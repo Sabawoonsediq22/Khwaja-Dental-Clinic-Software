@@ -45,8 +45,10 @@ export interface PatientVisit {
    chiefComplaint: string;
    clinicalNotes: string;
    status: "Open" | "Completed" | "Canceled";
-   discount?: number;
-   paidAmount?: number;
+   discountAfn?: number;
+   discountUsd?: number;
+   paidAmountAfn?: number;
+   paidAmountUsd?: number;
    createdAt?: string;
    updatedAt?: string;
  }

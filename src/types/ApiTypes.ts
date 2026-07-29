@@ -118,6 +118,8 @@ export interface CreatePatientInput {
   clinical_notes?: string | null;
   procedures: CreateProcedureWithTreatmentInput[];
   discount?: number | null;
+  discount_afn?: number | null;
+  discount_usd?: number | null;
   paid_amount?: number | null;
   paid_amount_afn: number;
   paid_amount_usd: number;

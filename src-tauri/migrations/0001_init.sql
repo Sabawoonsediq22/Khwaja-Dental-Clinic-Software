@@ -72,21 +72,16 @@ CREATE TABLE invoices (
     id TEXT PRIMARY KEY,
     visit_id TEXT NOT NULL UNIQUE REFERENCES visits(id) ON DELETE CASCADE,
     invoice_number TEXT NOT NULL UNIQUE,
-    subtotal REAL NOT NULL DEFAULT 0 CHECK(subtotal >= 0),
-    discount REAL NOT NULL DEFAULT 0 CHECK(discount >= 0),
-    total_amount REAL NOT NULL DEFAULT 0 CHECK(total_amount >= 0),
-    paid_amount REAL NOT NULL DEFAULT 0 CHECK(paid_amount >= 0),
-    outstanding_amount REAL NOT NULL DEFAULT 0 CHECK(outstanding_amount >= 0),
-    subtotal_afn REAL NOT NULL DEFAULT 0 CHECK(subtotal_afn >= 0),
-    subtotal_usd REAL NOT NULL DEFAULT 0 CHECK(subtotal_usd >= 0),
-    discount_afn REAL NOT NULL DEFAULT 0 CHECK(discount_afn >= 0),
-    discount_usd REAL NOT NULL DEFAULT 0 CHECK(discount_usd >= 0),
-    total_afn REAL NOT NULL DEFAULT 0 CHECK(total_afn >= 0),
-    total_usd REAL NOT NULL DEFAULT 0 CHECK(total_usd >= 0),
-    paid_afn REAL NOT NULL DEFAULT 0 CHECK(paid_afn >= 0),
-    paid_usd REAL NOT NULL DEFAULT 0 CHECK(paid_usd >= 0),
-    outstanding_afn REAL NOT NULL DEFAULT 0 CHECK(outstanding_afn >= 0),
-    outstanding_usd REAL NOT NULL DEFAULT 0 CHECK(outstanding_usd >= 0),
+    subtotal_afn REAL DEFAULT 0 CHECK(subtotal_afn >= 0),
+    subtotal_usd REAL DEFAULT 0 CHECK(subtotal_usd >= 0),
+    discount_afn REAL DEFAULT 0 CHECK(discount_afn >= 0),
+    discount_usd REAL DEFAULT 0 CHECK(discount_usd >= 0),
+    total_afn REAL DEFAULT 0 CHECK(total_afn >= 0),
+    total_usd REAL DEFAULT 0 CHECK(total_usd >= 0),
+    paid_afn REAL DEFAULT 0 CHECK(paid_afn >= 0),
+    paid_usd REAL DEFAULT 0 CHECK(paid_usd >= 0),
+    outstanding_afn REAL DEFAULT 0 CHECK(outstanding_afn >= 0),
+    outstanding_usd REAL DEFAULT 0 CHECK(outstanding_usd >= 0),
     status TEXT NOT NULL CHECK(status IN ('Unpaid','Partial','Paid')),
     issued_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -94,9 +89,8 @@ CREATE TABLE invoices (
 CREATE TABLE payments (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-    amount REAL NOT NULL DEFAULT 0 CHECK(amount > 0),
-    amount_afn REAL NOT NULL DEFAULT 0 CHECK(amount_afn > 0),
-    amount_usd REAL NOT NULL DEFAULT 0 CHECK(amount_usd > 0),
+    amount_afn REAL DEFAULT 0 CHECK(amount_afn > 0),
+    amount_usd REAL DEFAULT 0 CHECK(amount_usd > 0),
     method TEXT NOT NULL DEFAULT 'Cash',
     notes TEXT DEFAULT '',
     received_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -186,6 +180,7 @@ CREATE INDEX IF NOT EXISTS idx_invoices_visit ON invoices(visit_id);
 CREATE INDEX IF NOT EXISTS idx_invoices_status ON invoices(status);
 CREATE INDEX IF NOT EXISTS idx_invoices_issued_at ON invoices(issued_at);
 CREATE INDEX IF NOT EXISTS idx_invoices_outstanding_afn ON invoices(outstanding_afn);
+CREATE INDEX IF NOT EXISTS idx_invoices_outstanding_usd ON invoices(outstanding_usd);
 CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_received_at ON payments(received_at);
 CREATE INDEX IF NOT EXISTS idx_patient_allergies_patient ON patient_allergies(patient_id);

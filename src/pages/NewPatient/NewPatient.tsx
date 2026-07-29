@@ -296,9 +296,10 @@ const NewPatient: React.FC = () => {
     }));
   };
 
-  const discountAmount =
-    parseFloat(patientVisit.discount?.toString() || "0") || 0;
-  const paidAmount = parseFloat(patientVisit.paidAmount?.toString() || "0") || 0;
+  const discountAfn = parseFloat(patientVisit.discountAfn?.toString() || "0") || 0;
+  const discountUsd = parseFloat(patientVisit.discountUsd?.toString() || "0") || 0;
+  const paidAmountAfn = parseFloat(patientVisit.paidAmountAfn?.toString() || "0") || 0;
+  const paidAmountUsd = parseFloat(patientVisit.paidAmountUsd?.toString() || "0") || 0;
 
   const subtotalAfn = selectedProcedures.reduce(
     (sum, p) => sum + p.priceAfn * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
@@ -313,12 +314,12 @@ const NewPatient: React.FC = () => {
     0,
   );
 
-  const totalDueAfn = Math.max(subtotalAfn - discountAmount, 0);
-  const totalDueUsd = Math.max(subtotalUsd, 0);
-  const paidAmountAfn = Math.min(paidAmount, totalDueAfn);
-  const paidAmountUsd = 0;
-  const outstandingAfn = Math.max(totalDueAfn - paidAmountAfn, 0);
-  const outstandingUsd = Math.max(totalDueUsd - paidAmountUsd, 0);
+  const totalDueAfn = Math.max(subtotalAfn - discountAfn, 0);
+  const totalDueUsd = Math.max(subtotalUsd - discountUsd, 0);
+  const cappedPaidAfn = Math.min(paidAmountAfn, totalDueAfn);
+  const cappedPaidUsd = Math.min(paidAmountUsd, totalDueUsd);
+  const outstandingAfn = Math.max(totalDueAfn - cappedPaidAfn, 0);
+  const outstandingUsd = Math.max(totalDueUsd - cappedPaidUsd, 0);
   const billingCurrencySymbol = getCurrencySymbol(selectedProcedures[0]?.procedureName || "");
   const BillingStatusIcon: React.FC<{
     isActive: boolean;
@@ -441,8 +442,10 @@ const NewPatient: React.FC = () => {
         chief_complaint: patientVisit.chiefComplaint.trim() || null,
         clinical_notes: patientVisit.clinicalNotes.trim() || null,
         procedures: proceduresPayload,
-        discount: discountAmount > 0 ? discountAmount : null,
-        paid_amount: paidAmount > 0 ? paidAmount : null,
+        discount: (discountAfn > 0 || discountUsd > 0) ? (discountAfn + discountUsd) : null,
+        discount_afn: discountAfn > 0 ? discountAfn : null,
+        discount_usd: discountUsd > 0 ? discountUsd : null,
+        paid_amount: (paidAmountAfn > 0 || paidAmountUsd > 0) ? (paidAmountAfn + paidAmountUsd) : null,
         paid_amount_afn: paidAmountAfn,
         paid_amount_usd: paidAmountUsd,
       };
@@ -1060,62 +1063,126 @@ const NewPatient: React.FC = () => {
                   </div>
                 </div>
               </div>
+              {subtotalAfn > 0 && (
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <BillingStatusIcon isActive={discountAmount > 0} />
+                    <BillingStatusIcon isActive={discountAfn > 0} />
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("newPatient.discount")}
+                      {t("newPatient.discountAfn", "Discount (AFN)")}
                     </p>
                   </div>
                   <div className="relative w-36">
                     <FormInput
                       type="number"
                       placeholder={t(
-                        "newPatient.discount",
-                        "Enter Value",
+                        "newPatient.discountAfn",
+                        "AFN Discount",
                       )}
                       onChange={(e) =>
-                        handlePatientVisitChange("discount", e.target.value)
+                        handlePatientVisitChange("discountAfn", e.target.value)
                       }
-                      value={patientVisit.discount ?? ""}
+                      value={patientVisit.discountAfn ?? ""}
                       className="w-full text-right pr-10"
                       disabled={isSubmitting}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      {billingCurrencySymbol}
+                      AFN
                     </span>
                   </div>
                 </div>
               </div>
+              )}
+              {subtotalUsd > 0 && (
               <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <BillingStatusIcon isActive={paidAmount > 0} />
+                    <BillingStatusIcon isActive={discountUsd > 0} />
                     <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t("newPatient.paidAmount")}
+                      {t("newPatient.discountUsd", "Discount (USD)")}
                     </p>
                   </div>
                   <div className="relative w-36">
                     <FormInput
                       type="number"
                       placeholder={t(
-                        "newPatient.paidAmount",
-                        "Enter Amount",
+                        "newPatient.discountUsd",
+                        "USD Discount",
                       )}
                       onChange={(e) =>
-                        handlePatientVisitChange("paidAmount", e.target.value)
+                        handlePatientVisitChange("discountUsd", e.target.value)
                       }
-                      value={patientVisit.paidAmount ?? ""}
+                      value={patientVisit.discountUsd ?? ""}
                       className="w-full text-right pr-10"
                       disabled={isSubmitting}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      {billingCurrencySymbol}
+                      USD
                     </span>
                   </div>
                 </div>
               </div>
+              )}
+              {subtotalAfn > 0 && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <BillingStatusIcon isActive={paidAmountAfn > 0} />
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t("newPatient.paidAmountAfn", "Paid (AFN)")}
+                    </p>
+                  </div>
+                  <div className="relative w-36">
+                    <FormInput
+                      type="number"
+                      placeholder={t(
+                        "newPatient.paidAmountAfn",
+                        "AFN Paid",
+                      )}
+                      onChange={(e) =>
+                        handlePatientVisitChange("paidAmountAfn", e.target.value)
+                      }
+                      value={patientVisit.paidAmountAfn ?? ""}
+                      className="w-full text-right pr-10"
+                      disabled={isSubmitting}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      AFN
+                    </span>
+                  </div>
+                </div>
+              </div>
+              )}
+              {subtotalUsd > 0 && (
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <BillingStatusIcon isActive={paidAmountUsd > 0} />
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t("newPatient.paidAmountUsd", "Paid (USD)")}
+                    </p>
+                  </div>
+                  <div className="relative w-36">
+                    <FormInput
+                      type="number"
+                      placeholder={t(
+                        "newPatient.paidAmountUsd",
+                        "USD Paid",
+                      )}
+                      onChange={(e) =>
+                        handlePatientVisitChange("paidAmountUsd", e.target.value)
+                      }
+                      value={patientVisit.paidAmountUsd ?? ""}
+                      className="w-full text-right pr-10"
+                      disabled={isSubmitting}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                      USD
+                    </span>
+                  </div>
+                </div>
+              </div>
+              )}
             </div>
 
             <div className="space-y-4 flex-1">
@@ -1135,14 +1202,30 @@ const NewPatient: React.FC = () => {
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">${formatCurrency(subtotalUsd)}</p>
                   </div>
                 )}
-                <div className="flex justify-between items-center py-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.discount")}</p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(discountAmount)} {billingCurrencySymbol}</p>
-                </div>
-                <div className="flex justify-between items-center py-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.paidAmount")}</p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(paidAmount)} {billingCurrencySymbol}</p>
-                </div>
+                {discountAfn > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.discountAfn", "Discount (AFN)")}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(discountAfn)} AFN</p>
+                  </div>
+                )}
+                {discountUsd > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.discountUsd", "Discount (USD)")}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">${formatCurrency(discountUsd)}</p>
+                  </div>
+                )}
+                {paidAmountAfn > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.paidAmountAfn", "Paid (AFN)")}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(paidAmountAfn)} AFN</p>
+                  </div>
+                )}
+                {paidAmountUsd > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.paidAmountUsd", "Paid (USD)")}</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">${formatCurrency(paidAmountUsd)}</p>
+                  </div>
+                )}
                 <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
                 {totalDueAfn > 0 && (
                   <div className="flex justify-between items-center py-1">
