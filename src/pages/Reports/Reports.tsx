@@ -189,6 +189,8 @@ const Reports: React.FC = () => {
             {
               month: new Date().toISOString().slice(0, 7),
               revenue: summary.revenue_this_month,
+              revenue_afn: summary.revenue_this_month_afn,
+              revenue_usd: summary.revenue_this_month_usd,
               monthLabel: formatMonth(new Date().toISOString().slice(0, 7)),
             },
           ]

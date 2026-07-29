@@ -21,6 +21,13 @@ function formatCurrency(val: number): string {
   return val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+function formatDualCurrency(afn: number, usd: number): string {
+  const parts: string[] = [];
+  if (afn > 0) parts.push(`${formatCurrency(afn)} AFN`);
+  if (usd > 0) parts.push(`$${formatCurrency(usd)}`);
+  return parts.length > 0 ? parts.join(" + ") : `${formatCurrency(0)} AFN`;
+}
+
 const getStatusVariant = (status: string) => {
   switch (status) {
     case "Paid":
@@ -114,10 +121,10 @@ const BillingTable: React.FC<BillingTableProps> = ({
                   {formatDate(invoice.issued_at)}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {formatCurrency(invoice.total_amount)} AFN
+                  {formatDualCurrency(invoice.total_afn ?? invoice.total_amount, invoice.total_usd ?? 0)}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {formatCurrency(invoice.paid_amount)} AFN
+                  {formatDualCurrency(invoice.paid_afn ?? invoice.paid_amount, invoice.paid_usd ?? 0)}
                 </td>
                 <td className="py-3 px-4 text-sm whitespace-nowrap">
                   <span
@@ -127,7 +134,7 @@ const BillingTable: React.FC<BillingTableProps> = ({
                         : "text-gray-600 dark:text-gray-300"
                     }
                   >
-                    {formatCurrency(invoice.outstanding_amount)} AFN
+                    {formatDualCurrency(invoice.outstanding_afn ?? invoice.outstanding_amount, invoice.outstanding_usd ?? 0)}
                   </span>
                 </td>
                 <td className="py-3 px-4">
@@ -180,9 +187,9 @@ const BillingTable: React.FC<BillingTableProps> = ({
             </div>
             <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
               <span>{t("billing.table.dateLabel", "Date:")} {formatDate(invoice.issued_at)}</span>
-              <span>{t("billing.table.totalLabel", "Total:")} {formatCurrency(invoice.total_amount)} {t("billing.currency", "AFN")}</span>
-              <span>{t("billing.table.paidLabel", "Paid:")} {formatCurrency(invoice.paid_amount)} {t("billing.currency", "AFN")}</span>
-              <span>{t("billing.table.dueLabel", "Due:")} {formatCurrency(invoice.outstanding_amount)} {t("billing.currency", "AFN")}</span>
+              <span>{t("billing.table.totalLabel", "Total:")} {formatDualCurrency(invoice.total_afn ?? invoice.total_amount, invoice.total_usd ?? 0)}</span>
+              <span>{t("billing.table.paidLabel", "Paid:")} {formatDualCurrency(invoice.paid_afn ?? invoice.paid_amount, invoice.paid_usd ?? 0)}</span>
+              <span>{t("billing.table.dueLabel", "Due:")} {formatDualCurrency(invoice.outstanding_afn ?? invoice.outstanding_amount, invoice.outstanding_usd ?? 0)}</span>
             </div>
             {/* Mobile Popover */}
               <Popover

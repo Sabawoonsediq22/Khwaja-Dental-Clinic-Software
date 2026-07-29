@@ -94,6 +94,8 @@ const NewPatient: React.FC = () => {
     procedureName: string;
     additionalNotes: string;
     procedurePrice: number;
+    priceAfn: number;
+    priceUsd: number;
     numberOfProcedures: number;
     selectedToothIds: string[];
     sealedTeeth: ToothData[];
@@ -136,6 +138,8 @@ const NewPatient: React.FC = () => {
       procedureName: newProcedureName,
       additionalNotes: "",
       procedurePrice: selectedProcedure?.price ?? 0,
+      priceAfn: selectedProcedure?.price_afn ?? 0,
+      priceUsd: selectedProcedure?.price_usd ?? 0,
       numberOfProcedures: 1,
       selectedToothIds: [],
       sealedTeeth: [],
@@ -295,21 +299,27 @@ const NewPatient: React.FC = () => {
   const discountAmount =
     parseFloat(patientVisit.discount?.toString() || "0") || 0;
   const paidAmount = parseFloat(patientVisit.paidAmount?.toString() || "0") || 0;
-  const subtotal = selectedProcedures.reduce(
-    (sum, p) => sum + (parseFloat(p.procedurePrice.toString()) || 0) * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
+
+  const subtotalAfn = selectedProcedures.reduce(
+    (sum, p) => sum + p.priceAfn * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
+    0,
+  );
+  const subtotalUsd = selectedProcedures.reduce(
+    (sum, p) => sum + p.priceUsd * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
     0,
   );
   const numProc = selectedProcedures.reduce(
     (sum, p) => sum + (parseInt(p.numberOfProcedures.toString(), 10) || 0),
     0,
   );
-  const totalDue = subtotal - discountAmount;
-  const outstandingAmount = totalDue - paidAmount;
-  const currencySymbol = getCurrencySymbol(
-    selectedProcedures.length > 0
-      ? selectedProcedures[0].procedureName
-      : "",
-  );
+
+  const totalDueAfn = Math.max(subtotalAfn - discountAmount, 0);
+  const totalDueUsd = Math.max(subtotalUsd, 0);
+  const paidAmountAfn = Math.min(paidAmount, totalDueAfn);
+  const paidAmountUsd = 0;
+  const outstandingAfn = Math.max(totalDueAfn - paidAmountAfn, 0);
+  const outstandingUsd = Math.max(totalDueUsd - paidAmountUsd, 0);
+  const billingCurrencySymbol = getCurrencySymbol(selectedProcedures[0]?.procedureName || "");
   const BillingStatusIcon: React.FC<{
     isActive: boolean;
     className?: string;
@@ -404,6 +414,8 @@ const NewPatient: React.FC = () => {
           procedure_name: proc.procedureName,
           procedure_additional_note: proc.additionalNotes?.trim() || null,
           procedure_price: proc.procedurePrice,
+          procedure_price_afn: proc.priceAfn,
+          procedure_price_usd: proc.priceUsd,
           number_of_procedures: Math.max(proc.numberOfProcedures, 1),
           treatment_teeth: proc.selectedToothIds
             .map((id) => ({
@@ -431,6 +443,8 @@ const NewPatient: React.FC = () => {
         procedures: proceduresPayload,
         discount: discountAmount > 0 ? discountAmount : null,
         paid_amount: paidAmount > 0 ? paidAmount : null,
+        paid_amount_afn: paidAmountAfn,
+        paid_amount_usd: paidAmountUsd,
       };
 
       const created = await api.patients.create(input);
@@ -952,7 +966,7 @@ const NewPatient: React.FC = () => {
                   <img
                     src={xrayPreview}
                     alt="X-ray preview"
-                    className="h-[13.5rem] w-full rounded-lg border border-gray-200 object-contain dark:border-gray-700"
+                    className="h-54 w-full rounded-lg border border-gray-200 object-contain dark:border-gray-700"
                   />
                   <div className="flex items-center justify-between gap-3">
                     <p className="text-sm text-muted-foreground">
@@ -1069,7 +1083,7 @@ const NewPatient: React.FC = () => {
                       disabled={isSubmitting}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      {currencySymbol}
+                      {billingCurrencySymbol}
                     </span>
                   </div>
                 </div>
@@ -1097,7 +1111,7 @@ const NewPatient: React.FC = () => {
                       disabled={isSubmitting}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                      {currencySymbol}
+                      {billingCurrencySymbol}
                     </span>
                   </div>
                 </div>
@@ -1105,32 +1119,62 @@ const NewPatient: React.FC = () => {
             </div>
 
             <div className="space-y-4 flex-1">
-              <div className="rounded-xl border-2 border-amber-200 bg-gradient-to-b from-amber-50 to-orange-50 p-5 dark:border-gray-700 dark:from-gray-700/50 dark:to-gray-700/30 h-full flex flex-col justify-center">
+              <div className="rounded-xl border-2 border-amber-200 bg-linear-to-b from-amber-50 to-orange-50 p-5 dark:border-gray-700 dark:from-gray-700/50 dark:to-gray-700/30 h-full flex flex-col justify-center">
                 <div className="mb-3">
                   <p className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">{t("newPatient.billingSummary")}</p>
                 </div>
-                <div className="flex justify-between items-center py-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.subtotal")}</p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(subtotal)} {currencySymbol}</p>
-                </div>
+                {subtotalAfn > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.subtotal")} ({billingCurrencySymbol})</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(subtotalAfn)} {billingCurrencySymbol}</p>
+                  </div>
+                )}
+                {subtotalUsd > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.subtotal")} (USD)</p>
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">${formatCurrency(subtotalUsd)}</p>
+                  </div>
+                )}
                 <div className="flex justify-between items-center py-1">
                   <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.discount")}</p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(discountAmount)} {currencySymbol}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(discountAmount)} {billingCurrencySymbol}</p>
                 </div>
                 <div className="flex justify-between items-center py-1">
                   <p className="text-sm text-gray-600 dark:text-gray-300">{t("newPatient.paidAmount")}</p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(paidAmount)} {currencySymbol}</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(paidAmount)} {billingCurrencySymbol}</p>
                 </div>
                 <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
-                <div className="flex justify-between items-center py-1">
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newPatient.totalDue")}</p>
-                  <p className="text-xl font-bold text-amber-700 dark:text-amber-400">{formatCurrency(totalDue)} {currencySymbol}</p>
-                </div>
+                {totalDueAfn > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newPatient.totalDue")} ({billingCurrencySymbol})</p>
+                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{formatCurrency(totalDueAfn)} {billingCurrencySymbol}</p>
+                  </div>
+                )}
+                {totalDueUsd > 0 && (
+                  <div className="flex justify-between items-center py-1">
+                    <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newPatient.totalDue")} (USD)</p>
+                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">${formatCurrency(totalDueUsd)}</p>
+                  </div>
+                )}
                 <div className="mt-2 border-t-2 border-amber-500" />
-                <div className="flex justify-between items-center py-1 mt-2">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white">{t("newPatient.outstanding")}</p>
-                  <p className="text-xl font-bold text-red-600 dark:text-red-400">{formatCurrency(outstandingAmount)} {currencySymbol}</p>
-                </div>
+                {outstandingAfn > 0 && (
+                  <div className="flex justify-between items-center py-1 mt-2">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{t("newPatient.outstanding")} ({billingCurrencySymbol})</p>
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatCurrency(outstandingAfn)} {billingCurrencySymbol}</p>
+                  </div>
+                )}
+                {outstandingUsd > 0 && (
+                  <div className="flex justify-between items-center py-1 mt-2">
+                    <p className="text-sm font-bold text-gray-900 dark:text-white">{t("newPatient.outstanding")} (USD)</p>
+                    <p className="text-lg font-bold text-red-600 dark:text-red-400">${formatCurrency(outstandingUsd)}</p>
+                  </div>
+                )}
+                {outstandingAfn === 0 && outstandingUsd === 0 && selectedProcedures.length > 0 && (
+                  <div className="flex justify-between items-center py-1 mt-2">
+                    <p className="text-sm font-bold text-green-600 dark:text-green-400">{t("newPatient.outstanding")}</p>
+                    <p className="text-lg font-bold text-green-600 dark:text-green-400">0 {billingCurrencySymbol}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

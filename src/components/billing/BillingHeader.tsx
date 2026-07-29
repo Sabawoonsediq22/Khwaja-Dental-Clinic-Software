@@ -7,6 +7,8 @@ const BillingHeader: React.FC<BillingHeaderProps> = ({
   invoices,
   totalInvoices,
   totalOutstandingAmount,
+  totalOutstandingAfn,
+  totalOutstandingUsd,
   searchQuery,
   selectedStatus,
   onSearchChange,
@@ -57,7 +59,8 @@ const BillingHeader: React.FC<BillingHeaderProps> = ({
               {t("billing.outstandingBalance", "Outstanding")} |{" "}
             </span>
             <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
-              {totalOutstandingAmount.toLocaleString()} AFN
+              {totalOutstandingAfn != null && totalOutstandingAfn > 0 ? `${totalOutstandingAfn.toLocaleString()} AFN` : `${totalOutstandingAmount.toLocaleString()} AFN`}
+              {totalOutstandingUsd != null && totalOutstandingUsd > 0 && ` + $${totalOutstandingUsd.toLocaleString()}`}
             </span>
           </div>
         </div>

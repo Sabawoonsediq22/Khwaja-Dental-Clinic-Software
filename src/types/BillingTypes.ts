@@ -9,6 +9,8 @@ export interface BillingHeaderProps {
   totalInvoices: number;
   totalOutstanding: number;
   totalOutstandingAmount: number;
+  totalOutstandingAfn?: number;
+  totalOutstandingUsd?: number;
   searchQuery: string;
   selectedStatus: InvoiceStatusFilter;
   onSearchChange: (query: string) => void;

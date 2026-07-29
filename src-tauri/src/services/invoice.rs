@@ -5,6 +5,7 @@ use sqlx::SqlitePool;
 
 pub struct InvoiceService;
 
+#[allow(dead_code)]
 fn calculate_invoice_status(outstanding_amount: f64, paid_amount: f64) -> InvoiceStatus {
     if outstanding_amount == 0.0 {
         InvoiceStatus::Paid
@@ -139,44 +140,65 @@ impl InvoiceService {
             q.fetch_one(pool).await?
         };
 
+        // Per-currency total outstanding
+        let total_outstanding_afn_sql = if status_bind_values.is_empty() {
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+        } else {
+            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
+        };
+        
+        let _total_outstanding_afn: f64 = if status_bind_values.is_empty() {
+            sqlx::query_scalar(total_outstanding_afn_sql).fetch_one(pool).await?
+        } else {
+            let mut q = sqlx::query_scalar(total_outstanding_afn_sql);
+            for val in &status_bind_values {
+                q = q.bind(val);
+            }
+            q.fetch_one(pool).await?
+        };
+
+        let total_outstanding_usd_sql = if status_bind_values.is_empty() {
+            "SELECT COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+        } else {
+            "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
+        };
+        
+        let _total_outstanding_usd: f64 = if status_bind_values.is_empty() {
+            sqlx::query_scalar(total_outstanding_usd_sql).fetch_one(pool).await?
+        } else {
+            let mut q = sqlx::query_scalar(total_outstanding_usd_sql);
+            for val in &status_bind_values {
+                q = q.bind(val);
+            }
+            q.fetch_one(pool).await?
+        };
+
         // Build main query
         let query_str = format!(
-            "SELECT i.id, i.invoice_number, i.subtotal, i.discount, i.total_amount, i.paid_amount, i.outstanding_amount, i.status, i.issued_at, v.patient_id, p.full_name, p.phone, v.visit_date FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id {} ORDER BY i.issued_at DESC LIMIT ? OFFSET ?",
+            "SELECT i.id, i.invoice_number, i.subtotal, i.discount, i.total_amount, i.paid_amount, i.outstanding_amount,
+                    COALESCE(i.subtotal_afn, 0) as subtotal_afn,
+                    COALESCE(i.subtotal_usd, 0) as subtotal_usd,
+                    COALESCE(i.total_afn, 0) as total_afn,
+                    COALESCE(i.total_usd, 0) as total_usd,
+                    COALESCE(i.paid_afn, 0) as paid_afn,
+                    COALESCE(i.paid_usd, 0) as paid_usd,
+                    COALESCE(i.outstanding_afn, 0) as outstanding_afn,
+                    COALESCE(i.outstanding_usd, 0) as outstanding_usd,
+                    i.status, i.issued_at, i.visit_id as visit_id, v.patient_id as patient_id, p.full_name as patient_name, p.phone as patient_phone, v.visit_date
+             FROM invoices i
+             JOIN visits v ON v.id = i.visit_id
+             JOIN patients p ON p.id = v.patient_id {} ORDER BY i.issued_at DESC LIMIT ? OFFSET ?",
             where_clause
         );
 
-        // FIXED: Build query with all 13 columns
-        let mut query = sqlx::query_as::<_, (String, String, f64, f64, f64, f64, f64, String, String, String, String, Option<String>, String)>(&query_str);
-        
-        // FIXED: Bind values using a different approach
+        let mut query = sqlx::query_as::<_, InvoiceListItem>(&query_str);
+
         for val in bind_values {
             query = query.bind(val);
         }
         query = query.bind(per_page_i64).bind(offset);
 
-        let rows = query.fetch_all(pool).await?;
-
-        let items: Vec<InvoiceListItem> = rows
-            .into_iter()
-            .map(|(id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at, patient_id, patient_name, patient_phone, visit_date)| {
-                InvoiceListItem {
-                    id: id.clone(),
-                    invoice_number,
-                    patient_id,
-                    patient_name,
-                    patient_phone,
-                    visit_id: id,
-                    visit_date,
-                    subtotal,
-                    discount,
-                    total_amount,
-                    paid_amount,
-                    outstanding_amount,
-                    status,
-                    issued_at,
-                }
-            })
-            .collect();
+        let items: Vec<InvoiceListItem> = query.fetch_all(pool).await?;
 
         Ok(InvoicePageResult {
             items,
@@ -197,8 +219,11 @@ impl InvoiceService {
 
         let now = Utc::now().to_rfc3339();
 
-        let subtotal: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(p.procedure_price * tr.number_of_procedures), 0)
+        let row: (f64, f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(p.procedure_price * tr.number_of_procedures), 0),
+               COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0),
+               COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0)
              FROM treatment_records tr
              JOIN procedures p ON p.id = tr.procedure_id
              WHERE tr.visit_id = ?",
@@ -207,14 +232,42 @@ impl InvoiceService {
         .fetch_one(pool)
         .await?;
 
+        let subtotal = row.0;
+        let subtotal_afn = row.1;
+        let subtotal_usd = row.2;
+
+        let total_afn = (subtotal_afn - input.discount_afn).max(0.0);
+        let total_usd = (subtotal_usd - input.discount_usd).max(0.0);
         let total_amount = subtotal - input.discount;
-        let outstanding_amount = total_amount - input.paid_amount;
-        let status = calculate_invoice_status(outstanding_amount, input.paid_amount);
+        let paid_afn = input.paid_amount_afn;
+        let paid_usd = input.paid_amount_usd;
+        let final_paid_afn = if total_afn - paid_afn < 0.0 { total_afn } else { paid_afn.min(total_afn) };
+        let final_paid_usd = if total_usd - paid_usd < 0.0 { total_usd } else { paid_usd.min(total_usd) };
+        let final_outstanding_afn = (total_afn - final_paid_afn).max(0.0);
+        let final_outstanding_usd = (total_usd - final_paid_usd).max(0.0);
+
+        let paid_total = final_paid_afn + final_paid_usd;
+        let outstanding_total = final_outstanding_afn + final_outstanding_usd;
+
+        let status = if final_outstanding_afn == 0.0 && final_outstanding_usd == 0.0 {
+            InvoiceStatus::Paid
+        } else if final_paid_afn > 0.0 || final_paid_usd > 0.0 {
+            InvoiceStatus::Partial
+        } else {
+            InvoiceStatus::Unpaid
+        };
 
         let invoice = sqlx::query_as::<_, Invoice>(
-            "INSERT INTO invoices (id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             RETURNING id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at"
+            "INSERT INTO invoices (id, visit_id, invoice_number,
+              subtotal, discount, total_amount, paid_amount, outstanding_amount,
+              subtotal_afn, subtotal_usd,
+              total_afn, total_usd,
+              paid_afn, paid_usd,
+              outstanding_afn, outstanding_usd,
+              status, issued_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount,
+               subtotal_afn, subtotal_usd, total_afn, total_usd, paid_afn, paid_usd, outstanding_afn, outstanding_usd, status, issued_at"
         )
         .bind(&id)
         .bind(&input.visit_id)
@@ -222,8 +275,16 @@ impl InvoiceService {
         .bind(subtotal)
         .bind(input.discount)
         .bind(total_amount)
-        .bind(input.paid_amount)
-        .bind(outstanding_amount)
+        .bind(paid_total)
+        .bind(outstanding_total)
+        .bind(subtotal_afn)
+        .bind(subtotal_usd)
+        .bind(total_afn)
+        .bind(total_usd)
+        .bind(final_paid_afn)
+        .bind(final_paid_usd)
+        .bind(final_outstanding_afn)
+        .bind(final_outstanding_usd)
         .bind(match status {
             InvoiceStatus::Unpaid => "Unpaid",
             InvoiceStatus::Partial => "Partial",
@@ -287,6 +348,10 @@ impl InvoiceService {
                     tr.number_of_procedures as quantity,
                     p.procedure_price as unit_price,
                     (p.procedure_price * tr.number_of_procedures) as total_price,
+                    p.procedure_price_afn as unit_price_afn,
+                    p.procedure_price_usd as unit_price_usd,
+                    (p.procedure_price_afn * tr.number_of_procedures) as total_price_afn,
+                    (p.procedure_price_usd * tr.number_of_procedures) as total_price_usd,
                     tr.performed_at,
                     (SELECT GROUP_CONCAT(tt.tooth_number, ', ') FROM treatment_tooth tt WHERE tt.treatment_record_id = tr.id) as tooth_numbers
              FROM treatment_records tr
@@ -320,6 +385,14 @@ impl InvoiceService {
             total_amount: invoice.total_amount,
             paid_amount: invoice.paid_amount,
             outstanding_amount: invoice.outstanding_amount,
+            subtotal_afn: invoice.subtotal_afn,
+            subtotal_usd: invoice.subtotal_usd,
+            total_afn: invoice.total_afn,
+            total_usd: invoice.total_usd,
+            paid_afn: invoice.paid_afn,
+            paid_usd: invoice.paid_usd,
+            outstanding_afn: invoice.outstanding_afn,
+            outstanding_usd: invoice.outstanding_usd,
             status: invoice.status,
             procedures: procedure_rows,
             payments,

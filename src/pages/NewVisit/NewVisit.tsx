@@ -35,7 +35,7 @@ import { usePatient } from "../../hooks/usePatients";
 import { PROCEDURES } from "../../shared/constants/Procedures";
 import PatientAvatarWithStatus from "../../components/patients/PatientAvatarWithStatus";
 import { ReceiptPreviewModal } from "../../components/receipt/ReceiptPreviewModal";
-import { getCurrencySymbol } from "../../components/common/getCurrencySymbol";
+
 import { validateNewVisitForm as validateFormFields } from "../../validation/newVisitValidation";
 
 const getTodayDateString = () => new Date().toISOString().split("T")[0];
@@ -76,6 +76,8 @@ const NewVisit: React.FC = () => {
     procedureName: string;
     additionalNotes: string;
     procedurePrice: number;
+    priceAfn: number;
+    priceUsd: number;
     numberOfProcedures: number;
     selectedToothIds: string[];
     sealedTeeth: ToothData[];
@@ -119,6 +121,8 @@ const NewVisit: React.FC = () => {
       procedureName: newProcedureName,
       additionalNotes: "",
       procedurePrice: selectedProcedure?.price ?? 0,
+      priceAfn: selectedProcedure?.price_afn ?? 0,
+      priceUsd: selectedProcedure?.price_usd ?? 0,
       numberOfProcedures: 1,
       selectedToothIds: [],
       sealedTeeth: [],
@@ -185,17 +189,20 @@ const NewVisit: React.FC = () => {
 
   const discountAmount = parseFloat(discount) || 0;
   const paidAmountValue = parseFloat(paidAmount) || 0;
-  const subtotal = selectedProcedures.reduce(
-    (sum, p) => sum + (parseFloat(p.procedurePrice.toString()) || 0) * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
+  const subtotalAfn = selectedProcedures.reduce(
+    (sum, p) => sum + p.priceAfn * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
     0,
   );
-  const totalDue = Math.max(subtotal - discountAmount, 0);
-  const outstandingAmount = Math.max(totalDue - paidAmountValue, 0);
-  const currencySymbol = getCurrencySymbol(
-    selectedProcedures.length > 0
-      ? selectedProcedures[0].procedureName
-      : "",
+  const subtotalUsd = selectedProcedures.reduce(
+    (sum, p) => sum + p.priceUsd * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
+    0,
   );
+  const totalDueAfn = Math.max(subtotalAfn - discountAmount, 0);
+  const totalDueUsd = Math.max(subtotalUsd, 0);
+  const paidAmountAfn = Math.min(paidAmountValue, totalDueAfn);
+  const paidAmountUsd = 0;
+  const outstandingAfn = Math.max(totalDueAfn - paidAmountAfn, 0);
+  const outstandingUsd = Math.max(totalDueUsd - paidAmountUsd, 0);
 
   const BillingStatusIcon: React.FC<{
     isActive: boolean;
@@ -289,12 +296,14 @@ const NewVisit: React.FC = () => {
        let xrayUploadFailed = false;
 
        for (const proc of selectedProcedures) {
-         const procedureInput: CreateProcedureInput = {
-           visit_id: createdVisit.id,
-           name: proc.procedureName,
-           additional_note: proc.additionalNotes?.trim() || null,
-           procedure_price: proc.procedurePrice,
-         };
+          const procedureInput: CreateProcedureInput = {
+            visit_id: createdVisit.id,
+            name: proc.procedureName,
+            additional_note: proc.additionalNotes?.trim() || null,
+            procedure_price: proc.procedurePrice,
+            procedure_price_afn: proc.priceAfn,
+            procedure_price_usd: proc.priceUsd,
+          };
          const createdProcedure = await api.procedures.create(procedureInput);
          const treatmentInput: CreateTreatmentRecordInput = {
            visit_id: createdVisit.id,
@@ -325,12 +334,18 @@ const NewVisit: React.FC = () => {
          }
        }
 
-       const createdInvoice = await api.invoices.create({
-         visit_id: createdVisit.id,
-         subtotal,
-         discount: discountAmount,
-         paid_amount: paidAmountValue,
-       });
+        const createdInvoice = await api.invoices.create({
+          visit_id: createdVisit.id,
+          subtotal: subtotalAfn + subtotalUsd,
+          discount: discountAmount,
+          discount_afn: discountAmount,
+          discount_usd: 0,
+          paid_amount: paidAmountValue,
+          paid_amount_afn: paidAmountAfn,
+          paid_amount_usd: paidAmountUsd,
+          subtotal_afn: subtotalAfn,
+          subtotal_usd: subtotalUsd,
+        });
 
         queryClient.invalidateQueries({
           queryKey: ["patients", patientId],
@@ -556,10 +571,9 @@ const NewVisit: React.FC = () => {
                   disabled={isSubmitting}
                 >
                   <option value="">{t("newVisit.selectProcedure")}</option>
-                  {PROCEDURES.map((procedure, index) => (
+                   {PROCEDURES.map((procedure, index) => (
                     <option key={index} value={procedure.name}>
-                      {procedure.name} - {formatCurrency(procedure.price)}{" "}
-                      {getCurrencySymbol(procedure.name)}
+                      {procedure.name} - {formatCurrency(procedure.price_afn)} AFN / ${formatCurrency(procedure.price_usd)}
                     </option>
                   ))}
                 </Select>
@@ -625,8 +639,14 @@ const NewVisit: React.FC = () => {
                         {selectedProcedures[activeProcedureIndex]?.procedureName || t("newVisit.selectedProcedure")}
                       </h4>
                       <span className="text-sm text-muted-foreground">
-                        {formatCurrency(selectedProcedures[activeProcedureIndex]?.procedurePrice || 0)}{" "}
-                        {getCurrencySymbol(selectedProcedures[activeProcedureIndex]?.procedureName || "")}
+                        {(() => {
+                          const p = selectedProcedures[activeProcedureIndex];
+                          if (!p) return "";
+                          const parts: string[] = [];
+                          if (p.priceAfn > 0) parts.push(`${formatCurrency(p.priceAfn)} AFN`);
+                          if (p.priceUsd > 0) parts.push(`$${formatCurrency(p.priceUsd)}`);
+                          return parts.join(" / ");
+                        })()}
                       </span>
                       {selectedProcedures[activeProcedureIndex]?.selectedToothIds.length ? (
                         <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
@@ -789,18 +809,23 @@ const NewVisit: React.FC = () => {
                           {proc.procedureName || t("newVisit.selectedProcedure")}
                         </p>
                       </div>
-                      <div className="relative w-36">
-                        <FormInput
-                          type="number"
-                          readOnly
-                          value={proc.procedurePrice || ""}
-                          className="w-full text-right pr-10"
-                          disabled={isSubmitting}
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          {getCurrencySymbol(proc.procedureName)}
-                        </span>
-                      </div>
+                      {(proc.priceAfn > 0 || proc.priceUsd > 0) && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          {proc.priceAfn > 0 && (
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              {formatCurrency(proc.priceAfn)} AFN
+                            </span>
+                          )}
+                          {proc.priceAfn > 0 && proc.priceUsd > 0 && (
+                            <span className="text-gray-400 dark:text-gray-500">/</span>
+                          )}
+                          {proc.priceUsd > 0 && (
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                              ${formatCurrency(proc.priceUsd)}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))
@@ -821,7 +846,7 @@ const NewVisit: React.FC = () => {
               <BillingRow
                 iconActive={discountAmount > 0}
                 label={t("newVisit.discount")}
-                currency={currencySymbol}
+                currency="AFN"
                 value={discount}
                 placeholder={t("newPatient.discount")}
                 error={errors.discount}
@@ -831,7 +856,7 @@ const NewVisit: React.FC = () => {
               <BillingRow
                 iconActive={paidAmountValue > 0}
                 label={t("newVisit.paidAmount")}
-                currency={currencySymbol}
+                currency="AFN"
                 value={paidAmount}
                 placeholder={t("newPatient.paidAmount")}
                 error={errors.paidAmount}
@@ -840,42 +865,64 @@ const NewVisit: React.FC = () => {
               />
             </div>
 
-            <div className="rounded-xl border-2 border-amber-200 bg-linear-to-b from-amber-50 to-orange-50 p-5 dark:border-gray-700 dark:from-gray-700/50 dark:to-gray-700/30">
+            <div className="rounded-xl border-2 border-amber-200 bg-linear-to-b from-amber-50 to-orange-50 p-5 dark:border-gray-700 dark:from-gray-700/50 dark:to-gray-700/30 h-full flex flex-col justify-center">
               <div className="mb-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
                   {t("newVisit.billingSummary")}
                 </p>
               </div>
-              <SummaryRow
-                label={t("newVisit.subtotal")}
-                value={formatCurrency(subtotal)}
-                currency={currencySymbol}
-              />
-              <SummaryRow
-                label={t("newVisit.discount")}
-                value={formatCurrency(discountAmount)}
-                currency={currencySymbol}
-              />
-              <SummaryRow
-                label={t("newVisit.paidAmount")}
-                value={formatCurrency(paidAmountValue)}
-                currency={currencySymbol}
-              />
-              <div className="my-3 border-t border-amber-300 dark:border-gray-600" />
-              <SummaryRow
-                label={t("newVisit.totalDue")}
-                value={formatCurrency(totalDue)}
-                currency={currencySymbol}
-                strong
-              />
-              <div className="mt-3 pt-3 border-t-2 border-amber-500" />
-              <SummaryRow
-                label={t("newVisit.outstanding")}
-                value={formatCurrency(outstandingAmount)}
-                currency={currencySymbol}
-                strong
-                danger
-              />
+              {subtotalAfn > 0 && (
+                <div className="flex items-center justify-between py-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("newVisit.subtotal")} (AFN)</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(subtotalAfn)} AFN</p>
+                </div>
+              )}
+              {subtotalUsd > 0 && (
+                <div className="flex items-center justify-between py-1">
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{t("newVisit.subtotal")} (USD)</p>
+                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">${formatCurrency(subtotalUsd)}</p>
+                </div>
+              )}
+              <div className="flex items-center justify-between py-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300">{t("newVisit.discount")}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(discountAmount)} AFN</p>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <p className="text-sm text-gray-600 dark:text-gray-300">{t("newVisit.paidAmount")}</p>
+                <p className="text-sm font-medium text-gray-800 dark:text-gray-200">{formatCurrency(paidAmountAfn)} AFN</p>
+              </div>
+              <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
+              {totalDueAfn > 0 && (
+                <div className="flex items-center justify-between py-1">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newVisit.totalDue")} (AFN)</p>
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-400">{formatCurrency(totalDueAfn)} AFN</p>
+                </div>
+              )}
+              {totalDueUsd > 0 && (
+                <div className="flex items-center justify-between py-1">
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newVisit.totalDue")} (USD)</p>
+                  <p className="text-lg font-bold text-amber-700 dark:text-amber-400">${formatCurrency(totalDueUsd)}</p>
+                </div>
+              )}
+              <div className="mt-2 border-t-2 border-amber-500" />
+              {outstandingAfn > 0 && (
+                <div className="flex items-center justify-between py-1 mt-2">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">{t("newVisit.outstanding")} (AFN)</p>
+                  <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatCurrency(outstandingAfn)} AFN</p>
+                </div>
+              )}
+              {outstandingUsd > 0 && (
+                <div className="flex items-center justify-between py-1 mt-2">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white">{t("newVisit.outstanding")} (USD)</p>
+                  <p className="text-lg font-bold text-red-600 dark:text-red-400">${formatCurrency(outstandingUsd)}</p>
+                </div>
+              )}
+              {outstandingAfn === 0 && outstandingUsd === 0 && selectedProcedures.length > 0 && (
+                <div className="flex items-center justify-between py-1 mt-2">
+                  <p className="text-sm font-bold text-green-600 dark:text-green-400">{t("newVisit.outstanding")}</p>
+                  <p className="text-lg font-bold text-green-600 dark:text-green-400">0 AFN</p>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -949,45 +996,5 @@ const BillingRow: React.FC<BillingRowProps> = ({
     </div>
   );
 };
-
-interface SummaryRowProps {
-  label: string;
-  value: string;
-  currency: string;
-  strong?: boolean;
-  danger?: boolean;
-}
-
-const SummaryRow: React.FC<SummaryRowProps> = ({
-  label,
-  value,
-  currency,
-  strong,
-  danger,
-}) => (
-  <div className="flex items-center justify-between space-y-4">
-    <p
-      className={
-        strong
-          ? "text-sm font-bold text-gray-900 dark:text-white"
-          : "text-sm text-gray-700 dark:text-gray-200"
-      }
-    >
-      {label}
-    </p>
-    <p
-      className={
-        strong
-          ? "text-xl font-bold text-primary dark:text-white"
-          : "text-sm font-medium text-gray-900 dark:text-white"
-      }
-    >
-      <span className={danger ? "text-red-600 dark:text-red-400" : undefined}>
-        {value}
-      </span>{" "}
-      {currency}
-    </p>
-  </div>
-);
 
 export default NewVisit;

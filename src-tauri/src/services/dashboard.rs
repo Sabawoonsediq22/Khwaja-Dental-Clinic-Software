@@ -9,8 +9,12 @@ impl DashboardService {
     pub async fn stats(pool: &SqlitePool) -> AppResult<DashboardStats> {
         let today = Utc::now().format("%Y-%m-%d").to_string();
 
-        let daily_revenue: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(amount), 0.0) FROM payments WHERE date(received_at) = ?"
+        let daily_revenue_row: (f64, f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(amount), 0.0),
+               COALESCE(SUM(amount_afn), 0.0),
+               COALESCE(SUM(amount_usd), 0.0)
+             FROM payments WHERE date(received_at) = ?"
         )
         .bind(&today)
         .fetch_one(pool)
@@ -23,8 +27,12 @@ impl DashboardService {
         .fetch_one(pool)
         .await?;
 
-        let outstanding_balance: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(outstanding_amount), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+        let outstanding_row: (f64, f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(outstanding_amount), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
+             FROM invoices WHERE status IN ('Unpaid', 'Partial')"
         )
         .fetch_one(pool)
         .await?;
@@ -44,8 +52,12 @@ impl DashboardService {
 
         let yesterday = (Utc::now() - Duration::days(1)).format("%Y-%m-%d").to_string();
 
-        let yesterday_revenue: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(amount), 0.0) FROM payments WHERE date(received_at) = ?"
+        let yesterday_revenue_row: (f64, f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(amount), 0.0),
+               COALESCE(SUM(amount_afn), 0.0),
+               COALESCE(SUM(amount_usd), 0.0)
+             FROM payments WHERE date(received_at) = ?"
         )
         .bind(&yesterday)
         .fetch_one(pool)
@@ -66,12 +78,18 @@ impl DashboardService {
         .await?;
 
         Ok(DashboardStats {
-            daily_revenue: daily_revenue.unwrap_or(0.0),
+            daily_revenue: daily_revenue_row.0,
+            daily_revenue_afn: daily_revenue_row.1,
+            daily_revenue_usd: daily_revenue_row.2,
             patients_today,
-            outstanding_balance: outstanding_balance.unwrap_or(0.0),
+            outstanding_balance: outstanding_row.0,
+            outstanding_balance_afn: outstanding_row.1,
+            outstanding_balance_usd: outstanding_row.2,
             outstanding_invoices_count,
             procedures_performed,
-            yesterday_revenue: yesterday_revenue.unwrap_or(0.0),
+            yesterday_revenue: yesterday_revenue_row.0,
+            yesterday_revenue_afn: yesterday_revenue_row.1,
+            yesterday_revenue_usd: yesterday_revenue_row.2,
             yesterday_patients,
             yesterday_procedures,
         })

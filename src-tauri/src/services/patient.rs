@@ -200,6 +200,8 @@ impl PatientService {
                     Some(proc.procedure_name.as_str()),
                     proc.procedure_additional_note.as_deref(),
                     Some(proc.procedure_price),
+                    Some(proc.procedure_price_afn),
+                    Some(proc.procedure_price_usd),
                     &now,
                 )
                 .await?
@@ -217,11 +219,16 @@ impl PatientService {
             }
         }
 
+        let discount = input.discount.unwrap_or(0.0);
         let invoice = Self::insert_invoice(
             &mut tx,
             &visit_id,
-            input.discount.unwrap_or(0.0),
+            discount,
             input.paid_amount.unwrap_or(0.0),
+            input.paid_amount_afn,
+            input.paid_amount_usd,
+            discount,
+            0.0,
         )
         .await?;
 
@@ -335,24 +342,30 @@ impl PatientService {
         name: Option<&str>,
         additional_note: Option<&str>,
         price: Option<f64>,
+        price_afn: Option<f64>,
+        price_usd: Option<f64>,
         now: &str,
     ) -> AppResult<Option<String>> {
         let Some(name) = Self::trimmed_optional(name) else {
             return Ok(None);
         };
         let price = price.filter(|price| *price >= 0.0).unwrap_or(0.0);
+        let price_afn = price_afn.filter(|p| *p >= 0.0).unwrap_or(0.0);
+        let price_usd = price_usd.filter(|p| *p >= 0.0).unwrap_or(0.0);
         let additional_note = Self::trimmed_optional(additional_note);
         let id = format!("PROC-{}", Uuid::new_v4().simple());
 
         sqlx::query(
-            "INSERT INTO procedures (id, visit_id, name, additional_note, procedure_price, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO procedures (id, visit_id, name, additional_note, procedure_price, procedure_price_afn, procedure_price_usd, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&id)
         .bind(visit_id)
         .bind(&name)
         .bind(additional_note)
         .bind(price)
+        .bind(price_afn)
+        .bind(price_usd)
         .bind(now)
         .bind(now)
         .execute(&mut **tx)
@@ -408,14 +421,22 @@ impl PatientService {
         Ok(id)
     }
 
+    #[allow(unused_variables)]
     async fn insert_invoice(
         tx: &mut Transaction<'_, sqlx::Sqlite>,
         visit_id: &str,
         discount: f64,
         paid_amount: f64,
+        paid_amount_afn: f64,
+        paid_amount_usd: f64,
+        discount_afn: f64,
+        discount_usd: f64,
     ) -> AppResult<Invoice> {
-        let subtotal: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(p.procedure_price * tr.number_of_procedures), 0)
+        let row: (f64, f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(p.procedure_price * tr.number_of_procedures), 0),
+               COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0),
+               COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0)
              FROM treatment_records tr
              JOIN procedures p ON p.id = tr.procedure_id
              WHERE tr.visit_id = ?",
@@ -424,11 +445,24 @@ impl PatientService {
         .fetch_one(&mut **tx)
         .await?;
 
-        let total_amount = subtotal - discount;
-        let outstanding_amount = total_amount - paid_amount;
-        let status = if outstanding_amount == 0.0 {
+        let subtotal = row.0;
+        let subtotal_afn = row.1;
+        let subtotal_usd = row.2;
+
+        let total_afn = (subtotal_afn - discount_afn).max(0.0);
+        let total_usd = (subtotal_usd - discount_usd).max(0.0);
+        let outstanding_afn = total_afn - paid_amount_afn;
+        let outstanding_usd = total_usd - paid_amount_usd;
+
+        let paid_afn_total = if outstanding_afn < 0.0 { total_afn } else { paid_amount_afn.min(total_afn) };
+        let paid_usd_total = if outstanding_usd < 0.0 { total_usd } else { paid_amount_usd.min(total_usd) };
+
+        let final_outstanding_afn = (total_afn - paid_afn_total).max(0.0);
+        let final_outstanding_usd = (total_usd - paid_usd_total).max(0.0);
+
+        let status = if final_outstanding_afn == 0.0 && final_outstanding_usd == 0.0 {
             InvoiceStatus::Paid
-        } else if paid_amount > 0.0 {
+        } else if paid_afn_total > 0.0 || paid_usd_total > 0.0 {
             InvoiceStatus::Partial
         } else {
             InvoiceStatus::Unpaid
@@ -438,19 +472,38 @@ impl PatientService {
         let invoice_number = format!("INV-{}", Utc::now().timestamp_millis());
         let now = Utc::now().to_rfc3339();
 
+        let paid_total = paid_afn_total + paid_usd_total;
+        let final_total_amount = total_afn + total_usd;
+        let final_outstanding = final_outstanding_afn + final_outstanding_usd;
+
         Ok(sqlx::query_as::<_, Invoice>(
-            "INSERT INTO invoices (id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             RETURNING id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at"
+            "INSERT INTO invoices (id, visit_id, invoice_number,
+              subtotal, discount, total_amount, paid_amount, outstanding_amount,
+              subtotal_afn, subtotal_usd,
+              total_afn, total_usd,
+              paid_afn, paid_usd,
+              outstanding_afn, outstanding_usd,
+              status, issued_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount,
+               subtotal_afn, subtotal_usd, total_afn, total_usd, paid_afn, paid_usd, outstanding_afn, outstanding_usd, status, issued_at"
         )
         .bind(&invoice_id)
         .bind(visit_id)
         .bind(&invoice_number)
         .bind(subtotal)
         .bind(discount)
-        .bind(total_amount)
-        .bind(paid_amount)
-        .bind(outstanding_amount)
+        .bind(final_total_amount)
+        .bind(paid_total)
+        .bind(final_outstanding)
+        .bind(subtotal_afn)
+        .bind(subtotal_usd)
+        .bind(total_afn)
+        .bind(total_usd)
+        .bind(paid_afn_total)
+        .bind(paid_usd_total)
+        .bind(final_outstanding_afn)
+        .bind(final_outstanding_usd)
         .bind(match status {
             InvoiceStatus::Unpaid => "Unpaid",
             InvoiceStatus::Partial => "Partial",
@@ -615,15 +668,17 @@ impl PatientService {
     }
 
     pub async fn get_statistics(pool: &SqlitePool, id: &str) -> AppResult<PatientStatisticsResponse> {
-        let total_spent: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(i.total_amount), 0) FROM invoices i JOIN visits v ON v.id = i.visit_id WHERE v.patient_id = ?",
-        )
-        .bind(id)
-        .fetch_one(pool)
-        .await?;
-
-        let outstanding_balance: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(i.outstanding_amount), 0) FROM invoices i JOIN visits v ON v.id = i.visit_id WHERE v.patient_id = ?",
+        let row: (f64, f64, f64, f64, f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(i.total_amount), 0),
+               COALESCE(SUM(i.total_afn), 0),
+               COALESCE(SUM(i.total_usd), 0),
+               COALESCE(SUM(i.outstanding_amount), 0),
+               COALESCE(SUM(i.outstanding_afn), 0),
+               COALESCE(SUM(i.outstanding_usd), 0)
+             FROM invoices i
+             JOIN visits v ON v.id = i.visit_id
+             WHERE v.patient_id = ?",
         )
         .bind(id)
         .fetch_one(pool)
@@ -637,10 +692,14 @@ impl PatientService {
         .await?;
 
         Ok(PatientStatisticsResponse {
-            total_spent,
+            total_spent: row.0,
+            total_spent_afn: row.1,
+            total_spent_usd: row.2,
             last_visit_date: last_visit.as_ref().map(|(d, _)| d.clone()),
             last_visit_procedure: last_visit.map(|(_, p)| p),
-            outstanding_balance,
+            outstanding_balance: row.3,
+            outstanding_balance_afn: row.4,
+            outstanding_balance_usd: row.5,
         })
     }
 

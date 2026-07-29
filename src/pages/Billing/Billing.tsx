@@ -80,7 +80,7 @@ const Billing: React.FC = () => {
     setShowReceiptModal(true);
   };
 
-  const handlePaymentSubmit = (input: { invoice_id: string; amount: number; method: "Cash" | "Card" | "Mobile" | "Insurance"; notes?: string | null }) => {
+  const handlePaymentSubmit = (input: { invoice_id: string; amount: number; amount_afn: number; amount_usd: number; method: "Cash" | "Card" | "Mobile" | "Insurance"; notes?: string | null }) => {
     addPaymentMutation.mutate(input, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["invoices"] });
@@ -94,6 +94,8 @@ const Billing: React.FC = () => {
 
   const invoices = data?.items ?? [];
   const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.outstanding_amount, 0);
+  const totalOutstandingAfn = invoices.reduce((sum, inv) => sum + (inv.outstanding_afn ?? 0), 0);
+  const totalOutstandingUsd = invoices.reduce((sum, inv) => sum + (inv.outstanding_usd ?? 0), 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -102,6 +104,8 @@ const Billing: React.FC = () => {
         totalInvoices={data?.total ?? 0}
         totalOutstanding={totalOutstanding}
         totalOutstandingAmount={data?.total_outstanding ?? 0}
+        totalOutstandingAfn={totalOutstandingAfn}
+        totalOutstandingUsd={totalOutstandingUsd}
         searchQuery={searchQuery}
         selectedStatus={selectedStatus}
         onSearchChange={handleSearchChange}
@@ -147,6 +151,8 @@ const Billing: React.FC = () => {
             onClose={() => setShowPaymentModal(false)}
             invoiceId={selectedInvoice.id}
             outstandingAmount={selectedInvoice.outstanding_amount}
+            outstandingAfn={selectedInvoice.outstanding_afn ?? selectedInvoice.outstanding_amount}
+            outstandingUsd={selectedInvoice.outstanding_usd ?? 0}
             onSave={handlePaymentSubmit}
           />
 

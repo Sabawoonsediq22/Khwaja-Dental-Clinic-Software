@@ -11,6 +11,10 @@ struct ProcedureRow {
     number_of_procedures: i32,
     unit_price: f64,
     total_price: f64,
+    unit_price_afn: f64,
+    unit_price_usd: f64,
+    total_price_afn: f64,
+    total_price_usd: f64,
     performed_at: String,
 }
 
@@ -116,6 +120,10 @@ impl VisitService {
                         tr.number_of_procedures,
                         p.procedure_price as unit_price,
                         (p.procedure_price * tr.number_of_procedures) as total_price,
+                        COALESCE(p.procedure_price_afn, 0) as unit_price_afn,
+                        COALESCE(p.procedure_price_usd, 0) as unit_price_usd,
+                        (COALESCE(p.procedure_price_afn, 0) * tr.number_of_procedures) as total_price_afn,
+                        (COALESCE(p.procedure_price_usd, 0) * tr.number_of_procedures) as total_price_usd,
                         tr.performed_at
                  FROM treatment_records tr
                  JOIN procedures p ON p.id = tr.procedure_id
@@ -157,7 +165,11 @@ impl VisitService {
                     procedure_additional_note: None,
                     number_of_procedures: row.number_of_procedures,
                     unit_price: row.unit_price,
+                    unit_price_afn: row.unit_price_afn,
+                    unit_price_usd: row.unit_price_usd,
                     total_price: row.total_price,
+                    total_price_afn: row.total_price_afn,
+                    total_price_usd: row.total_price_usd,
                     performed_at: row.performed_at,
                     teeth,
                     xrays,

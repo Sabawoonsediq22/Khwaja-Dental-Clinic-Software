@@ -35,9 +35,13 @@ export interface PatientMedicalInfo {
 
 export interface PatientStatisticsInfo {
   total_spent: number;
+  total_spent_afn: number;
+  total_spent_usd: number;
   last_visit_date: string | null;
   last_visit_procedure: string | null;
   outstanding_balance: number;
+  outstanding_balance_afn: number;
+  outstanding_balance_usd: number;
 }
 
 export interface UpdatePatientMedicalInfoInput {
@@ -79,6 +83,14 @@ export interface InvoiceListItem {
   total_amount: number;
   paid_amount: number;
   outstanding_amount: number;
+  subtotal_afn: number;
+  subtotal_usd: number;
+  total_afn: number;
+  total_usd: number;
+  paid_afn: number;
+  paid_usd: number;
+  outstanding_afn: number;
+  outstanding_usd: number;
   status: "Unpaid" | "Partial" | "Paid";
   issued_at: string;
 }
@@ -107,12 +119,16 @@ export interface CreatePatientInput {
   procedures: CreateProcedureWithTreatmentInput[];
   discount?: number | null;
   paid_amount?: number | null;
+  paid_amount_afn: number;
+  paid_amount_usd: number;
 }
 
 export interface CreateProcedureWithTreatmentInput {
   procedure_name: string;
   procedure_additional_note?: string | null;
   procedure_price: number;
+  procedure_price_afn: number;
+  procedure_price_usd: number;
   number_of_procedures: number;
   treatment_teeth: TreatmentToothInput[];
 }
@@ -151,6 +167,8 @@ export interface CreateProcedureInput {
   name: string;
   additional_note?: string | null;
   procedure_price: number;
+  procedure_price_afn: number;
+  procedure_price_usd: number;
 }
 
 export interface TreatmentRecord {
@@ -206,6 +224,8 @@ export interface Procedure {
   name: string;
   additional_note?: string | null;
   price: number;
+  procedure_price_afn: number;
+  procedure_price_usd: number;
   created_at: string;
   updated_at: string;
 }
@@ -219,6 +239,14 @@ export interface Invoice {
   total_amount: number;
   paid_amount: number;
   outstanding_amount: number;
+  subtotal_afn: number;
+  subtotal_usd: number;
+  total_afn: number;
+  total_usd: number;
+  paid_afn: number;
+  paid_usd: number;
+  outstanding_afn: number;
+  outstanding_usd: number;
   status: "Unpaid" | "Partial" | "Paid";
   issued_at: string;
 }
@@ -227,7 +255,13 @@ export interface CreateInvoiceInput {
     visit_id: string;
     subtotal: number;
     discount: number;
+    discount_afn: number;
+    discount_usd: number;
     paid_amount: number;
+    paid_amount_afn: number;
+    paid_amount_usd: number;
+    subtotal_afn?: number;
+    subtotal_usd?: number;
 }
 
 export interface Payment {
@@ -254,6 +288,8 @@ export interface ReceiptPatient {
 export interface ReceiptPayment {
   id: string;
   amount: number;
+  amountAfn: number;
+  amountUsd: number;
   method?: string | null;
   notes?: string | null;
   receivedAt: string;
@@ -266,6 +302,10 @@ export interface ReceiptProcedure {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  unitPriceAfn: number;
+  unitPriceUsd: number;
+  totalPriceAfn: number;
+  totalPriceUsd: number;
   performedAt?: string;
   toothNumbers?: string | number[];
 }
@@ -284,6 +324,14 @@ export interface ReceiptData {
   totalAmount: number;
   paidAmount: number;
   outstandingAmount: number;
+  subtotalAfn: number;
+  subtotalUsd: number;
+  totalAfn: number;
+  totalUsd: number;
+  paidAfn: number;
+  paidUsd: number;
+  outstandingAfn: number;
+  outstandingUsd: number;
   status: "Unpaid" | "Partial" | "Paid";
   procedures: ReceiptProcedure[];
   payments: ReceiptPayment[];
@@ -293,6 +341,8 @@ export interface ReceiptData {
 export interface AddPaymentInput {
   invoice_id: string;
   amount: number;
+  amount_afn: number;
+  amount_usd: number;
   method: "Cash" | "Card" | "Mobile" | "Insurance";
   notes?: string | null;
 }
@@ -309,6 +359,8 @@ export interface Xray {
 export interface MonthlyRevenuePoint {
   month: string;
   revenue: number;
+  revenue_afn: number;
+  revenue_usd: number;
 }
 
 export interface DailyTrendPoint {
@@ -320,7 +372,11 @@ export interface ReportSummary {
   active_patients: number;
   total_visits_this_month: number;
   revenue_this_month: number;
+  revenue_this_month_afn: number;
+  revenue_this_month_usd: number;
   outstanding_balance: number;
+  outstanding_balance_afn: number;
+  outstanding_balance_usd: number;
   completed_visits_this_month: number;
   cancelled_visits_this_month: number;
   active_patients_trend: DailyTrendPoint[];
@@ -330,7 +386,11 @@ export interface ReportSummary {
   prev_active_patients: number;
   prev_total_visits: number;
   prev_revenue: number;
+  prev_revenue_afn: number;
+  prev_revenue_usd: number;
   prev_outstanding: number;
+  prev_outstanding_afn: number;
+  prev_outstanding_usd: number;
 }
 
 export interface AppSettings {
@@ -356,11 +416,17 @@ export interface UpdateSettingsInput {
 
 export interface DashboardStats {
   daily_revenue: number;
+  daily_revenue_afn: number;
+  daily_revenue_usd: number;
   patients_today: number;
   outstanding_balance: number;
+  outstanding_balance_afn: number;
+  outstanding_balance_usd: number;
   outstanding_invoices_count: number;
   procedures_performed: number;
   yesterday_revenue: number;
+  yesterday_revenue_afn: number;
+  yesterday_revenue_usd: number;
   yesterday_patients: number;
   yesterday_procedures: number;
 }

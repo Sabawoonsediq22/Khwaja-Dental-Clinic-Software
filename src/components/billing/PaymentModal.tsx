@@ -8,6 +8,8 @@ interface PaymentModalProps {
   onClose: () => void;
   invoiceId: string;
   outstandingAmount: number;
+  outstandingAfn?: number;
+  outstandingUsd?: number;
   onSave: (input: AddPaymentInput) => void;
 }
 
@@ -16,23 +18,30 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   onClose,
   invoiceId,
   outstandingAmount,
+  outstandingAfn = 0,
+  outstandingUsd = 0,
   onSave,
 }) => {
   const { t } = useTranslation();
   const [amount, setAmount] = useState("");
   const [notes, setNotes] = useState("");
   const [method, setMethod] = useState<"Cash" | "Card" | "Mobile" | "Insurance">("Cash");
+  const [currency, setCurrency] = useState<"AFN" | "USD">("AFN");
+
+  const maxAmount = currency === "AFN" ? outstandingAfn || outstandingAmount : outstandingUsd;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const paymentAmount = parseFloat(amount);
-    if (isNaN(paymentAmount) || paymentAmount <= 0 || paymentAmount > outstandingAmount) {
+    if (isNaN(paymentAmount) || paymentAmount <= 0 || paymentAmount > (maxAmount || outstandingAmount)) {
       return;
     }
 
     onSave({
       invoice_id: invoiceId,
       amount: paymentAmount,
+      amount_afn: currency === "AFN" ? paymentAmount : 0,
+      amount_usd: currency === "USD" ? paymentAmount : 0,
       method,
       notes: notes.trim() || null,
     });
@@ -40,29 +49,43 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     setAmount("");
     setNotes("");
     setMethod("Cash");
+    setCurrency("AFN");
     onClose();
   };
-
-  const maxAmount = outstandingAmount;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={t("billing.recordPayment", "Record Payment")} size="sm">
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium mb-1">{t("billing.paymentAmount", "Payment Amount")} (AFN)</label>
-          <Input
-            type="number"
-            step="0.01"
-            min="0.01"
-            max={maxAmount}
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder={t("billing.enterAmount", "Enter amount")}
-            required
-            className="w-full"
-          />
+          <label className="block text-sm font-medium mb-1">{t("billing.paymentAmount", "Payment Amount")}</label>
+          <div className="flex gap-2">
+            <div className="flex-1">
+              <Input
+                type="number"
+                step="0.01"
+                min="0.01"
+                max={maxAmount || outstandingAmount}
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder={t("billing.enterAmount", "Enter amount")}
+                required
+                className="w-full"
+              />
+            </div>
+            <select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value as "AFN" | "USD")}
+              className="px-3 py-2 border rounded-md text-sm"
+            >
+              <option value="AFN">AFN</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
           <p className="text-xs text-gray-500 mt-1">
-            {t("billing.outstandingAmount", "Outstanding: {{amount}} AFN", { amount: maxAmount.toLocaleString() })}
+            {outstandingAfn > 0 && `${t("billing.outstandingAmount", "Outstanding")}: ${outstandingAfn.toLocaleString()} AFN`}
+            {outstandingAfn > 0 && outstandingUsd > 0 && " | "}
+            {outstandingUsd > 0 && `$${outstandingUsd.toLocaleString()}`}
+            {outstandingAfn === 0 && outstandingUsd === 0 && `${t("billing.outstandingAmount", "Outstanding")}: ${outstandingAmount.toLocaleString()} AFN`}
           </p>
         </div>
 

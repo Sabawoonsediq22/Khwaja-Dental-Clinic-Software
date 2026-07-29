@@ -62,9 +62,13 @@ pub struct PatientMedicalInfoResponse {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PatientStatisticsResponse {
     pub total_spent: f64,
+    pub total_spent_afn: f64,
+    pub total_spent_usd: f64,
     pub last_visit_date: Option<String>,
     pub last_visit_procedure: Option<String>,
     pub outstanding_balance: f64,
+    pub outstanding_balance_afn: f64,
+    pub outstanding_balance_usd: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
@@ -122,7 +126,11 @@ pub struct TreatmentProcedure {
     pub procedure_additional_note: Option<String>,
     pub number_of_procedures: i32,
     pub unit_price: f64,
+    pub unit_price_afn: f64,
+    pub unit_price_usd: f64,
     pub total_price: f64,
+    pub total_price_afn: f64,
+    pub total_price_usd: f64,
     pub performed_at: String,
     pub teeth: Vec<TreatmentTooth>,
     pub xrays: Vec<String>,
@@ -146,6 +154,10 @@ pub struct Procedure {
     pub additional_note: Option<String>,
     #[serde(rename = "price")]
     pub procedure_price: f64,
+    #[sqlx(default)]
+    pub procedure_price_afn: f64,
+    #[sqlx(default)]
+    pub procedure_price_usd: f64,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -161,6 +173,22 @@ pub struct Invoice {
     pub total_amount: f64,
     pub paid_amount: f64,
     pub outstanding_amount: f64,
+    #[sqlx(default)]
+    pub subtotal_afn: f64,
+    #[sqlx(default)]
+    pub subtotal_usd: f64,
+    #[sqlx(default)]
+    pub total_afn: f64,
+    #[sqlx(default)]
+    pub total_usd: f64,
+    #[sqlx(default)]
+    pub paid_afn: f64,
+    #[sqlx(default)]
+    pub paid_usd: f64,
+    #[sqlx(default)]
+    pub outstanding_afn: f64,
+    #[sqlx(default)]
+    pub outstanding_usd: f64,
     pub status: InvoiceStatus,
     pub issued_at: String,
 }
@@ -182,6 +210,14 @@ pub struct InvoiceItem {
     pub quantity: i32,
     pub unit_price: f64,
     pub total_price: f64,
+    #[sqlx(default)]
+    pub unit_price_afn: f64,
+    #[sqlx(default)]
+    pub unit_price_usd: f64,
+    #[sqlx(default)]
+    pub total_price_afn: f64,
+    #[sqlx(default)]
+    pub total_price_usd: f64,
 }
 
 // Payment
@@ -190,6 +226,10 @@ pub struct Payment {
     pub id: String,
     pub invoice_id: String,
     pub amount: f64,
+    #[sqlx(default)]
+    pub amount_afn: f64,
+    #[sqlx(default)]
+    pub amount_usd: f64,
     pub method: Option<String>,
     pub notes: Option<String>,
     pub received_at: String,
@@ -246,6 +286,10 @@ pub struct ReceiptPayment {
     pub id: String,
     pub invoice_id: String,
     pub amount: f64,
+    #[sqlx(default)]
+    pub amount_afn: f64,
+    #[sqlx(default)]
+    pub amount_usd: f64,
     pub method: Option<String>,
     pub notes: Option<String>,
     pub received_at: String,
@@ -260,6 +304,14 @@ pub struct ReceiptProcedure {
     pub quantity: i32,
     pub unit_price: f64,
     pub total_price: f64,
+    #[sqlx(default)]
+    pub unit_price_afn: f64,
+    #[sqlx(default)]
+    pub unit_price_usd: f64,
+    #[sqlx(default)]
+    pub total_price_afn: f64,
+    #[sqlx(default)]
+    pub total_price_usd: f64,
     pub performed_at: String,
     pub tooth_numbers: Option<String>,
 }
@@ -289,6 +341,14 @@ pub struct ReceiptData {
     pub total_amount: f64,
     pub paid_amount: f64,
     pub outstanding_amount: f64,
+    pub subtotal_afn: f64,
+    pub subtotal_usd: f64,
+    pub total_afn: f64,
+    pub total_usd: f64,
+    pub paid_afn: f64,
+    pub paid_usd: f64,
+    pub outstanding_afn: f64,
+    pub outstanding_usd: f64,
     pub status: InvoiceStatus,
     pub procedures: Vec<ReceiptProcedure>,
     pub payments: Vec<ReceiptPayment>,
@@ -358,7 +418,11 @@ pub struct ReportSummary {
     pub active_patients: i64,
     pub total_visits_this_month: i64,
     pub revenue_this_month: f64,
+    pub revenue_this_month_afn: f64,
+    pub revenue_this_month_usd: f64,
     pub outstanding_balance: f64,
+    pub outstanding_balance_afn: f64,
+    pub outstanding_balance_usd: f64,
     pub completed_visits_this_month: i64,
     pub cancelled_visits_this_month: i64,
     pub active_patients_trend: Vec<DailyTrendPoint>,
@@ -368,24 +432,36 @@ pub struct ReportSummary {
     pub prev_active_patients: i64,
     pub prev_total_visits: i64,
     pub prev_revenue: f64,
+    pub prev_revenue_afn: f64,
+    pub prev_revenue_usd: f64,
     pub prev_outstanding: f64,
+    pub prev_outstanding_afn: f64,
+    pub prev_outstanding_usd: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MonthlyRevenuePoint {
     pub month: String,
     pub revenue: f64,
+    pub revenue_afn: f64,
+    pub revenue_usd: f64,
 }
 
 // Dashboard
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DashboardStats {
     pub daily_revenue: f64,
+    pub daily_revenue_afn: f64,
+    pub daily_revenue_usd: f64,
     pub patients_today: i64,
     pub outstanding_balance: f64,
+    pub outstanding_balance_afn: f64,
+    pub outstanding_balance_usd: f64,
     pub outstanding_invoices_count: i64,
     pub procedures_performed: i64,
     pub yesterday_revenue: f64,
+    pub yesterday_revenue_afn: f64,
+    pub yesterday_revenue_usd: f64,
     pub yesterday_patients: i64,
     pub yesterday_procedures: i64,
 }
@@ -434,6 +510,8 @@ pub struct CreatePatientInput {
     pub procedures: Option<Vec<CreateProcedureWithTreatmentInput>>,
     pub discount: Option<f64>,
     pub paid_amount: Option<f64>,
+    pub paid_amount_afn: f64,
+    pub paid_amount_usd: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -441,6 +519,8 @@ pub struct CreateProcedureWithTreatmentInput {
     pub procedure_name: String,
     pub procedure_additional_note: Option<String>,
     pub procedure_price: f64,
+    pub procedure_price_afn: f64,
+    pub procedure_price_usd: f64,
     pub number_of_procedures: i32,
     pub treatment_teeth: Option<Vec<TreatmentToothInput>>,
 }
@@ -478,6 +558,8 @@ pub struct CreateProcedureInput {
     pub name: String,
     pub additional_note: Option<String>,
     pub procedure_price: f64,
+    pub procedure_price_afn: f64,
+    pub procedure_price_usd: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -499,13 +581,19 @@ pub struct CreateInvoiceInput {
     pub visit_id: String,
     pub subtotal: f64,
     pub discount: f64,
+    pub discount_afn: f64,
+    pub discount_usd: f64,
     pub paid_amount: f64,
+    pub paid_amount_afn: f64,
+    pub paid_amount_usd: f64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AddPaymentInput {
     pub invoice_id: String,
     pub amount: f64,
+    pub amount_afn: f64,
+    pub amount_usd: f64,
     pub method: PaymentMethod,
     pub notes: Option<String>,
 }
@@ -524,6 +612,22 @@ pub struct InvoiceListItem {
     pub total_amount: f64,
     pub paid_amount: f64,
     pub outstanding_amount: f64,
+    #[sqlx(default)]
+    pub subtotal_afn: f64,
+    #[sqlx(default)]
+    pub subtotal_usd: f64,
+    #[sqlx(default)]
+    pub total_afn: f64,
+    #[sqlx(default)]
+    pub total_usd: f64,
+    #[sqlx(default)]
+    pub paid_afn: f64,
+    #[sqlx(default)]
+    pub paid_usd: f64,
+    #[sqlx(default)]
+    pub outstanding_afn: f64,
+    #[sqlx(default)]
+    pub outstanding_usd: f64,
     pub status: String,
     pub issued_at: String,
 }
@@ -582,6 +686,10 @@ pub struct GlobalSearchInvoice {
     pub invoice_number: String,
     pub status: String,
     pub outstanding_amount: f64,
+    #[sqlx(default)]
+    pub outstanding_afn: f64,
+    #[sqlx(default)]
+    pub outstanding_usd: f64,
     pub patient_name: String,
 }
 
@@ -607,6 +715,10 @@ pub struct GlobalSearchTreatment {
     pub name: String,
     pub additional_note: Option<String>,
     pub procedure_price: f64,
+    #[sqlx(default)]
+    pub procedure_price_afn: f64,
+    #[sqlx(default)]
+    pub procedure_price_usd: f64,
     pub visit_id: String,
     pub practitioner_name: Option<String>,
 }
@@ -615,6 +727,10 @@ pub struct GlobalSearchTreatment {
 pub struct GlobalSearchPayment {
     pub id: String,
     pub amount: f64,
+    #[sqlx(default)]
+    pub amount_afn: f64,
+    #[sqlx(default)]
+    pub amount_usd: f64,
     pub received_at: String,
     pub patient_name: String,
 }

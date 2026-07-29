@@ -1,4 +1,5 @@
 import type { ReceiptCurrency, ReceiptData, ReceiptProcedure } from "./types";
+import { DOLLAR_PROCEDURE_NAMES } from "../../shared/constants/Procedures";
 
 export const DEFAULT_CLINIC = {
   name: "KHWAJA DENTAL & IMPLANT SERVICE",
@@ -7,14 +8,7 @@ export const DEFAULT_CLINIC = {
   logoUrl: null,
 };
 
-export const DOLLAR_PROCEDURES = [
-  "Zirconium Crown",
-  "Orthodontics (Basic)",
-  "Orthodontics (Standard)",
-  "Implant Surgery Only (Standard)",
-  "Implant Surgery Only (Premium)",
-  "Bleaching",
-];
+export const DOLLAR_PROCEDURES = DOLLAR_PROCEDURE_NAMES;
 
 export const MOCK_RECEIPT_DATA: ReceiptData = {
   id: "INV-MOCK-20260619",
@@ -30,6 +24,14 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
   totalAmount: 8000,
   paidAmount: 5000,
   outstandingAmount: 3000,
+  subtotalAfn: 5000,
+  subtotalUsd: 3000,
+  totalAfn: 5000,
+  totalUsd: 3000,
+  paidAfn: 5000,
+  paidUsd: 0,
+  outstandingAfn: 0,
+  outstandingUsd: 3000,
   status: "Partial",
   clinic: DEFAULT_CLINIC,
   procedures: [
@@ -39,6 +41,10 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
       quantity: 1,
       unitPrice: 5000,
       totalPrice: 5000,
+      unitPriceAfn: 5000,
+      unitPriceUsd: 0,
+      totalPriceAfn: 5000,
+      totalPriceUsd: 0,
       performedAt: "2023-10-12T00:00:00.000Z",
       toothNumbers: [16],
     },
@@ -48,6 +54,10 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
       quantity: 2,
       unitPrice: 1500,
       totalPrice: 3000,
+      unitPriceAfn: 0,
+      unitPriceUsd: 1500,
+      totalPriceAfn: 0,
+      totalPriceUsd: 3000,
       performedAt: "2023-10-12T00:00:00.000Z",
       toothNumbers: [11, 21],
     },
@@ -56,6 +66,8 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
     {
       id: "PAY-MOCK-1",
       amount: 5000,
+      amountAfn: 5000,
+      amountUsd: 0,
       method: "Cash",
       notes: "Initial cash payment",
       receivedAt: "2023-10-12T00:00:00.000Z",
@@ -129,10 +141,18 @@ export const getProcedureLabel = (procedure: ReceiptProcedure) => {
 
 export const getReceiptTotals = (receipt: ReceiptData) => {
   const subtotal = receipt.procedures.reduce((sum, item) => sum + item.totalPrice, 0);
+  const subtotalAfn = receipt.procedures.reduce((sum, item) => sum + (item.totalPriceAfn || 0), 0);
+  const subtotalUsd = receipt.procedures.reduce((sum, item) => sum + (item.totalPriceUsd || 0), 0);
   const discount = Math.max(receipt.discount, 0);
   const totalAmount = Math.max(subtotal - discount, 0);
+  const totalAfn = Math.max(subtotalAfn - discount, 0);
+  const totalUsd = Math.max(subtotalUsd, 0);
   const paidAmount = receipt.payments.reduce((sum, payment) => sum + payment.amount, 0) || receipt.paidAmount;
+  const paidAfn = receipt.payments.reduce((sum, payment) => sum + (payment.amountAfn || 0), 0) || receipt.paidAfn;
+  const paidUsd = receipt.payments.reduce((sum, payment) => sum + (payment.amountUsd || 0), 0) || receipt.paidUsd;
   const outstandingAmount = Math.max(totalAmount - paidAmount, 0);
+  const outstandingAfn = Math.max(totalAfn - paidAfn, 0);
+  const outstandingUsd = Math.max(totalUsd - paidUsd, 0);
 
   return {
     subtotal,
@@ -140,6 +160,14 @@ export const getReceiptTotals = (receipt: ReceiptData) => {
     totalAmount,
     paidAmount,
     outstandingAmount,
+    subtotalAfn,
+    subtotalUsd,
+    totalAfn,
+    totalUsd,
+    paidAfn,
+    paidUsd,
+    outstandingAfn,
+    outstandingUsd,
   };
 };
 

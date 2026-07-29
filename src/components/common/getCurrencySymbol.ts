@@ -1,11 +1,13 @@
+import { PROCEDURES } from "../../shared/constants/Procedures";
+
 export const getCurrencySymbol = (procedureName: string): string => {
-    const dollarProcedures = [
-      "Zirconium Crown",
-      "Orthodontics (Basic)",
-      "Orthodontics (Standard)",
-      "Implant Surgery Only (Standard)",
-      "Implant Surgery Only (Premium)",
-      "Bleaching",
-    ];
-    return dollarProcedures.includes(procedureName) ? "$" : "AFN";
-  };
+  const proc = PROCEDURES.find((p) => p.name === procedureName);
+  if (!proc) return "AFN";
+  return proc.price_usd > 0 ? "$" : "AFN";
+};
+
+export const getProcedureCurrency = (procedureName: string): "AFN" | "USD" => {
+  const proc = PROCEDURES.find((p) => p.name === procedureName);
+  if (!proc) return "AFN";
+  return proc.price_usd > 0 ? "USD" : "AFN";
+};

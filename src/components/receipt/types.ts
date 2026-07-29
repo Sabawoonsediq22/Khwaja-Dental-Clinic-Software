@@ -18,6 +18,8 @@ export interface ReceiptPatient {
 export interface ReceiptPayment {
   id: string;
   amount: number;
+  amountAfn: number;
+  amountUsd: number;
   method?: string | null;
   notes?: string | null;
   receivedAt: string;
@@ -30,6 +32,10 @@ export interface ReceiptProcedure {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  unitPriceAfn: number;
+  unitPriceUsd: number;
+  totalPriceAfn: number;
+  totalPriceUsd: number;
   performedAt?: string;
   toothNumbers?: string | number[];
 }
@@ -48,6 +54,14 @@ export interface ReceiptData {
   totalAmount: number;
   paidAmount: number;
   outstandingAmount: number;
+  subtotalAfn: number;
+  subtotalUsd: number;
+  totalAfn: number;
+  totalUsd: number;
+  paidAfn: number;
+  paidUsd: number;
+  outstandingAfn: number;
+  outstandingUsd: number;
   status: ReceiptInvoiceStatus;
   procedures: ReceiptProcedure[];
   payments: ReceiptPayment[];

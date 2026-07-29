@@ -47,7 +47,8 @@ CREATE TABLE procedures (
     visit_id TEXT NOT NULL REFERENCES visits(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     additional_note TEXT,
-    procedure_price REAL NOT NULL CHECK (procedure_price >= 0),
+    procedure_price_afn REAL NOT NULL DEFAULT 0 CHECK (procedure_price_afn >= 0),
+    procedure_price_usd REAL NOT NULL DEFAULT 0 CHECK (procedure_price_usd >= 0),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -71,11 +72,16 @@ CREATE TABLE invoices (
     id TEXT PRIMARY KEY,
     visit_id TEXT NOT NULL UNIQUE REFERENCES visits(id) ON DELETE CASCADE,
     invoice_number TEXT NOT NULL UNIQUE,
-    subtotal REAL NOT NULL CHECK(subtotal >= 0),
-    discount REAL NOT NULL DEFAULT 0 CHECK(discount >= 0),
-    total_amount REAL NOT NULL CHECK(total_amount >= 0),
-    paid_amount REAL NOT NULL DEFAULT 0 CHECK(paid_amount >= 0),
-    outstanding_amount REAL NOT NULL DEFAULT 0 CHECK(outstanding_amount >= 0),
+    subtotal_afn REAL NOT NULL DEFAULT 0 CHECK(subtotal_afn >= 0),
+    subtotal_usd REAL NOT NULL DEFAULT 0 CHECK(subtotal_usd >= 0),
+    discount_afn REAL NOT NULL DEFAULT 0 CHECK(discount_afn >= 0),
+    discount_usd REAL NOT NULL DEFAULT 0 CHECK(discount_usd >= 0),
+    total_afn REAL NOT NULL DEFAULT 0 CHECK(total_afn >= 0),
+    total_usd REAL NOT NULL DEFAULT 0 CHECK(total_usd >= 0),
+    paid_afn REAL NOT NULL DEFAULT 0 CHECK(paid_afn >= 0),
+    paid_usd REAL NOT NULL DEFAULT 0 CHECK(paid_usd >= 0),
+    outstanding_afn REAL NOT NULL DEFAULT 0 CHECK(outstanding_afn >= 0),
+    outstanding_usd REAL NOT NULL DEFAULT 0 CHECK(outstanding_usd >= 0),
     status TEXT NOT NULL CHECK(status IN ('Unpaid','Partial','Paid')),
     issued_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -83,7 +89,8 @@ CREATE TABLE invoices (
 CREATE TABLE payments (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-    amount REAL NOT NULL CHECK(amount > 0),
+    amount_afn REAL NOT NULL DEFAULT 0 CHECK(amount_afn > 0),
+    amount_usd REAL NOT NULL DEFAULT 0 CHECK(amount_usd > 0),
     method TEXT NOT NULL DEFAULT 'Cash',
     notes TEXT DEFAULT '',
     received_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -104,8 +111,10 @@ CREATE TABLE invoice_items (
     treatment_record_id TEXT REFERENCES treatment_records(id),
     procedure_name TEXT NOT NULL,
     quantity INTEGER NOT NULL,
-    unit_price REAL NOT NULL,
-    total_price REAL NOT NULL
+    unit_price_afn REAL NOT NULL DEFAULT 0,
+    unit_price_usd REAL NOT NULL DEFAULT 0,
+    total_price_afn REAL NOT NULL DEFAULT 0,
+    total_price_usd REAL NOT NULL DEFAULT 0
 );
 
 CREATE TABLE app_settings (

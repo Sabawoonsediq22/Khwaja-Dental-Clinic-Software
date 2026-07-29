@@ -73,8 +73,27 @@ impl ReportService {
         .fetch_one(pool)
         .await?;
 
+        let revenue_this_month_row: (f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0),
+               COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0)
+             FROM invoices WHERE strftime('%Y', issued_at) = ?"
+        )
+        .bind(&year_str)
+        .fetch_one(pool)
+        .await?;
+
         let outstanding_balance: Option<f64> = sqlx::query_scalar(
             "SELECT COALESCE(SUM(outstanding_amount), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+        )
+        .fetch_one(pool)
+        .await?;
+
+        let outstanding_balance_row: (f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
+             FROM invoices WHERE status IN ('Unpaid', 'Partial')"
         )
         .fetch_one(pool)
         .await?;
@@ -163,8 +182,32 @@ impl ReportService {
         .fetch_one(pool)
         .await?;
 
+        let prev_revenue_row: (f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(COALESCE(amount_afn, 0)), 0.0),
+               COALESCE(SUM(COALESCE(amount_usd, 0)), 0.0)
+             FROM payments
+             WHERE received_at >= ? AND received_at < ?"
+        )
+        .bind(&prev_start_str)
+        .bind(&prev_start)
+        .fetch_one(pool)
+        .await?;
+
         let prev_outstanding: f64 = sqlx::query_scalar(
             "SELECT COALESCE(SUM(outstanding_amount), 0.0) FROM invoices
+             WHERE issued_at >= ? AND issued_at < ?"
+        )
+        .bind(&prev_start_str)
+        .bind(&prev_start)
+        .fetch_one(pool)
+        .await?;
+
+        let prev_outstanding_row: (f64, f64) = sqlx::query_as(
+            "SELECT
+               COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
+             FROM invoices
              WHERE issued_at >= ? AND issued_at < ?"
         )
         .bind(&prev_start_str)
@@ -176,7 +219,11 @@ impl ReportService {
             active_patients: total_patients,
             total_visits_this_month,
             revenue_this_month: revenue_this_month.unwrap_or(0.0),
+            revenue_this_month_afn: revenue_this_month_row.0,
+            revenue_this_month_usd: revenue_this_month_row.1,
             outstanding_balance: outstanding_balance.unwrap_or(0.0),
+            outstanding_balance_afn: outstanding_balance_row.0,
+            outstanding_balance_usd: outstanding_balance_row.1,
             completed_visits_this_month,
             cancelled_visits_this_month,
             active_patients_trend,
@@ -186,13 +233,20 @@ impl ReportService {
             prev_active_patients,
             prev_total_visits,
             prev_revenue,
+            prev_revenue_afn: prev_revenue_row.0,
+            prev_revenue_usd: prev_revenue_row.1,
             prev_outstanding,
+            prev_outstanding_afn: prev_outstanding_row.0,
+            prev_outstanding_usd: prev_outstanding_row.1,
         })
     }
 
     pub async fn monthly_revenue(pool: &SqlitePool) -> AppResult<Vec<MonthlyRevenuePoint>> {
-        let rows: Vec<(String, f64)> = sqlx::query_as(
-            "SELECT strftime('%Y-%m', issued_at) as month, COALESCE(SUM(paid_amount), 0.0) as revenue
+        let rows: Vec<(String, f64, f64, f64)> = sqlx::query_as(
+            "SELECT strftime('%Y-%m', issued_at) as month,
+                    COALESCE(SUM(paid_amount), 0.0) as revenue,
+                    COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
+                    COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
              FROM invoices
              WHERE issued_at >= date('now', '-12 months')
              GROUP BY strftime('%Y-%m', issued_at)
@@ -200,6 +254,6 @@ impl ReportService {
         )
         .fetch_all(pool)
         .await?;
-        Ok(rows.into_iter().map(|(month, revenue)| MonthlyRevenuePoint { month, revenue }).collect())
+        Ok(rows.into_iter().map(|(month, revenue, revenue_afn, revenue_usd)| MonthlyRevenuePoint { month, revenue, revenue_afn, revenue_usd }).collect())
     }
 }
