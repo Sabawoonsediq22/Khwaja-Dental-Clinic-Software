@@ -136,34 +136,81 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
         </div>
 
         <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/70">
-          <SummaryRow
-            label={t("receipt.subtotal")}
-            value={formatCurrency(totals.subtotal, receipt.currency)}
-          />
-          <SummaryRow
-            label={t("receipt.discount")}
-            value={formatCurrency(totals.discount, receipt.currency)}
-            valueClassName="text-red-600 dark:text-red-400"
-          />
-          <SummaryRow
-            label={t("receipt.totalAmount")}
-            value={formatCurrency(totals.totalAmount, receipt.currency)}
-            labelClassName="text-lg font-bold text-teal-700 dark:text-teal-300"
-            valueClassName="text-lg font-black text-teal-700 dark:text-teal-300"
-          />
-          <SummaryRow
-            label={t("receipt.paidAmountCash")}
-            value={formatCurrency(totals.paidAmount, receipt.currency)}
-            valueClassName="font-semibold text-teal-700 dark:text-teal-300"
-          />
+          {totals.subtotalAfn > 0 && (
+            <SummaryRow
+              label={`${t("receipt.subtotal")} (AFN)`}
+              value={formatCurrency(totals.subtotalAfn, "AFN")}
+            />
+          )}
+          {totals.subtotalUsd > 0 && (
+            <SummaryRow
+              label={`${t("receipt.subtotal")} (USD)`}
+              value={formatCurrency(totals.subtotalUsd, "USD")}
+            />
+          )}
+          {totals.discountAfn > 0 && (
+            <SummaryRow
+              label={`${t("receipt.discount")} (AFN)`}
+              value={formatCurrency(totals.discountAfn, "AFN")}
+              valueClassName="text-red-600 dark:text-red-400"
+            />
+          )}
+          {totals.discountUsd > 0 && (
+            <SummaryRow
+              label={`${t("receipt.discount")} (USD)`}
+              value={formatCurrency(totals.discountUsd, "USD")}
+              valueClassName="text-red-600 dark:text-red-400"
+            />
+          )}
+          {totals.totalAfn > 0 && (
+            <SummaryRow
+              label={`${t("receipt.totalAmount")} (AFN)`}
+              value={formatCurrency(totals.totalAfn, "AFN")}
+              labelClassName="text-lg font-bold text-teal-700 dark:text-teal-300"
+              valueClassName="text-lg font-black text-teal-700 dark:text-teal-300"
+            />
+          )}
+          {totals.totalUsd > 0 && (
+            <SummaryRow
+              label={`${t("receipt.totalAmount")} (USD)`}
+              value={formatCurrency(totals.totalUsd, "USD")}
+              labelClassName="text-lg font-bold text-teal-700 dark:text-teal-300"
+              valueClassName="text-lg font-black text-teal-700 dark:text-teal-300"
+            />
+          )}
+          {totals.paidAfn > 0 && (
+            <SummaryRow
+              label={`${t("receipt.paidAmountCash")} (AFN)`}
+              value={formatCurrency(totals.paidAfn, "AFN")}
+              valueClassName="font-semibold text-teal-700 dark:text-teal-300"
+            />
+          )}
+          {totals.paidUsd > 0 && (
+            <SummaryRow
+              label={`${t("receipt.paidAmountCash")} (USD)`}
+              value={formatCurrency(totals.paidUsd, "USD")}
+              valueClassName="font-semibold text-teal-700 dark:text-teal-300"
+            />
+          )}
           <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
-          <SummaryRow
-            label={t("receipt.outstandingBalance")}
-            value={formatCurrency(totals.outstandingAmount, receipt.currency)}
-            labelClassName="text-lg font-bold text-red-600 dark:text-red-400"
-            valueClassName="text-xl font-black text-red-600 dark:text-red-400"
-            prominent
-          />
+          {totals.outstandingAfn > 0 && (
+            <SummaryRow
+              label={`${t("receipt.outstandingBalance")} (AFN)`}
+              value={formatCurrency(totals.outstandingAfn, "AFN")}
+              labelClassName="text-lg font-bold text-red-600 dark:text-red-400"
+              valueClassName="text-xl font-black text-red-600 dark:text-red-400"
+              prominent
+            />
+          )}
+          {totals.outstandingUsd > 0 && (
+            <SummaryRow
+              label={`${t("receipt.outstandingBalance")} (USD)`}
+              value={formatCurrency(totals.outstandingUsd, "USD")}
+              labelClassName="text-lg font-bold text-red-600 dark:text-red-400"
+              valueClassName="text-xl font-black text-red-600 dark:text-red-400"
+              prominent
+            />
+          )}
         </div>
 
         {receipt.payments.length > 1 && (
@@ -179,7 +226,9 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
                     {payment.notes ? ` — ${payment.notes}` : ""}
                   </span>
                   <span className="font-semibold text-teal-700 dark:text-teal-300">
-                    {formatCurrency(payment.amount, receipt.currency)}
+                    {payment.amountAfn > 0 && formatCurrency(payment.amountAfn, "AFN")}
+                    {payment.amountAfn > 0 && payment.amountUsd > 0 && " / "}
+                    {payment.amountUsd > 0 && formatCurrency(payment.amountUsd, "USD")}
                   </span>
                 </div>
               ))}

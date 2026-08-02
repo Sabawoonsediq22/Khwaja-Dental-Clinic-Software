@@ -42,7 +42,7 @@ impl SearchService {
 
         // Invoices (with patient name via visits)
         let invoices: Vec<GlobalSearchInvoice> = sqlx::query_as(
-            "SELECT i.id, i.invoice_number, i.status, i.outstanding_amount,
+            "SELECT i.id, i.invoice_number, i.status,
                     COALESCE(i.outstanding_afn, 0) as outstanding_afn,
                     COALESCE(i.outstanding_usd, 0) as outstanding_usd,
                     p.full_name as patient_name

@@ -1,36 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Button } from "../../components/ui/button";
-import { Badge } from "../../components/ui/Badge";
-import {
-  CurrencyIcon,
-  PatientIcon,
-  ClockIcon,
-  ToothIcon,
-  PlusIcon,
-  ActivityIcon,
-} from "../../shared/icons/icons";
-import { useUpdateVisitStatus } from "../../hooks/useVisits";
-import { useDashboardStats, usePatientsFlow, useProcedureDistribution, useRecentPatients } from "../../hooks/useDashboard";
-import StatCard from "../../components/dashboard/StatCard";
-import ChartCard from "../../components/dashboard/ChartCard";
-import RecentPatientsTable from "../../components/dashboard/RecentPatientsTable";
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
-import type { ProcedureDistribution } from "../../types/ApiTypes";
-import { toast } from "../../lib/toast-utils";
 import { format } from "date-fns";
+import { useDashboardStats, usePatientsFlow, useProcedureDistribution, useRecentPatients } from "../hooks/useDashboard";
+import { useUpdateVisitStatus } from "../hooks/useVisits";
+import { toast } from "../lib/toast-utils";
+import StatCard from "../components/dashboard/StatCard";
+import { Bar, CartesianGrid, Cell, Line, Tooltip, XAxis, YAxis } from "recharts";
+import { ProcedureDistribution } from "../types/ApiTypes";
+import RecentPatientsTable from "../components/dashboard/RecentPatientsTable";
+import { ActivityIcon, ClockIcon, CurrencyIcon, PatientIcon, PlusIcon, ToothIcon } from "../shared/icons/icons";
+import { Badge, Button } from "../components/ui";
+import ChartCard from "../components/dashboard/ChartCard";
+import { ResponsiveContainer, LineChart, BarChart } from "recharts";
 
 const COLORS = [
   "#006A71", "#005E8A", "#F2C12E", "#9B5DE5", "#00C49A",

@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner } from "../../components/ui";
-import { useReportSummary, useMonthlyRevenue } from "../../hooks/useReports";
+import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner } from "../components/ui";
+import { useReportSummary, useMonthlyRevenue } from "../hooks/useReports";
 import {
   AreaChart,
   Area,
@@ -14,12 +14,12 @@ import {
   Bar,
   Cell,
 } from "recharts";
-import { CurrencyIcon, PatientIcon, ToothIcon, CalendarIcon, DownloadIcon, FileIcon } from "../../shared/icons/icons";
-import type { MonthlyRevenuePoint, DailyTrendPoint } from "../../types/ApiTypes";
-import { exportPatientsReport, exportFinancialReport, exportTreatmentReport } from "../../lib/export";
-import type { ReportFormat } from "../../lib/export";
-import { toast } from "../../lib/toast-utils";
-import SparklineChart from "../../components/charts/SparklineChart";
+import { CurrencyIcon, PatientIcon, ToothIcon, CalendarIcon, DownloadIcon, FileIcon } from "../shared/icons/icons";
+import type { MonthlyRevenuePoint, DailyTrendPoint } from "../types/ApiTypes";
+import { exportPatientsReport, exportFinancialReport, exportTreatmentReport } from "../lib/export";
+import type { ReportFormat } from "../lib/export";
+import { toast } from "../lib/toast-utils";
+import SparklineChart from "../components/charts/SparklineChart";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",

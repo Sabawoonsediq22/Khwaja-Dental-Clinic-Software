@@ -29,7 +29,7 @@ impl DashboardService {
 
         let outstanding_row: (f64, f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(outstanding_amount), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0),
                COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
                COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
              FROM invoices WHERE status IN ('Unpaid', 'Partial')"

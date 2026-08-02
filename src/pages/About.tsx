@@ -16,7 +16,7 @@ import {
   Globe,
   Phone,
   Clock,
-} from "../../shared/icons/icons";
+} from "../shared/icons/icons";
 
 const About: React.FC = () => {
   const { t } = useTranslation();

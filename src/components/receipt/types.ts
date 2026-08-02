@@ -17,7 +17,6 @@ export interface ReceiptPatient {
 
 export interface ReceiptPayment {
   id: string;
-  amount: number;
   amountAfn: number;
   amountUsd: number;
   method?: string | null;
@@ -49,13 +48,10 @@ export interface ReceiptData {
   visitId: string;
   issueDate: string;
   currency: ReceiptCurrency;
-  subtotal: number;
-  discount: number;
-  totalAmount: number;
-  paidAmount: number;
-  outstandingAmount: number;
   subtotalAfn: number;
   subtotalUsd: number;
+  discountAfn: number;
+  discountUsd: number;
   totalAfn: number;
   totalUsd: number;
   paidAfn: number;

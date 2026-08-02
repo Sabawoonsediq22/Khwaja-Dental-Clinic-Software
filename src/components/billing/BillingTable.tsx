@@ -121,20 +121,20 @@ const BillingTable: React.FC<BillingTableProps> = ({
                   {formatDate(invoice.issued_at)}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {formatDualCurrency(invoice.total_afn ?? invoice.total_amount, invoice.total_usd ?? 0)}
+                  {formatDualCurrency(invoice.total_afn, invoice.total_usd)}
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {formatDualCurrency(invoice.paid_afn ?? invoice.paid_amount, invoice.paid_usd ?? 0)}
+                  {formatDualCurrency(invoice.paid_afn, invoice.paid_usd)}
                 </td>
                 <td className="py-3 px-4 text-sm whitespace-nowrap">
                   <span
                     className={
-                      invoice.outstanding_amount > 0
+                      (invoice.outstanding_afn + invoice.outstanding_usd) > 0
                         ? "text-orange-600 dark:text-orange-400 font-medium"
                         : "text-gray-600 dark:text-gray-300"
                     }
                   >
-                    {formatDualCurrency(invoice.outstanding_afn ?? invoice.outstanding_amount, invoice.outstanding_usd ?? 0)}
+                    {formatDualCurrency(invoice.outstanding_afn, invoice.outstanding_usd)}
                   </span>
                 </td>
                 <td className="py-3 px-4">
@@ -148,7 +148,7 @@ const BillingTable: React.FC<BillingTableProps> = ({
                     {/* New Popover for more actions */}
                   <Popover 
                     actions={[
-                      ...(invoice.outstanding_amount > 0 ? [{
+                      ...((invoice.outstanding_afn + invoice.outstanding_usd) > 0 ? [{
                         label: t("billing.actions.recordPayment", "Record Payment"),
                         onClick: () => onRecordPayment?.(invoice),
                       }] : []),
@@ -187,14 +187,14 @@ const BillingTable: React.FC<BillingTableProps> = ({
             </div>
             <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
               <span>{t("billing.table.dateLabel", "Date:")} {formatDate(invoice.issued_at)}</span>
-              <span>{t("billing.table.totalLabel", "Total:")} {formatDualCurrency(invoice.total_afn ?? invoice.total_amount, invoice.total_usd ?? 0)}</span>
-              <span>{t("billing.table.paidLabel", "Paid:")} {formatDualCurrency(invoice.paid_afn ?? invoice.paid_amount, invoice.paid_usd ?? 0)}</span>
-              <span>{t("billing.table.dueLabel", "Due:")} {formatDualCurrency(invoice.outstanding_afn ?? invoice.outstanding_amount, invoice.outstanding_usd ?? 0)}</span>
+              <span>{t("billing.table.totalLabel", "Total:")} {formatDualCurrency(invoice.total_afn, invoice.total_usd)}</span>
+              <span>{t("billing.table.paidLabel", "Paid:")} {formatDualCurrency(invoice.paid_afn, invoice.paid_usd)}</span>
+              <span>{t("billing.table.dueLabel", "Due:")} {formatDualCurrency(invoice.outstanding_afn, invoice.outstanding_usd)}</span>
             </div>
             {/* Mobile Popover */}
               <Popover
                 actions={[
-                  ...(invoice.outstanding_amount > 0 ? [{
+                  ...((invoice.outstanding_afn + invoice.outstanding_usd) > 0 ? [{
                     label: t("billing.actions.recordPayment", "Record Payment"),
                     onClick: () => onRecordPayment?.(invoice),
                   }] : []),

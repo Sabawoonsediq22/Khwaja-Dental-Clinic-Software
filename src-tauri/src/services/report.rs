@@ -84,7 +84,7 @@ impl ReportService {
         .await?;
 
         let outstanding_balance: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(outstanding_amount), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
         )
         .fetch_one(pool)
         .await?;
@@ -139,7 +139,7 @@ impl ReportService {
 
         // Daily outstanding trend (current month)
         let outstanding_rows: Vec<(i64, f64)> = sqlx::query_as(
-            "SELECT CAST(strftime('%d', issued_at) AS INTEGER) as day_num, COALESCE(SUM(outstanding_amount), 0.0) as val
+            "SELECT CAST(strftime('%d', issued_at) AS INTEGER) as day_num, COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) as val
              FROM invoices
              WHERE strftime('%Y-%m', issued_at) = ?
              GROUP BY strftime('%d', issued_at)
@@ -195,7 +195,7 @@ impl ReportService {
         .await?;
 
         let prev_outstanding: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(outstanding_amount), 0.0) FROM invoices
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices
              WHERE issued_at >= ? AND issued_at < ?"
         )
         .bind(&prev_start_str)

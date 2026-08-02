@@ -39,7 +39,6 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
     onSave({
       invoice_id: invoiceId,
-      amount: paymentAmount,
       amount_afn: currency === "AFN" ? paymentAmount : 0,
       amount_usd: currency === "USD" ? paymentAmount : 0,
       method,

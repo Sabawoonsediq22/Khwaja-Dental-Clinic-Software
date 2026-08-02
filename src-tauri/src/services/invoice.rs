@@ -125,9 +125,9 @@ impl InvoiceService {
         };
 
         let total_outstanding_sql = if status_bind_values.is_empty() {
-            "SELECT COALESCE(SUM(outstanding_amount), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
         } else {
-            "SELECT COALESCE(SUM(i.outstanding_amount), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
+            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
         };
         
         let total_outstanding: f64 = if status_bind_values.is_empty() {
@@ -175,9 +175,11 @@ impl InvoiceService {
 
         // Build main query
         let query_str = format!(
-            "SELECT i.id, i.invoice_number, i.subtotal, i.discount, i.total_amount, i.paid_amount, i.outstanding_amount,
+            "SELECT i.id, i.invoice_number,
                     COALESCE(i.subtotal_afn, 0) as subtotal_afn,
                     COALESCE(i.subtotal_usd, 0) as subtotal_usd,
+                    COALESCE(i.discount_afn, 0) as discount_afn,
+                    COALESCE(i.discount_usd, 0) as discount_usd,
                     COALESCE(i.total_afn, 0) as total_afn,
                     COALESCE(i.total_usd, 0) as total_usd,
                     COALESCE(i.paid_afn, 0) as paid_afn,
@@ -232,22 +234,17 @@ impl InvoiceService {
         .fetch_one(pool)
         .await?;
 
-        let subtotal = row.0;
         let subtotal_afn = row.1;
         let subtotal_usd = row.2;
 
         let total_afn = (subtotal_afn - input.discount_afn).max(0.0);
         let total_usd = (subtotal_usd - input.discount_usd).max(0.0);
-        let total_amount = subtotal - input.discount;
         let paid_afn = input.paid_amount_afn;
         let paid_usd = input.paid_amount_usd;
         let final_paid_afn = if total_afn - paid_afn < 0.0 { total_afn } else { paid_afn.min(total_afn) };
         let final_paid_usd = if total_usd - paid_usd < 0.0 { total_usd } else { paid_usd.min(total_usd) };
         let final_outstanding_afn = (total_afn - final_paid_afn).max(0.0);
         let final_outstanding_usd = (total_usd - final_paid_usd).max(0.0);
-
-        let paid_total = final_paid_afn + final_paid_usd;
-        let outstanding_total = final_outstanding_afn + final_outstanding_usd;
 
         let status = if final_outstanding_afn == 0.0 && final_outstanding_usd == 0.0 {
             InvoiceStatus::Paid
@@ -259,26 +256,28 @@ impl InvoiceService {
 
         let invoice = sqlx::query_as::<_, Invoice>(
             "INSERT INTO invoices (id, visit_id, invoice_number,
-              subtotal, discount, total_amount, paid_amount, outstanding_amount,
               subtotal_afn, subtotal_usd,
+              discount_afn, discount_usd,
               total_afn, total_usd,
               paid_afn, paid_usd,
               outstanding_afn, outstanding_usd,
               status, issued_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             RETURNING id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount,
-               subtotal_afn, subtotal_usd, total_afn, total_usd, paid_afn, paid_usd, outstanding_afn, outstanding_usd, status, issued_at"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id, visit_id, invoice_number,
+               subtotal_afn, subtotal_usd,
+               discount_afn, discount_usd,
+               total_afn, total_usd,
+               paid_afn, paid_usd,
+               outstanding_afn, outstanding_usd,
+               status, issued_at"
         )
         .bind(&id)
         .bind(&input.visit_id)
         .bind(&invoice_number)
-        .bind(subtotal)
-        .bind(input.discount)
-        .bind(total_amount)
-        .bind(paid_total)
-        .bind(outstanding_total)
         .bind(subtotal_afn)
         .bind(subtotal_usd)
+        .bind(input.discount_afn)
+        .bind(input.discount_usd)
         .bind(total_afn)
         .bind(total_usd)
         .bind(final_paid_afn)
@@ -299,7 +298,14 @@ impl InvoiceService {
 
     pub async fn get_for_visit(pool: &SqlitePool, visit_id: &str) -> AppResult<Option<Invoice>> {
         let invoice = sqlx::query_as(
-            "SELECT id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at FROM invoices WHERE visit_id = ?"
+            "SELECT id, visit_id, invoice_number,
+               subtotal_afn, subtotal_usd,
+               discount_afn, discount_usd,
+               total_afn, total_usd,
+               paid_afn, paid_usd,
+               outstanding_afn, outstanding_usd,
+               status, issued_at
+             FROM invoices WHERE visit_id = ?"
         )
         .bind(visit_id)
         .fetch_optional(pool)
@@ -313,7 +319,14 @@ impl InvoiceService {
         invoice_id: &str,
     ) -> AppResult<ReceiptData> {
         let invoice = sqlx::query_as::<_, Invoice>(
-            "SELECT id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at FROM invoices WHERE id = ?"
+            "SELECT id, visit_id, invoice_number,
+               subtotal_afn, subtotal_usd,
+               discount_afn, discount_usd,
+               total_afn, total_usd,
+               paid_afn, paid_usd,
+               outstanding_afn, outstanding_usd,
+               status, issued_at
+             FROM invoices WHERE id = ?"
         )
         .bind(invoice_id)
         .fetch_optional(pool)
@@ -333,7 +346,7 @@ impl InvoiceService {
         })?;
 
         let payments = sqlx::query_as::<_, ReceiptPayment>(
-            "SELECT id, invoice_id, amount, method, notes, received_at FROM payments
+            "SELECT id, invoice_id, amount_afn, amount_usd, method, notes, received_at FROM payments
              WHERE invoice_id = ?
              ORDER BY received_at ASC",
         )
@@ -380,13 +393,10 @@ impl InvoiceService {
             visit_id: invoice.visit_id,
             issue_date: invoice.issued_at,
             currency: "AFN".to_string(),
-            subtotal: invoice.subtotal,
-            discount: invoice.discount,
-            total_amount: invoice.total_amount,
-            paid_amount: invoice.paid_amount,
-            outstanding_amount: invoice.outstanding_amount,
             subtotal_afn: invoice.subtotal_afn,
             subtotal_usd: invoice.subtotal_usd,
+            discount_afn: invoice.discount_afn,
+            discount_usd: invoice.discount_usd,
             total_afn: invoice.total_afn,
             total_usd: invoice.total_usd,
             paid_afn: invoice.paid_afn,
@@ -410,7 +420,14 @@ impl InvoiceService {
         visit_id: &str,
     ) -> AppResult<ReceiptData> {
         let invoice = sqlx::query_as::<_, Invoice>(
-            "SELECT id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at FROM invoices WHERE visit_id = ?"
+            "SELECT id, visit_id, invoice_number,
+               subtotal_afn, subtotal_usd,
+               discount_afn, discount_usd,
+               total_afn, total_usd,
+               paid_afn, paid_usd,
+               outstanding_afn, outstanding_usd,
+               status, issued_at
+             FROM invoices WHERE visit_id = ?"
         )
         .bind(visit_id)
         .fetch_optional(pool)
@@ -423,7 +440,14 @@ impl InvoiceService {
     #[allow(dead_code)]
     pub async fn find(pool: &SqlitePool, id: &str) -> AppResult<Invoice> {
         let invoice = sqlx::query_as(
-            "SELECT id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount, status, issued_at FROM invoices WHERE id = ?"
+            "SELECT id, visit_id, invoice_number,
+               subtotal_afn, subtotal_usd,
+               discount_afn, discount_usd,
+               total_afn, total_usd,
+               paid_afn, paid_usd,
+               outstanding_afn, outstanding_usd,
+               status, issued_at
+             FROM invoices WHERE id = ?"
         )
         .bind(id)
         .fetch_optional(pool)

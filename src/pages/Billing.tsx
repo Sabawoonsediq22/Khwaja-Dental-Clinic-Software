@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import { LoadingSpinner, Pagination } from "../../components/ui";
-import BillingHeader from "../../components/billing/BillingHeader";
-import BillingTable from "../../components/billing/BillingTable";
-import PaymentModal from "../../components/billing/PaymentModal";
-import { ReceiptPreviewModal } from "../../components/receipt";
-import { useInvoices, useAddPayment } from "../../hooks/useInvoices";
-import { useDebounce } from "../../hooks/useDebounce";
+import { LoadingSpinner, Pagination } from "../components/ui";
+import BillingHeader from "../components/billing/BillingHeader";
+import BillingTable from "../components/billing/BillingTable";
+import PaymentModal from "../components/billing/PaymentModal";
+import { ReceiptPreviewModal } from "../components/receipt";
+import { useInvoices, useAddPayment } from "../hooks/useInvoices";
+import { useDebounce } from "../hooks/useDebounce";
 import { useQueryClient } from "@tanstack/react-query";
 import { useParams } from "react-router-dom";
-import type { InvoiceListItem } from "../../types/ApiTypes";
+import type { InvoiceListItem } from "../types/ApiTypes";
 import { toast } from "sonner";
 
 const PAGE_SIZE = 10;
@@ -21,13 +21,16 @@ const Billing: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<"All" | "Unpaid" | "Partial" | "Paid">("All");
+  const [selectedStatus, setSelectedStatus] = useState<
+    "All" | "Unpaid" | "Partial" | "Paid"
+  >("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGE_SIZE);
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showReceiptModal, setShowReceiptModal] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceListItem | null>(null);
+  const [selectedInvoice, setSelectedInvoice] =
+    useState<InvoiceListItem | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -54,7 +57,9 @@ const Billing: React.FC = () => {
     setSearchQuery(query);
   };
 
-  const handleStatusChange = (status: "All" | "Unpaid" | "Partial" | "Paid") => {
+  const handleStatusChange = (
+    status: "All" | "Unpaid" | "Partial" | "Paid",
+  ) => {
     setSelectedStatus(status);
     setCurrentPage(1);
   };
@@ -80,22 +85,44 @@ const Billing: React.FC = () => {
     setShowReceiptModal(true);
   };
 
-  const handlePaymentSubmit = (input: { invoice_id: string; amount: number; amount_afn: number; amount_usd: number; method: "Cash" | "Card" | "Mobile" | "Insurance"; notes?: string | null }) => {
+  const handlePaymentSubmit = (input: {
+    invoice_id: string;
+    amount_afn: number;
+    amount_usd: number;
+    method: "Cash" | "Card" | "Mobile" | "Insurance";
+    notes?: string | null;
+  }) => {
     addPaymentMutation.mutate(input, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["invoices"] });
-        toast.success(t("billing.notifications.paymentAdded", "Payment recorded successfully"));
+        toast.success(
+          t(
+            "billing.notifications.paymentAdded",
+            "Payment recorded successfully",
+          ),
+        );
       },
       onError: (error) => {
-        toast.error(`${t("billing.notifications.paymentError", "Failed to record payment")}: ${String(error)}`);
+        toast.error(
+          `${t("billing.notifications.paymentError", "Failed to record payment")}: ${String(error)}`,
+        );
       },
     });
   };
 
   const invoices = data?.items ?? [];
-  const totalOutstanding = invoices.reduce((sum, inv) => sum + inv.outstanding_amount, 0);
-  const totalOutstandingAfn = invoices.reduce((sum, inv) => sum + (inv.outstanding_afn ?? 0), 0);
-  const totalOutstandingUsd = invoices.reduce((sum, inv) => sum + (inv.outstanding_usd ?? 0), 0);
+  const totalOutstanding = invoices.reduce(
+    (sum, inv) => sum + (inv.outstanding_afn ?? 0) + (inv.outstanding_usd ?? 0),
+    0,
+  );
+  const totalOutstandingAfn = invoices.reduce(
+    (sum, inv) => sum + (inv.outstanding_afn ?? 0),
+    0,
+  );
+  const totalOutstandingUsd = invoices.reduce(
+    (sum, inv) => sum + (inv.outstanding_usd ?? 0),
+    0,
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -118,12 +145,16 @@ const Billing: React.FC = () => {
       <div className="flex-1 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 mb-3">
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <LoadingSpinner size="lg" text={t("billing.loadingInvoices", "Loading invoices...")} />
+            <LoadingSpinner
+              size="lg"
+              text={t("billing.loadingInvoices", "Loading invoices...")}
+            />
           </div>
         ) : error ? (
           <div className="flex h-full items-center justify-center">
             <div className="text-lg text-red-500">
-              {t("billing.errorLoading", "Error loading invoices")}: {String(error)}
+              {t("billing.errorLoading", "Error loading invoices")}:{" "}
+              {String(error)}
             </div>
           </div>
         ) : (
@@ -150,8 +181,11 @@ const Billing: React.FC = () => {
             isOpen={showPaymentModal}
             onClose={() => setShowPaymentModal(false)}
             invoiceId={selectedInvoice.id}
-            outstandingAmount={selectedInvoice.outstanding_amount}
-            outstandingAfn={selectedInvoice.outstanding_afn ?? selectedInvoice.outstanding_amount}
+            outstandingAmount={
+              (selectedInvoice.outstanding_afn ?? 0) +
+              (selectedInvoice.outstanding_usd ?? 0)
+            }
+            outstandingAfn={selectedInvoice.outstanding_afn ?? 0}
             outstandingUsd={selectedInvoice.outstanding_usd ?? 0}
             onSave={handlePaymentSubmit}
           />

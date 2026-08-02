@@ -78,13 +78,10 @@ export interface InvoiceListItem {
   patient_phone: string | null;
   visit_id: string;
   visit_date: string;
-  subtotal: number;
-  discount: number;
-  total_amount: number;
-  paid_amount: number;
-  outstanding_amount: number;
   subtotal_afn: number;
   subtotal_usd: number;
+  discount_afn: number;
+  discount_usd: number;
   total_afn: number;
   total_usd: number;
   paid_afn: number;
@@ -117,10 +114,8 @@ export interface CreatePatientInput {
   chief_complaint?: string | null;
   clinical_notes?: string | null;
   procedures: CreateProcedureWithTreatmentInput[];
-  discount?: number | null;
   discount_afn?: number | null;
   discount_usd?: number | null;
-  paid_amount?: number | null;
   paid_amount_afn: number;
   paid_amount_usd: number;
 }
@@ -236,13 +231,10 @@ export interface Invoice {
   id: string;
   visit_id: string;
   invoice_number: string;
-  subtotal: number;
-  discount: number;
-  total_amount: number;
-  paid_amount: number;
-  outstanding_amount: number;
   subtotal_afn: number;
   subtotal_usd: number;
+  discount_afn: number;
+  discount_usd: number;
   total_afn: number;
   total_usd: number;
   paid_afn: number;
@@ -255,15 +247,10 @@ export interface Invoice {
 
 export interface CreateInvoiceInput {
     visit_id: string;
-    subtotal: number;
-    discount: number;
     discount_afn: number;
     discount_usd: number;
-    paid_amount: number;
     paid_amount_afn: number;
     paid_amount_usd: number;
-    subtotal_afn?: number;
-    subtotal_usd?: number;
 }
 
 export interface Payment {
@@ -321,13 +308,10 @@ export interface ReceiptData {
   visitId: string;
   issueDate: string;
   currency: "AFN" | "USD";
-  subtotal: number;
-  discount: number;
-  totalAmount: number;
-  paidAmount: number;
-  outstandingAmount: number;
   subtotalAfn: number;
   subtotalUsd: number;
+  discountAfn: number;
+  discountUsd: number;
   totalAfn: number;
   totalUsd: number;
   paidAfn: number;
@@ -342,7 +326,6 @@ export interface ReceiptData {
 
 export interface AddPaymentInput {
   invoice_id: string;
-  amount: number;
   amount_afn: number;
   amount_usd: number;
   method: "Cash" | "Card" | "Mobile" | "Insurance";

@@ -19,13 +19,10 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
   visitId: "V-20231012-000001",
   issueDate: "2023-10-12T00:00:00.000Z",
   currency: "AFN",
-  subtotal: 8000,
-  discount: 0,
-  totalAmount: 8000,
-  paidAmount: 5000,
-  outstandingAmount: 3000,
   subtotalAfn: 5000,
   subtotalUsd: 3000,
+  discountAfn: 0,
+  discountUsd: 0,
   totalAfn: 5000,
   totalUsd: 3000,
   paidAfn: 5000,
@@ -65,7 +62,6 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
   payments: [
     {
       id: "PAY-MOCK-1",
-      amount: 5000,
       amountAfn: 5000,
       amountUsd: 0,
       method: "Cash",
@@ -140,28 +136,22 @@ export const getProcedureLabel = (procedure: ReceiptProcedure) => {
 };
 
 export const getReceiptTotals = (receipt: ReceiptData) => {
-  const subtotal = receipt.procedures.reduce((sum, item) => sum + item.totalPrice, 0);
   const subtotalAfn = receipt.procedures.reduce((sum, item) => sum + (item.totalPriceAfn || 0), 0);
   const subtotalUsd = receipt.procedures.reduce((sum, item) => sum + (item.totalPriceUsd || 0), 0);
-  const discount = Math.max(receipt.discount, 0);
-  const totalAmount = Math.max(subtotal - discount, 0);
-  const totalAfn = Math.max(subtotalAfn - discount, 0);
-  const totalUsd = Math.max(subtotalUsd, 0);
-  const paidAmount = receipt.payments.reduce((sum, payment) => sum + payment.amount, 0) || receipt.paidAmount;
+  const discountAfn = Math.max(receipt.discountAfn || 0, 0);
+  const discountUsd = Math.max(receipt.discountUsd || 0, 0);
+  const totalAfn = Math.max(subtotalAfn - discountAfn, 0);
+  const totalUsd = Math.max(subtotalUsd - discountUsd, 0);
   const paidAfn = receipt.payments.reduce((sum, payment) => sum + (payment.amountAfn || 0), 0) || receipt.paidAfn;
   const paidUsd = receipt.payments.reduce((sum, payment) => sum + (payment.amountUsd || 0), 0) || receipt.paidUsd;
-  const outstandingAmount = Math.max(totalAmount - paidAmount, 0);
   const outstandingAfn = Math.max(totalAfn - paidAfn, 0);
   const outstandingUsd = Math.max(totalUsd - paidUsd, 0);
 
   return {
-    subtotal,
-    discount,
-    totalAmount,
-    paidAmount,
-    outstandingAmount,
     subtotalAfn,
     subtotalUsd,
+    discountAfn,
+    discountUsd,
     totalAfn,
     totalUsd,
     paidAfn,
@@ -213,13 +203,18 @@ export const buildReceiptDownloadHtml = (receipt: ReceiptData) => `<!doctype htm
     </table>
     <div class="divider"></div>
     <div class="meta">
-      <div>Subtotal<br />Discount<br /><span class="total">Total Amount<br />Paid Amount (Cash)</span></div>
-      <div class="right">${formatCurrency(receipt.subtotal, receipt.currency)}<br /><span style="color:#dc2626">${formatCurrency(receipt.discount, receipt.currency)}</span><br /><span class="total">${formatCurrency(receipt.totalAmount, receipt.currency)}</span><br /><span class="total">${formatCurrency(receipt.paidAmount, receipt.currency)}</span></div>
+      <div>${receipt.subtotalAfn > 0 ? `Subtotal (AFN)<br />` : ""}${receipt.discountAfn > 0 ? `Discount (AFN)<br />` : ""}${receipt.totalAfn > 0 ? `<span class="total">Total (AFN)<br /></span>` : ""}${receipt.paidAfn > 0 ? `<span class="total">Paid (AFN)</span>` : ""}</div>
+      <div class="right">${receipt.subtotalAfn > 0 ? `${formatCurrency(receipt.subtotalAfn, "AFN")}<br />` : ""}${receipt.discountAfn > 0 ? `<span style="color:#dc2626">${formatCurrency(receipt.discountAfn, "AFN")}</span><br />` : ""}${receipt.totalAfn > 0 ? `<span class="total">${formatCurrency(receipt.totalAfn, "AFN")}</span><br />` : ""}${receipt.paidAfn > 0 ? `<span class="total">${formatCurrency(receipt.paidAfn, "AFN")}</span>` : ""}</div>
     </div>
+    ${receipt.subtotalUsd > 0 || receipt.discountUsd > 0 || receipt.totalUsd > 0 || receipt.paidUsd > 0 ? `
+    <div class="meta">
+      <div>${receipt.subtotalUsd > 0 ? `Subtotal (USD)<br />` : ""}${receipt.discountUsd > 0 ? `Discount (USD)<br />` : ""}${receipt.totalUsd > 0 ? `<span class="total">Total (USD)<br /></span>` : ""}${receipt.paidUsd > 0 ? `<span class="total">Paid (USD)</span>` : ""}</div>
+      <div class="right">${receipt.subtotalUsd > 0 ? `${formatCurrency(receipt.subtotalUsd, "USD")}<br />` : ""}${receipt.discountUsd > 0 ? `<span style="color:#dc2626">${formatCurrency(receipt.discountUsd, "USD")}</span><br />` : ""}${receipt.totalUsd > 0 ? `<span class="total">${formatCurrency(receipt.totalUsd, "USD")}</span><br />` : ""}${receipt.paidUsd > 0 ? `<span class="total">${formatCurrency(receipt.paidUsd, "USD")}</span>` : ""}</div>
+    </div>` : ""}
     <div class="divider"></div>
     <div class="meta">
       <div>Outstanding Balance</div>
-      <div class="right outstanding">${formatCurrency(receipt.outstandingAmount, receipt.currency)}</div>
+      <div class="right outstanding">${receipt.outstandingAfn > 0 ? formatCurrency(receipt.outstandingAfn, "AFN") : ""}${receipt.outstandingAfn > 0 && receipt.outstandingUsd > 0 ? " / " : ""}${receipt.outstandingUsd > 0 ? formatCurrency(receipt.outstandingUsd, "USD") : ""}</div>
     </div>
     <div class="footer">${receipt.clinic.name ? `Thank you for choosing ${receipt.clinic.name}!` : "Thank you for your visit!"}</div>
   </div>

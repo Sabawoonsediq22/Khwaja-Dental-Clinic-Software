@@ -219,16 +219,15 @@ impl PatientService {
             }
         }
 
-        let discount = input.discount.unwrap_or(0.0);
+        let discount_afn = input.discount_afn.unwrap_or(0.0);
+        let discount_usd = input.discount_usd.unwrap_or(0.0);
         let invoice = Self::insert_invoice(
             &mut tx,
             &visit_id,
-            discount,
-            input.paid_amount.unwrap_or(0.0),
             input.paid_amount_afn,
             input.paid_amount_usd,
-            discount,
-            0.0,
+            discount_afn,
+            discount_usd,
         )
         .await?;
 
@@ -425,8 +424,6 @@ impl PatientService {
     async fn insert_invoice(
         tx: &mut Transaction<'_, sqlx::Sqlite>,
         visit_id: &str,
-        discount: f64,
-        paid_amount: f64,
         paid_amount_afn: f64,
         paid_amount_usd: f64,
         discount_afn: f64,
@@ -472,32 +469,30 @@ impl PatientService {
         let invoice_number = format!("INV-{}", Utc::now().timestamp_millis());
         let now = Utc::now().to_rfc3339();
 
-        let paid_total = paid_afn_total + paid_usd_total;
-        let final_total_amount = total_afn + total_usd;
-        let final_outstanding = final_outstanding_afn + final_outstanding_usd;
-
         Ok(sqlx::query_as::<_, Invoice>(
             "INSERT INTO invoices (id, visit_id, invoice_number,
-              subtotal, discount, total_amount, paid_amount, outstanding_amount,
               subtotal_afn, subtotal_usd,
+              discount_afn, discount_usd,
               total_afn, total_usd,
               paid_afn, paid_usd,
               outstanding_afn, outstanding_usd,
               status, issued_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-             RETURNING id, visit_id, invoice_number, subtotal, discount, total_amount, paid_amount, outstanding_amount,
-               subtotal_afn, subtotal_usd, total_afn, total_usd, paid_afn, paid_usd, outstanding_afn, outstanding_usd, status, issued_at"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             RETURNING id, visit_id, invoice_number,
+               subtotal_afn, subtotal_usd,
+               discount_afn, discount_usd,
+               total_afn, total_usd,
+               paid_afn, paid_usd,
+               outstanding_afn, outstanding_usd,
+               status, issued_at"
         )
         .bind(&invoice_id)
         .bind(visit_id)
         .bind(&invoice_number)
-        .bind(subtotal)
-        .bind(discount)
-        .bind(final_total_amount)
-        .bind(paid_total)
-        .bind(final_outstanding)
         .bind(subtotal_afn)
         .bind(subtotal_usd)
+        .bind(discount_afn)
+        .bind(discount_usd)
         .bind(total_afn)
         .bind(total_usd)
         .bind(paid_afn_total)
@@ -670,10 +665,10 @@ impl PatientService {
     pub async fn get_statistics(pool: &SqlitePool, id: &str) -> AppResult<PatientStatisticsResponse> {
         let row: (f64, f64, f64, f64, f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(i.total_amount), 0),
+               COALESCE(SUM(i.total_afn + i.total_usd), 0),
                COALESCE(SUM(i.total_afn), 0),
                COALESCE(SUM(i.total_usd), 0),
-               COALESCE(SUM(i.outstanding_amount), 0),
+               COALESCE(SUM(i.outstanding_afn + i.outstanding_usd), 0),
                COALESCE(SUM(i.outstanding_afn), 0),
                COALESCE(SUM(i.outstanding_usd), 0)
              FROM invoices i

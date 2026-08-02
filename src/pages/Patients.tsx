@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { LoadingSpinner, Pagination } from "../../components/ui";
-import PatientsHeader from "../../components/patients/PatientsHeader";
-import PatientTable from "../../components/patients/PatientTable";
-import { usePatients } from "../../hooks/usePatients";
-import type { Patient } from "../../types/ApiTypes";
+import { LoadingSpinner, Pagination } from "../components/ui";
+import PatientsHeader from "../components/patients/PatientsHeader";
+import PatientTable from "../components/patients/PatientTable";
+import { usePatients } from "../hooks/usePatients";
+import type { Patient } from "../types/ApiTypes";
 
 const Patients: React.FC = () => {
   const { t } = useTranslation();

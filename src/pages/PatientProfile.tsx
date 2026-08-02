@@ -1,44 +1,67 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button, Modal, LoadingSpinner } from "../../components/ui";
-import { usePatient, usePatientMedicalInfo, usePatientStatistics, useUpdatePatient, useDeletePatient, useUpdatePatientMedicalInfo } from "../../hooks/usePatients";
-import { usePatientTreatmentHistory, useUpdateVisitStatus } from "../../hooks/useVisits";
+import { Button, Modal, LoadingSpinner } from "../components/ui";
+import {
+  usePatient,
+  usePatientMedicalInfo,
+  usePatientStatistics,
+  useUpdatePatient,
+  useDeletePatient,
+  useUpdatePatientMedicalInfo,
+} from "../hooks/usePatients";
+import {
+  usePatientTreatmentHistory,
+  useUpdateVisitStatus,
+} from "../hooks/useVisits";
 import { useQueryClient } from "@tanstack/react-query";
-import { AllergyAlert, TreatmentEntry } from "../../types/PatientTypes";
-import AllergiesMedicalAlertsCard from "../../components/patients/AllergiesMedicalAlertsCard";
-import TreatmentHistoryTimeline from "../../components/patients/TreatmentHistoryTimeline";
-import PatientAvatarWithStatus from "../../components/patients/PatientAvatarWithStatus";
-import StatisticsCard from "../../components/patients/StatisticsCard";
-import PersonalDetailsCard from "../../components/patients/PersonalDetailsCard";
-import { PatientIcon, PhoneIcon, HomeIcon, PlusIcon, DeleteIcon, LocationIcon } from "../../shared/icons/icons";
+import { AllergyAlert, TreatmentEntry } from "../types/PatientTypes";
+import AllergiesMedicalAlertsCard from "../components/patients/AllergiesMedicalAlertsCard";
+import TreatmentHistoryTimeline from "../components/patients/TreatmentHistoryTimeline";
+import PatientAvatarWithStatus from "../components/patients/PatientAvatarWithStatus";
+import StatisticsCard from "../components/patients/StatisticsCard";
+import PersonalDetailsCard from "../components/patients/PersonalDetailsCard";
+import {
+  PatientIcon,
+  PhoneIcon,
+  HomeIcon,
+  PlusIcon,
+  DeleteIcon,
+  LocationIcon,
+} from "../shared/icons/icons";
 import { toast } from "sonner";
-import type { PatientVisitWithTreatments } from "../../types/ApiTypes";
-import i18n from "../../i18n";
+import type { PatientVisitWithTreatments } from "../types/ApiTypes";
+import i18n from "../i18n";
 
 const formatDate = (dateStr: string | null | undefined): string => {
   if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleDateString(i18n.language === "ps" ? "en-US" : i18n.language, {
-    month: "short",
-    day: "2-digit",
-    year: "numeric",
-  });
+  return new Date(dateStr).toLocaleDateString(
+    i18n.language === "ps" ? "en-US" : i18n.language,
+    {
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
+    },
+  );
 };
 
-const parseCsv = (value: string): string[] => Array.from(
-  new Set(
-    value
-      .split(",")
-      .map((item) => item.trim())
-      .filter(Boolean),
-  ),
-);
+const parseCsv = (value: string): string[] =>
+  Array.from(
+    new Set(
+      value
+        .split(",")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  );
 
 const formatCsv = (values: string[]): string => values.join(", ");
 
-const toTreatmentEntries = (visits: PatientVisitWithTreatments[]): TreatmentEntry[] => {
+const toTreatmentEntries = (
+  visits: PatientVisitWithTreatments[],
+): TreatmentEntry[] => {
   const entries: TreatmentEntry[] = [];
-  
+
   visits.forEach((visit) => {
     if (visit.procedures.length === 0) return;
 
@@ -47,23 +70,37 @@ const toTreatmentEntries = (visits: PatientVisitWithTreatments[]): TreatmentEntr
         id: `${visit.visit_id}-procedure-${procedureIndex}`,
         visitId: visit.visit_id,
         title: procedure.procedure_name,
-        tooth_number: procedure.teeth.length > 0 ? procedure.teeth[0].tooth_number : undefined,
+        tooth_number:
+          procedure.teeth.length > 0
+            ? procedure.teeth[0].tooth_number
+            : undefined,
         date: visit.visit_date,
         time: procedure.performed_at || visit.visit_date,
         cost: procedure.total_price,
-        status: visit.status === "Open" || visit.status === "Completed" || visit.status === "Cancelled"
-          ? visit.status
-          : "Open",
-        notes: visit.clinical_notes || procedure.procedure_additional_note || undefined,
-        procedures: [{
-          name: procedure.procedure_name,
-          additional_note: procedure.procedure_additional_note ?? undefined,
-          quantity: procedure.number_of_procedures,
-          unit_price: procedure.unit_price,
-          total_price: procedure.total_price,
-          tooth_numbers: procedure.teeth.map((tooth) => tooth.tooth_number),
-        }],
-        images: procedure.xrays && procedure.xrays.length > 0 ? [...procedure.xrays] : undefined,
+        status:
+          visit.status === "Open" ||
+          visit.status === "Completed" ||
+          visit.status === "Cancelled"
+            ? visit.status
+            : "Open",
+        notes:
+          visit.clinical_notes ||
+          procedure.procedure_additional_note ||
+          undefined,
+        procedures: [
+          {
+            name: procedure.procedure_name,
+            additional_note: procedure.procedure_additional_note ?? undefined,
+            quantity: procedure.number_of_procedures,
+            unit_price: procedure.unit_price,
+            total_price: procedure.total_price,
+            tooth_numbers: procedure.teeth.map((tooth) => tooth.tooth_number),
+          },
+        ],
+        images:
+          procedure.xrays && procedure.xrays.length > 0
+            ? [...procedure.xrays]
+            : undefined,
       };
 
       entries.push(procedureEntry);
@@ -99,7 +136,8 @@ const PatientProfile: React.FC = () => {
       return b.time.localeCompare(a.time);
     });
     const latestEntry = sorted[0];
-    if (!latestEntry.procedures || latestEntry.procedures.length === 0) return null;
+    if (!latestEntry.procedures || latestEntry.procedures.length === 0)
+      return null;
     return latestEntry.procedures[0].name;
   }, [treatmentHistory]);
 
@@ -168,7 +206,12 @@ const PatientProfile: React.FC = () => {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["patients"] });
           navigate("/patients");
-          toast.success(t("patientProfile.notifications.deleted", "Patient deleted successfully"));
+          toast.success(
+            t(
+              "patientProfile.notifications.deleted",
+              "Patient deleted successfully",
+            ),
+          );
         },
       });
     }
@@ -203,29 +246,42 @@ const PatientProfile: React.FC = () => {
       medical_conditions: conditionsArray,
     };
 
-    updateMedicalInfoMutation.mutate({
-      patient_id: patient.id,
-      input: {
-        allergies: allergiesArray.length > 0 ? formatCsv(allergiesArray) : null,
-        medications: medicationsArray.length > 0 ? formatCsv(medicationsArray) : null,
-        medical_conditions: conditionsArray.length > 0 ? conditionsArray : null,
+    updateMedicalInfoMutation.mutate(
+      {
+        patient_id: patient.id,
+        input: {
+          allergies:
+            allergiesArray.length > 0 ? formatCsv(allergiesArray) : null,
+          medications:
+            medicationsArray.length > 0 ? formatCsv(medicationsArray) : null,
+          medical_conditions:
+            conditionsArray.length > 0 ? conditionsArray : null,
+        },
       },
-    }, {
-      onSuccess: () => {
-        queryClient.setQueryData(medicalInfoKey, optimisticMedicalInfo);
-        queryClient.invalidateQueries({ queryKey: medicalInfoKey });
-        setAllergiesFormData({
-          allergies: formatCsv(allergiesArray),
-          medical_conditions: formatCsv(conditionsArray),
-          medications: formatCsv(medicationsArray),
-        });
-        setShowAllergiesModal(false);
-        toast.success(t("patientProfile.notifications.medicalUpdated", "Medical information updated successfully"));
+      {
+        onSuccess: () => {
+          queryClient.setQueryData(medicalInfoKey, optimisticMedicalInfo);
+          queryClient.invalidateQueries({ queryKey: medicalInfoKey });
+          setAllergiesFormData({
+            allergies: formatCsv(allergiesArray),
+            medical_conditions: formatCsv(conditionsArray),
+            medications: formatCsv(medicationsArray),
+          });
+          setShowAllergiesModal(false);
+          toast.success(
+            t(
+              "patientProfile.notifications.medicalUpdated",
+              "Medical information updated successfully",
+            ),
+          );
+        },
+        onError: (error) => {
+          toast.error(
+            `${t("patientProfile.notifications.medicalUpdateError", "Failed to update medical information")}: ${String(error)}`,
+          );
+        },
       },
-      onError: (error) => {
-        toast.error(`${t("patientProfile.notifications.medicalUpdateError", "Failed to update medical information")}: ${String(error)}`);
-      },
-    });
+    );
   };
 
   const handleStatusChange = (visitId: string, newStatus: string) => {
@@ -233,21 +289,41 @@ const PatientProfile: React.FC = () => {
     queryClient.setQueryData(treatmentHistoryKey, (old: any) => {
       if (!old) return old;
       return old.map((visit: any) =>
-        visit.visit_id === visitId ? { ...visit, status: newStatus } : visit
+        visit.visit_id === visitId ? { ...visit, status: newStatus } : visit,
       );
     });
 
-    updateVisitStatusMutation.mutate({ id: visitId, status: newStatus as "Open" | "Completed" | "Cancelled" }, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: treatmentHistoryKey, refetchType: "all" });
-        queryClient.invalidateQueries({ queryKey: ["patients", patient?.id, "statistics"], refetchType: "all" });
-        toast.success(t("patientProfile.notifications.statusUpdated", "Treatment status updated to {{status}}", { status: newStatus }));
+    updateVisitStatusMutation.mutate(
+      { id: visitId, status: newStatus as "Open" | "Completed" | "Cancelled" },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: treatmentHistoryKey,
+            refetchType: "all",
+          });
+          queryClient.invalidateQueries({
+            queryKey: ["patients", patient?.id, "statistics"],
+            refetchType: "all",
+          });
+          toast.success(
+            t(
+              "patientProfile.notifications.statusUpdated",
+              "Treatment status updated to {{status}}",
+              { status: newStatus },
+            ),
+          );
+        },
+        onError: (error) => {
+          queryClient.invalidateQueries({
+            queryKey: treatmentHistoryKey,
+            refetchType: "all",
+          });
+          toast.error(
+            `${t("patientProfile.notifications.statusUpdateError", "Failed to update status")}: ${String(error)}`,
+          );
+        },
       },
-      onError: (error) => {
-        queryClient.invalidateQueries({ queryKey: treatmentHistoryKey, refetchType: "all" });
-        toast.error(`${t("patientProfile.notifications.statusUpdateError", "Failed to update status")}: ${String(error)}`);
-      },
-    });
+    );
   };
 
   React.useEffect(() => {
@@ -256,7 +332,12 @@ const PatientProfile: React.FC = () => {
     }
   }, [patientQuery.error, patient, patientQuery.isLoading, navigate]);
 
-  if (patientQuery.isLoading || medicalInfoQuery.isLoading || statisticsQuery.isLoading || treatmentHistoryQuery.isLoading) {
+  if (
+    patientQuery.isLoading ||
+    medicalInfoQuery.isLoading ||
+    statisticsQuery.isLoading ||
+    treatmentHistoryQuery.isLoading
+  ) {
     return (
       <div className="flex h-full items-center justify-center">
         <LoadingSpinner size="lg" text={t("common.loading", "Loading...")} />
@@ -269,8 +350,8 @@ const PatientProfile: React.FC = () => {
   }
 
   if (treatmentHistoryQuery.error) {
-    return (
-      toast.error(`${t("patientProfile.notifications.treatmentHistoryError", "Failed to load treatment history")}: ${String(treatmentHistoryQuery.error)}`)
+    return toast.error(
+      `${t("patientProfile.notifications.treatmentHistoryError", "Failed to load treatment history")}: ${String(treatmentHistoryQuery.error)}`,
     );
   }
 
@@ -278,36 +359,49 @@ const PatientProfile: React.FC = () => {
     {
       label: t("patientProfile.ageGender"),
       value: `${patient.age} ${t("patientProfile.years")} • ${t(`patients.filters.${patient.gender.toLowerCase()}`)}`,
-      icon: (
-        <PatientIcon className="w-5 h-5" />
-      ),
+      icon: <PatientIcon className="w-5 h-5" />,
     },
     {
       label: t("patientProfile.phoneNumber"),
       value: patient.phone,
-      icon: (
-        <PhoneIcon className="w-5 h-5" />
-      ),
+      icon: <PhoneIcon className="w-5 h-5" />,
     },
     {
       label: t("patientProfile.homeAddress"),
       value: patient.address || t("patientProfile.addressNotProvided"),
-      icon: (
-        <HomeIcon className="w-5 h-5" />
-      ),
+      icon: <HomeIcon className="w-5 h-5" />,
     },
   ];
 
   const allergiesAlerts: AllergyAlert[] = [
-    { label: t("patientProfile.allergiesLabel"), value: medicalInfo?.allergies?.join(", ") || t("patientProfile.noneRecorded") },
-    { label: t("patientProfile.medicalConditionsLabel"), value: medicalInfo?.medical_conditions?.join(", ") || t("patientProfile.noneRecorded") },
-    { label: t("patientProfile.medicationsLabel"), value: medicalInfo?.medications?.join(", ") || t("patientProfile.noneRecorded") },
+    {
+      label: t("patientProfile.allergiesLabel"),
+      value:
+        medicalInfo?.allergies?.join(", ") || t("patientProfile.noneRecorded"),
+    },
+    {
+      label: t("patientProfile.medicalConditionsLabel"),
+      value:
+        medicalInfo?.medical_conditions?.join(", ") ||
+        t("patientProfile.noneRecorded"),
+    },
+    {
+      label: t("patientProfile.medicationsLabel"),
+      value:
+        medicalInfo?.medications?.join(", ") ||
+        t("patientProfile.noneRecorded"),
+    },
   ];
 
   const registeredDate = formatDate(patient.created_at);
-  const totalSpentStatus = statistics?.outstanding_balance === 0 ? t("patientProfile.fullyPaid") : statistics?.outstanding_balance
-    ? t("patientProfile.amountOutstanding", { amount: statistics?.outstanding_balance.toLocaleString() })
-    : t("patientProfile.noVisits");
+  const totalSpentStatus =
+    statistics?.outstanding_balance === 0
+      ? t("patientProfile.fullyPaid")
+      : statistics?.outstanding_balance
+        ? t("patientProfile.amountOutstanding", {
+            amount: statistics?.outstanding_balance.toLocaleString(),
+          })
+        : t("patientProfile.noVisits");
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
@@ -316,22 +410,33 @@ const PatientProfile: React.FC = () => {
         <div className="flex items-start justify-between">
           {/* Left Side */}
           <div className="flex items-center gap-4">
-            <PatientAvatarWithStatus name={patient.full_name} size="xxl" status="online" />
+            <PatientAvatarWithStatus
+              name={patient.full_name}
+              size="xxl"
+              status="online"
+            />
             <div>
               <div className="flex items-center gap-4">
                 <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {patient.full_name}
-              </h1>
+                  {patient.full_name}
+                </h1>
                 <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
                   {patient.id}
                 </span>
               </div>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                 <span className="flex items-center gap-1">
-                  <LocationIcon className="h-3 w-3"/>
-                  {patient.address ? patient.address : t("patientProfile.addressNotProvided")}   •
+                  <LocationIcon className="h-3 w-3" />
+                  {patient.address
+                    ? patient.address
+                    : t("patientProfile.addressNotProvided")}{" "}
+                  •
                 </span>
-                <span>{t("patientProfile.registeredSince", { date: registeredDate })}</span>
+                <span>
+                  {t("patientProfile.registeredSince", {
+                    date: registeredDate,
+                  })}
+                </span>
               </div>
             </div>
           </div>
@@ -362,22 +467,34 @@ const PatientProfile: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <StatisticsCard
           label={t("patientProfile.totalSpentLabel")}
-          value={t("patientProfile.amountAfn", { amount: (statistics?.total_spent || 0).toLocaleString() })}
+          value={t("patientProfile.amountAfn", {
+            amount: (statistics?.total_spent || 0).toLocaleString(),
+          })}
           subtitle={totalSpentStatus}
           variant="success"
           icon="check"
         />
         <StatisticsCard
           label={t("patientProfile.lastVisitLabel")}
-          value={formatDate(statistics?.last_visit_date) || t("patientProfile.noVisits")}
+          value={
+            formatDate(statistics?.last_visit_date) ||
+            t("patientProfile.noVisits")
+          }
           subtitle={lastVisitProcedure || "-"}
           variant="info"
           icon="clock"
         />
         <StatisticsCard
           label={t("patientProfile.outstandingBalanceLabel")}
-          value={t("patientProfile.amountAfn", { amount: (statistics?.outstanding_balance || 0).toLocaleString() })}
-          variant={statistics?.outstanding_balance && statistics.outstanding_balance > 0 ? "warning" : "success"}
+          value={t("patientProfile.amountAfn", {
+            amount: (statistics?.outstanding_balance || 0).toLocaleString(),
+          })}
+          variant={
+            statistics?.outstanding_balance &&
+            statistics.outstanding_balance > 0
+              ? "warning"
+              : "success"
+          }
           icon="check"
         />
       </div>
@@ -431,38 +548,60 @@ const PatientProfile: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.fullName")}</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("patientProfile.formLabels.fullName")}
+            </label>
             <input
               type="text"
               value={editFormData.full_name}
-              onChange={(e) => setEditFormData({ ...editFormData, full_name: e.target.value })}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, full_name: e.target.value })
+              }
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.phoneNumber")}</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("patientProfile.formLabels.phoneNumber")}
+            </label>
             <input
               type="tel"
               value={editFormData.phone}
-              onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, phone: e.target.value })
+              }
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.age")}</label>
+              <label className="block text-sm font-medium mb-1">
+                {t("patientProfile.formLabels.age")}
+              </label>
               <input
                 type="number"
                 value={editFormData.age}
-                onChange={(e) => setEditFormData({ ...editFormData, age: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    age: parseInt(e.target.value) || 0,
+                  })
+                }
                 className="w-full px-3 py-2 border rounded-md"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.gender")}</label>
+              <label className="block text-sm font-medium mb-1">
+                {t("patientProfile.formLabels.gender")}
+              </label>
               <select
                 value={editFormData.gender}
-                onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value as "Male" | "Female" | "Other" })}
+                onChange={(e) =>
+                  setEditFormData({
+                    ...editFormData,
+                    gender: e.target.value as "Male" | "Female" | "Other",
+                  })
+                }
                 className="w-full px-3 py-2 border rounded-md"
               >
                 <option value="Male">{t("patients.filters.male")}</option>
@@ -472,10 +611,14 @@ const PatientProfile: React.FC = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.address")}</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("patientProfile.formLabels.address")}
+            </label>
             <textarea
               value={editFormData.address}
-              onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+              onChange={(e) =>
+                setEditFormData({ ...editFormData, address: e.target.value })
+              }
               className="w-full px-3 py-2 border rounded-md"
               rows={3}
             />
@@ -500,38 +643,68 @@ const PatientProfile: React.FC = () => {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.allergies")}</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("patientProfile.formLabels.allergies")}
+            </label>
             <input
               type="text"
               value={allergiesFormData.allergies}
-              onChange={(e) => setAllergiesFormData({ ...allergiesFormData, allergies: e.target.value })}
-              placeholder={t("patientProfile.formPlaceholders.allergiesExample")}
+              onChange={(e) =>
+                setAllergiesFormData({
+                  ...allergiesFormData,
+                  allergies: e.target.value,
+                })
+              }
+              placeholder={t(
+                "patientProfile.formPlaceholders.allergiesExample",
+              )}
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.medicalConditions")}</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("patientProfile.formLabels.medicalConditions")}
+            </label>
             <input
               type="text"
               value={allergiesFormData.medical_conditions}
-              onChange={(e) => setAllergiesFormData({ ...allergiesFormData, medical_conditions: e.target.value })}
-              placeholder={t("patientProfile.formPlaceholders.conditionsExample")}
+              onChange={(e) =>
+                setAllergiesFormData({
+                  ...allergiesFormData,
+                  medical_conditions: e.target.value,
+                })
+              }
+              placeholder={t(
+                "patientProfile.formPlaceholders.conditionsExample",
+              )}
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">{t("patientProfile.formLabels.medications")}</label>
+            <label className="block text-sm font-medium mb-1">
+              {t("patientProfile.formLabels.medications")}
+            </label>
             <input
               type="text"
               value={allergiesFormData.medications}
-              onChange={(e) => setAllergiesFormData({ ...allergiesFormData, medications: e.target.value })}
-              placeholder={t("patientProfile.formPlaceholders.medicationsExample")}
+              onChange={(e) =>
+                setAllergiesFormData({
+                  ...allergiesFormData,
+                  medications: e.target.value,
+                })
+              }
+              placeholder={t(
+                "patientProfile.formPlaceholders.medicationsExample",
+              )}
               className="w-full px-3 py-2 border rounded-md"
             />
           </div>
         </div>
         <div className="flex justify-end gap-3 mt-6">
-          <Button variant="outline" onClick={() => setShowAllergiesModal(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setShowAllergiesModal(false)}
+          >
             {t("common.cancel")}
           </Button>
           <Button onClick={handleSaveAllergies}>

@@ -1,12 +1,12 @@
 import React, { useRef, useState, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { api } from "../../lib/api";
+import { api } from "../lib/api";
 
-import BackupSection from "../../components/settings/BackupSection";
-import StatsCards from "../../components/settings/StatsCards";
-import { useBackupSettings } from "../../hooks/useBackup";
-import ClinicForm from "../../components/settings/ClinicForm";
+import BackupSection from "../components/settings/BackupSection";
+import StatsCards from "../components/settings/StatsCards";
+import { useBackupSettings } from "../hooks/useBackup";
+import ClinicForm from "../components/settings/ClinicForm";
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();

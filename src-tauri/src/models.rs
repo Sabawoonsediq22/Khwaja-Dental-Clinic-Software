@@ -168,15 +168,14 @@ pub struct Invoice {
     pub id: String,
     pub visit_id: String,
     pub invoice_number: String,
-    pub subtotal: f64,
-    pub discount: f64,
-    pub total_amount: f64,
-    pub paid_amount: f64,
-    pub outstanding_amount: f64,
     #[sqlx(default)]
     pub subtotal_afn: f64,
     #[sqlx(default)]
     pub subtotal_usd: f64,
+    #[sqlx(default)]
+    pub discount_afn: f64,
+    #[sqlx(default)]
+    pub discount_usd: f64,
     #[sqlx(default)]
     pub total_afn: f64,
     #[sqlx(default)]
@@ -225,10 +224,7 @@ pub struct InvoiceItem {
 pub struct Payment {
     pub id: String,
     pub invoice_id: String,
-    pub amount: f64,
-    #[sqlx(default)]
     pub amount_afn: f64,
-    #[sqlx(default)]
     pub amount_usd: f64,
     pub method: Option<String>,
     pub notes: Option<String>,
@@ -285,10 +281,7 @@ pub struct ReceiptPatient {
 pub struct ReceiptPayment {
     pub id: String,
     pub invoice_id: String,
-    pub amount: f64,
-    #[sqlx(default)]
     pub amount_afn: f64,
-    #[sqlx(default)]
     pub amount_usd: f64,
     pub method: Option<String>,
     pub notes: Option<String>,
@@ -336,13 +329,10 @@ pub struct ReceiptData {
     pub visit_id: String,
     pub issue_date: String,
     pub currency: String,
-    pub subtotal: f64,
-    pub discount: f64,
-    pub total_amount: f64,
-    pub paid_amount: f64,
-    pub outstanding_amount: f64,
     pub subtotal_afn: f64,
     pub subtotal_usd: f64,
+    pub discount_afn: f64,
+    pub discount_usd: f64,
     pub total_afn: f64,
     pub total_usd: f64,
     pub paid_afn: f64,
@@ -509,7 +499,9 @@ pub struct CreatePatientInput {
     pub clinical_notes: Option<String>,
     pub procedures: Option<Vec<CreateProcedureWithTreatmentInput>>,
     pub discount: Option<f64>,
-    pub paid_amount: Option<f64>,
+    pub discount_afn: Option<f64>,
+    pub discount_usd: Option<f64>,
+    // pub paid_amount: Option<f64>,
     pub paid_amount_afn: f64,
     pub paid_amount_usd: f64,
 }
@@ -579,11 +571,8 @@ pub struct TreatmentToothInput {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateInvoiceInput {
     pub visit_id: String,
-    pub subtotal: f64,
-    pub discount: f64,
     pub discount_afn: f64,
     pub discount_usd: f64,
-    pub paid_amount: f64,
     pub paid_amount_afn: f64,
     pub paid_amount_usd: f64,
 }
@@ -591,7 +580,6 @@ pub struct CreateInvoiceInput {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AddPaymentInput {
     pub invoice_id: String,
-    pub amount: f64,
     pub amount_afn: f64,
     pub amount_usd: f64,
     pub method: PaymentMethod,
@@ -607,15 +595,14 @@ pub struct InvoiceListItem {
     pub patient_phone: Option<String>,
     pub visit_id: String,
     pub visit_date: String,
-    pub subtotal: f64,
-    pub discount: f64,
-    pub total_amount: f64,
-    pub paid_amount: f64,
-    pub outstanding_amount: f64,
     #[sqlx(default)]
     pub subtotal_afn: f64,
     #[sqlx(default)]
     pub subtotal_usd: f64,
+    #[sqlx(default)]
+    pub discount_afn: f64,
+    #[sqlx(default)]
+    pub discount_usd: f64,
     #[sqlx(default)]
     pub total_afn: f64,
     #[sqlx(default)]
@@ -685,10 +672,7 @@ pub struct GlobalSearchInvoice {
     pub id: String,
     pub invoice_number: String,
     pub status: String,
-    pub outstanding_amount: f64,
-    #[sqlx(default)]
     pub outstanding_afn: f64,
-    #[sqlx(default)]
     pub outstanding_usd: f64,
     pub patient_name: String,
 }

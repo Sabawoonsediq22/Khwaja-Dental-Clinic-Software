@@ -111,10 +111,10 @@ CREATE TABLE invoice_items (
     treatment_record_id TEXT REFERENCES treatment_records(id),
     procedure_name TEXT NOT NULL,
     quantity INTEGER NOT NULL,
-    unit_price_afn REAL NOT NULL DEFAULT 0,
-    unit_price_usd REAL NOT NULL DEFAULT 0,
-    total_price_afn REAL NOT NULL DEFAULT 0,
-    total_price_usd REAL NOT NULL DEFAULT 0
+    unit_price_afn REAL DEFAULT 0,
+    unit_price_usd REAL DEFAULT 0,
+    total_price_afn REAL DEFAULT 0,
+    total_price_usd REAL DEFAULT 0
 );
 
 CREATE TABLE app_settings (

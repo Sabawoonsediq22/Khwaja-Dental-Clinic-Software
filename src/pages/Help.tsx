@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../../components/ui";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../../components/ui/Tabs";
-import { Badge } from "../../components/ui/Badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/Tabs";
+import { Badge } from "../components/ui/Badge";
 import {
   DashboardIcon,
   PatientIcon,
@@ -14,7 +14,7 @@ import {
   HelpIcon,
   SearchIcon,
   ChevronRightIcon,
-} from "../../shared/icons/icons";
+} from "../shared/icons/icons";
 
 type HelpIconProps = { className?: string; size?: "xs" | "sm" | "md" | "lg" | "xl" };
 
@@ -264,7 +264,7 @@ const Help: React.FC = () => {
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none dark:hover:text-gray-300 transition-colors bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:bg-white dark:hover:text-gray-300 transition-colors bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
             >
               <tab.icon size="xs" />
               {tab.label}
