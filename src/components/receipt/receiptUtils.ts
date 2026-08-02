@@ -204,7 +204,7 @@ export const buildReceiptDownloadHtml = (receipt: ReceiptData) => `<!doctype htm
     </div>
     ${receipt.subtotalUsd > 0 || receipt.discountUsd > 0 || receipt.totalUsd > 0 || receipt.paidUsd > 0 ? `
     <div class="meta">
-      <div>${receipt.subtotalUsd > 0 ? `Subtotal (USD)<br />` : ""}${receipt.discountUsd > 0 ? `Discount (USD)<br />` : ""}${receipt.totalUsd > 0 ? `<span class="total">Total (USD)<br /></span>` : ""}${receipt.paidUsd > 0 ? `<span class="total">Paid (USD)</span>` : ""}</div>
+      <div>${receipt.subtotalUsd > 0 ? `Subtotal ($)<br />` : ""}${receipt.discountUsd > 0 ? `Discount ($)<br />` : ""}${receipt.totalUsd > 0 ? `<span class="total">Total ($)<br /></span>` : ""}${receipt.paidUsd > 0 ? `<span class="total">Paid ($)</span>` : ""}</div>
       <div class="right">${receipt.subtotalUsd > 0 ? `${formatCurrency(receipt.subtotalUsd, "USD")}<br />` : ""}${receipt.discountUsd > 0 ? `<span style="color:#dc2626">${formatCurrency(receipt.discountUsd, "USD")}</span><br />` : ""}${receipt.totalUsd > 0 ? `<span class="total">${formatCurrency(receipt.totalUsd, "USD")}</span><br />` : ""}${receipt.paidUsd > 0 ? `<span class="total">${formatCurrency(receipt.paidUsd, "USD")}</span>` : ""}</div>
     </div>` : ""}
     <div class="divider"></div>

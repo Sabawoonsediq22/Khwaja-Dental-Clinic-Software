@@ -930,7 +930,7 @@ const NewVisit: React.FC = () => {
                 {subtotalUsd > 0 && (
                   <div className="flex items-center justify-between py-1">
                     <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {t("newVisit.subtotal")} (USD)
+                      {t("newVisit.subtotal")} ($)
                     </p>
                     <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                       ${formatCurrency(subtotalUsd)}
@@ -967,7 +967,7 @@ const NewVisit: React.FC = () => {
                 {totalDueUsd > 0 && (
                   <div className="flex items-center justify-between py-1">
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {t("newVisit.totalDue")} (USD)
+                      {t("newVisit.totalDue")} ($)
                     </p>
                     <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
                       ${formatCurrency(totalDueUsd)}
@@ -988,7 +988,7 @@ const NewVisit: React.FC = () => {
                 {outstandingUsd > 0 && (
                   <div className="flex items-center justify-between py-1 mt-2">
                     <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      {t("newVisit.outstanding")} (USD)
+                      {t("newVisit.outstanding")} ($)
                     </p>
                     <p className="text-lg font-bold text-red-600 dark:text-red-400">
                       ${formatCurrency(outstandingUsd)}

@@ -1163,7 +1163,7 @@ const NewPatient: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <BillingStatusIcon isActive={discountUsd > 0} />
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t("newPatient.discountUsd", "Discount (USD)")}
+                          {t("newPatient.discountUsd", "Discount ($)")}
                         </p>
                       </div>
                       <div className="relative w-36">
@@ -1171,7 +1171,7 @@ const NewPatient: React.FC = () => {
                           type="number"
                           placeholder={t(
                             "newPatient.discountUsd",
-                            "USD Discount",
+                            "$ Discount",
                           )}
                           onChange={(e) =>
                             handlePatientVisitChange(
@@ -1229,7 +1229,7 @@ const NewPatient: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <BillingStatusIcon isActive={paidAmountUsd > 0} />
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t("newPatient.paidAmountUsd", "Paid (USD)")}
+                          {t("newPatient.paidAmountUsd", "Paid ($)")}
                         </p>
                       </div>
                       <div className="relative w-36">
@@ -1237,7 +1237,7 @@ const NewPatient: React.FC = () => {
                           type="number"
                           placeholder={t(
                             "newPatient.paidAmountUsd",
-                            "USD Paid",
+                            "$ Paid",
                           )}
                           onChange={(e) =>
                             handlePatientVisitChange(
@@ -1336,7 +1336,9 @@ const NewPatient: React.FC = () => {
                       </p>
                     </div>
                   )}
-                  <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
+                  {selectedProcedures.length > 0 && (
+                    <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
+                  )}
                   {totalDueAfn > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -1357,7 +1359,9 @@ const NewPatient: React.FC = () => {
                       </p>
                     </div>
                   )}
-                  <div className="mt-2 border-t-2 border-amber-500" />
+                  {selectedProcedures.length > 0 && (
+                    <div className="mt-2 border-t-2 border-amber-500" />
+                  )}
                   {outstandingAfn > 0 && (
                     <div className="flex justify-between items-center py-1 mt-2">
                       <p className="text-sm font-bold text-gray-900 dark:text-white">

@@ -77,7 +77,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               className="px-3 py-2 border rounded-md text-sm"
             >
               <option value="AFN">AFN</option>
-              <option value="USD">USD</option>
+              <option value="USD">$</option>
             </select>
           </div>
           <p className="text-xs text-gray-500 mt-1">

@@ -245,9 +245,11 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                               </div>
                               <div className="flex items-center gap-3 ml-4">
                                 <span className="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                                  {entry.procedure.totalPriceAfn.toLocaleString()} AFN
+                                  {entry.procedure.totalPriceAfn > 0 && (
+                                    <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
+                                  )}
                                   {entry.procedure.totalPriceUsd > 0 && (
-                                    <> / {entry.procedure.totalPriceUsd.toLocaleString()} USD</>
+                                    <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
                                   )}
                                 </span>
                                 <button
@@ -300,27 +302,33 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                     <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.unitPrice", "Unit Price")}</p>
                                       <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                        {entry.procedure.unitPriceAfn.toLocaleString()} AFN
-                                        {entry.procedure.unitPriceUsd > 0 && (
-                                          <> / {entry.procedure.unitPriceUsd.toLocaleString()} USD</>
-                                        )}
+                                        {entry.procedure.totalPriceAfn > 0 && (
+                                      <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
+                                    )}
+                                    {entry.procedure.totalPriceUsd > 0 && (
+                                    <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
+                                      )}
                                       </p>
                                     </div>
                                     <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.subtotal", "Subtotal")}</p>
                                       <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                        {(entry.procedure.unitPriceAfn * entry.procedure.quantity).toLocaleString()} AFN
+                                        {entry.procedure.unitPriceAfn > 0 && (
+                                          <>{(entry.procedure.unitPriceAfn * entry.procedure.quantity).toLocaleString()} AFN</>
+                                        )}
                                         {entry.procedure.unitPriceUsd > 0 && (
-                                          <> / {(entry.procedure.unitPriceUsd * entry.procedure.quantity).toLocaleString()} USD</>
+                                          <>{(entry.procedure.unitPriceUsd * entry.procedure.quantity).toLocaleString()} $</>
                                         )}
                                       </p>
                                     </div>
                                     <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.totalDue", "Total Due")}</p>
                                       <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">
-                                        {entry.procedure.totalPriceAfn.toLocaleString()} AFN
+                                        {entry.procedure.totalPriceAfn > 0 && (
+                                          <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
+                                        )}
                                         {entry.procedure.totalPriceUsd > 0 && (
-                                          <> / {entry.procedure.totalPriceUsd.toLocaleString()} USD</>
+                                          <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
                                         )}
                                       </p>
                                     </div>

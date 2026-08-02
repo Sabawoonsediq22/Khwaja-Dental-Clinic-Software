@@ -140,33 +140,33 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
         <div className="space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/70">
           {totals.subtotalAfn > 0 && (
             <SummaryRow
-              label={`${t("receipt.subtotal")} (AFN)`}
+              label={`${t("receipt.subtotal")}`}
               value={formatCurrency(totals.subtotalAfn, "AFN")}
             />
           )}
           {totals.subtotalUsd > 0 && (
             <SummaryRow
-              label={`${t("receipt.subtotal")} (USD)`}
+              label={`${t("receipt.subtotal")}`}
               value={formatCurrency(totals.subtotalUsd, "USD")}
             />
           )}
           {totals.discountAfn > 0 && (
             <SummaryRow
-              label={`${t("receipt.discount")} (AFN)`}
+              label={`${t("receipt.discount")}`}
               value={formatCurrency(totals.discountAfn, "AFN")}
               valueClassName="text-red-600 dark:text-red-400"
             />
           )}
           {totals.discountUsd > 0 && (
             <SummaryRow
-              label={`${t("receipt.discount")} (USD)`}
+              label={`${t("receipt.discount")}`}
               value={formatCurrency(totals.discountUsd, "USD")}
               valueClassName="text-red-600 dark:text-red-400"
             />
           )}
           {totals.totalAfn > 0 && (
             <SummaryRow
-              label={`${t("receipt.totalAmount")} (AFN)`}
+              label={`${t("receipt.totalAmount")}`}
               value={formatCurrency(totals.totalAfn, "AFN")}
               labelClassName="text-lg font-bold text-teal-700 dark:text-teal-300"
               valueClassName="text-lg font-black text-teal-700 dark:text-teal-300"
@@ -174,7 +174,7 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
           )}
           {totals.totalUsd > 0 && (
             <SummaryRow
-              label={`${t("receipt.totalAmount")} (USD)`}
+              label={`${t("receipt.totalAmount")}`}
               value={formatCurrency(totals.totalUsd, "USD")}
               labelClassName="text-lg font-bold text-teal-700 dark:text-teal-300"
               valueClassName="text-lg font-black text-teal-700 dark:text-teal-300"
@@ -182,14 +182,14 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
           )}
           {totals.paidAfn > 0 && (
             <SummaryRow
-              label={`${t("receipt.paidAmountCash")} (AFN)`}
+              label={`${t("receipt.paidAmountCash")}`}
               value={formatCurrency(totals.paidAfn, "AFN")}
               valueClassName="font-semibold text-teal-700 dark:text-teal-300"
             />
           )}
           {totals.paidUsd > 0 && (
             <SummaryRow
-              label={`${t("receipt.paidAmountCash")} (USD)`}
+              label={`${t("receipt.paidAmountCash")}`}
               value={formatCurrency(totals.paidUsd, "USD")}
               valueClassName="font-semibold text-teal-700 dark:text-teal-300"
             />
@@ -197,7 +197,7 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
           <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
           {totals.outstandingAfn > 0 && (
             <SummaryRow
-              label={`${t("receipt.outstandingBalance")} (AFN)`}
+              label={`${t("receipt.outstandingBalance")}`}
               value={formatCurrency(totals.outstandingAfn, "AFN")}
               labelClassName="text-lg font-bold text-red-600 dark:text-red-400"
               valueClassName="text-xl font-black text-red-600 dark:text-red-400"
@@ -206,7 +206,7 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
           )}
           {totals.outstandingUsd > 0 && (
             <SummaryRow
-              label={`${t("receipt.outstandingBalance")} (USD)`}
+              label={`${t("receipt.outstandingBalance")}`}
               value={formatCurrency(totals.outstandingUsd, "USD")}
               labelClassName="text-lg font-bold text-red-600 dark:text-red-400"
               valueClassName="text-xl font-black text-red-600 dark:text-red-400"
