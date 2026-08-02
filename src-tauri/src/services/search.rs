@@ -130,7 +130,7 @@ impl SearchService {
 
         // Treatments (via procedures joined to visits)
         let treatments: Vec<GlobalSearchTreatment> = sqlx::query_as(
-            "SELECT DISTINCT p.id, p.name, p.additional_note, p.procedure_price,
+            "SELECT DISTINCT p.id, p.name, p.additional_note,
                     COALESCE(p.procedure_price_afn, 0) as procedure_price_afn,
                     COALESCE(p.procedure_price_usd, 0) as procedure_price_usd,
                     p.visit_id,
@@ -154,7 +154,7 @@ impl SearchService {
                 subtitle: if let Some(practitioner) = t.practitioner_name {
                     format!("Practitioner: {}", practitioner)
                 } else {
-                    format!("Price: {}", t.procedure_price)
+                    format!("Price: {} AFN / {} USD", t.procedure_price_afn, t.procedure_price_usd)
                 },
                 route: Some(format!("/treatments/{}", t.id)),
             });

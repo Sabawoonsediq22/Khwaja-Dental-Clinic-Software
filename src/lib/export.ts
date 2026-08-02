@@ -178,7 +178,7 @@ export async function exportTreatmentReport(format: ReportFormat): Promise<void>
 
   const rows = procedures.map((p) => [
     p.name,
-    p.price.toFixed(2),
+    `AFN: ${p.procedure_price_afn.toFixed(2)} / USD: ${p.procedure_price_usd.toFixed(2)}`,
     p.additional_note ?? "",
     formatDate(p.created_at),
   ]);

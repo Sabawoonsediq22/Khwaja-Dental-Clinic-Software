@@ -29,8 +29,6 @@ export interface ReceiptProcedure {
   procedureName: string;
   additionalNote?: string | null;
   quantity: number;
-  unitPrice: number;
-  totalPrice: number;
   unitPriceAfn: number;
   unitPriceUsd: number;
   totalPriceAfn: number;

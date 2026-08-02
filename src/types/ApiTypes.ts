@@ -123,7 +123,6 @@ export interface CreatePatientInput {
 export interface CreateProcedureWithTreatmentInput {
   procedure_name: string;
   procedure_additional_note?: string | null;
-  procedure_price: number;
   procedure_price_afn: number;
   procedure_price_usd: number;
   number_of_procedures: number;
@@ -163,7 +162,6 @@ export interface CreateProcedureInput {
   visit_id: string;
   name: string;
   additional_note?: string | null;
-  procedure_price: number;
   procedure_price_afn: number;
   procedure_price_usd: number;
 }
@@ -188,8 +186,10 @@ export interface TreatmentProcedure {
   procedure_name: string;
   procedure_additional_note: string | null;
   number_of_procedures: number;
-  unit_price: number;
-  total_price: number;
+  unit_price_afn: number;
+  unit_price_usd: number;
+  total_price_afn: number;
+  total_price_usd: number;
   performed_at: string;
   teeth: TreatmentTooth[];
   xrays: string[];
@@ -220,7 +220,6 @@ export interface Procedure {
   id: string;
   name: string;
   additional_note?: string | null;
-  price: number;
   procedure_price_afn: number;
   procedure_price_usd: number;
   created_at: string;
@@ -289,8 +288,6 @@ export interface ReceiptProcedure {
   procedureName: string;
   additionalNote?: string | null;
   quantity: number;
-  unitPrice: number;
-  totalPrice: number;
   unitPriceAfn: number;
   unitPriceUsd: number;
   totalPriceAfn: number;

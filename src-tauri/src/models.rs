@@ -125,10 +125,8 @@ pub struct TreatmentProcedure {
     pub procedure_name: String,
     pub procedure_additional_note: Option<String>,
     pub number_of_procedures: i32,
-    pub unit_price: f64,
     pub unit_price_afn: f64,
     pub unit_price_usd: f64,
-    pub total_price: f64,
     pub total_price_afn: f64,
     pub total_price_usd: f64,
     pub performed_at: String,
@@ -152,8 +150,6 @@ pub struct Procedure {
     pub id: String,
     pub name: String,
     pub additional_note: Option<String>,
-    #[serde(rename = "price")]
-    pub procedure_price: f64,
     #[sqlx(default)]
     pub procedure_price_afn: f64,
     #[sqlx(default)]
@@ -207,8 +203,6 @@ pub struct InvoiceItem {
     pub treatment_record_id: Option<String>,
     pub procedure_name: String,
     pub quantity: i32,
-    pub unit_price: f64,
-    pub total_price: f64,
     #[sqlx(default)]
     pub unit_price_afn: f64,
     #[sqlx(default)]
@@ -295,8 +289,6 @@ pub struct ReceiptProcedure {
     pub procedure_name: String,
     pub additional_note: Option<String>,
     pub quantity: i32,
-    pub unit_price: f64,
-    pub total_price: f64,
     #[sqlx(default)]
     pub unit_price_afn: f64,
     #[sqlx(default)]
@@ -510,7 +502,6 @@ pub struct CreatePatientInput {
 pub struct CreateProcedureWithTreatmentInput {
     pub procedure_name: String,
     pub procedure_additional_note: Option<String>,
-    pub procedure_price: f64,
     pub procedure_price_afn: f64,
     pub procedure_price_usd: f64,
     pub number_of_procedures: i32,
@@ -549,7 +540,6 @@ pub struct CreateProcedureInput {
     pub visit_id: String,
     pub name: String,
     pub additional_note: Option<String>,
-    pub procedure_price: f64,
     pub procedure_price_afn: f64,
     pub procedure_price_usd: f64,
 }
@@ -698,7 +688,6 @@ pub struct GlobalSearchTreatment {
     pub id: String,
     pub name: String,
     pub additional_note: Option<String>,
-    pub procedure_price: f64,
     #[sqlx(default)]
     pub procedure_price_afn: f64,
     #[sqlx(default)]

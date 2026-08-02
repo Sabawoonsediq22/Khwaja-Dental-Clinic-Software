@@ -76,7 +76,7 @@ const toTreatmentEntries = (
             : undefined,
         date: visit.visit_date,
         time: procedure.performed_at || visit.visit_date,
-        cost: procedure.total_price,
+        cost: procedure.total_price_afn + procedure.total_price_usd,
         status:
           visit.status === "Open" ||
           visit.status === "Completed" ||
@@ -92,8 +92,10 @@ const toTreatmentEntries = (
             name: procedure.procedure_name,
             additional_note: procedure.procedure_additional_note ?? undefined,
             quantity: procedure.number_of_procedures,
-            unit_price: procedure.unit_price,
-            total_price: procedure.total_price,
+            unit_price_afn: procedure.unit_price_afn,
+            unit_price_usd: procedure.unit_price_usd,
+            total_price_afn: procedure.total_price_afn,
+            total_price_usd: procedure.total_price_usd,
             tooth_numbers: procedure.teeth.map((tooth) => tooth.tooth_number),
           },
         ],

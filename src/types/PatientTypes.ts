@@ -89,8 +89,10 @@ export interface TreatmentEntry {
     name: string;
     additional_note?: string;
     quantity: number;
-    unit_price: number;
-    total_price: number;
+    unit_price_afn: number;
+    unit_price_usd: number;
+    total_price_afn: number;
+    total_price_usd: number;
     tooth_numbers?: number[];
   }[];
 }

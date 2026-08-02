@@ -36,8 +36,6 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
       treatmentRecordId: "TR-MOCK-1",
       procedureName: "Root Canal Treatment",
       quantity: 1,
-      unitPrice: 5000,
-      totalPrice: 5000,
       unitPriceAfn: 5000,
       unitPriceUsd: 0,
       totalPriceAfn: 5000,
@@ -49,8 +47,6 @@ export const MOCK_RECEIPT_DATA: ReceiptData = {
       treatmentRecordId: "TR-MOCK-2",
       procedureName: "Zirconium Crown",
       quantity: 2,
-      unitPrice: 1500,
-      totalPrice: 3000,
       unitPriceAfn: 0,
       unitPriceUsd: 1500,
       totalPriceAfn: 0,
@@ -199,7 +195,7 @@ export const buildReceiptDownloadHtml = (receipt: ReceiptData) => `<!doctype htm
     </div>
     <table>
       <thead><tr><th>Procedure</th><th class="money">Price</th></tr></thead>
-      <tbody>${receipt.procedures.map((procedure) => `<tr><td>${getProcedureLabel(procedure)}</td><td class="money">${formatCurrency(procedure.totalPrice, receipt.currency)}</td></tr>`).join("")}</tbody>
+      <tbody>${receipt.procedures.map((procedure) => `<tr><td>${getProcedureLabel(procedure)}</td><td class="money">${receipt.currency === "USD" ? formatCurrency(procedure.totalPriceUsd, "USD") : formatCurrency(procedure.totalPriceAfn, "AFN")}</td></tr>`).join("")}</tbody>
     </table>
     <div class="divider"></div>
     <div class="meta">

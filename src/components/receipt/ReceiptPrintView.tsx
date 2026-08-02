@@ -120,7 +120,9 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
-                    {formatCurrency(procedure.totalPrice, receipt.currency)}
+                    {receipt.currency === "USD"
+                      ? formatCurrency(procedure.totalPriceUsd, "USD")
+                      : formatCurrency(procedure.totalPriceAfn, "AFN")}
                   </td>
                 </tr>
               ))}

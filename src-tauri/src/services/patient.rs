@@ -199,7 +199,6 @@ impl PatientService {
                     &visit_id,
                     Some(proc.procedure_name.as_str()),
                     proc.procedure_additional_note.as_deref(),
-                    Some(proc.procedure_price),
                     Some(proc.procedure_price_afn),
                     Some(proc.procedure_price_usd),
                     &now,
@@ -340,7 +339,6 @@ impl PatientService {
         visit_id: &str,
         name: Option<&str>,
         additional_note: Option<&str>,
-        price: Option<f64>,
         price_afn: Option<f64>,
         price_usd: Option<f64>,
         now: &str,
@@ -348,21 +346,19 @@ impl PatientService {
         let Some(name) = Self::trimmed_optional(name) else {
             return Ok(None);
         };
-        let price = price.filter(|price| *price >= 0.0).unwrap_or(0.0);
         let price_afn = price_afn.filter(|p| *p >= 0.0).unwrap_or(0.0);
         let price_usd = price_usd.filter(|p| *p >= 0.0).unwrap_or(0.0);
         let additional_note = Self::trimmed_optional(additional_note);
         let id = format!("PROC-{}", Uuid::new_v4().simple());
 
         sqlx::query(
-            "INSERT INTO procedures (id, visit_id, name, additional_note, procedure_price, procedure_price_afn, procedure_price_usd, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO procedures (id, visit_id, name, additional_note, procedure_price_afn, procedure_price_usd, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&id)
         .bind(visit_id)
         .bind(&name)
         .bind(additional_note)
-        .bind(price)
         .bind(price_afn)
         .bind(price_usd)
         .bind(now)
@@ -429,9 +425,8 @@ impl PatientService {
         discount_afn: f64,
         discount_usd: f64,
     ) -> AppResult<Invoice> {
-        let row: (f64, f64, f64) = sqlx::query_as(
+        let row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(p.procedure_price * tr.number_of_procedures), 0),
                COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0),
                COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0)
              FROM treatment_records tr
@@ -442,9 +437,8 @@ impl PatientService {
         .fetch_one(&mut **tx)
         .await?;
 
-        let subtotal = row.0;
-        let subtotal_afn = row.1;
-        let subtotal_usd = row.2;
+        let subtotal_afn = row.0;
+        let subtotal_usd = row.1;
 
         let total_afn = (subtotal_afn - discount_afn).max(0.0);
         let total_usd = (subtotal_usd - discount_usd).max(0.0);

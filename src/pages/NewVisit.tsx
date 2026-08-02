@@ -307,7 +307,6 @@ const NewVisit: React.FC = () => {
           visit_id: createdVisit.id,
           name: proc.procedureName,
           additional_note: proc.additionalNotes?.trim() || null,
-          procedure_price: proc.procedurePrice,
           procedure_price_afn: proc.priceAfn,
           procedure_price_usd: proc.priceUsd,
         };

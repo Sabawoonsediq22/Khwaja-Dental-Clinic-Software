@@ -421,7 +421,6 @@ const NewPatient: React.FC = () => {
         selectedProcedures.map((proc) => ({
           procedure_name: proc.procedureName,
           procedure_additional_note: proc.additionalNotes?.trim() || null,
-          procedure_price: proc.procedurePrice,
           procedure_price_afn: proc.priceAfn,
           procedure_price_usd: proc.priceUsd,
           number_of_procedures: Math.max(proc.numberOfProcedures, 1),
@@ -1185,7 +1184,7 @@ const NewPatient: React.FC = () => {
                           disabled={isSubmitting}
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          USD
+                          $
                         </span>
                       </div>
                     </div>
@@ -1251,7 +1250,7 @@ const NewPatient: React.FC = () => {
                           disabled={isSubmitting}
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-                          USD
+                          $
                         </span>
                       </div>
                     </div>
@@ -1266,6 +1265,17 @@ const NewPatient: React.FC = () => {
                       {t("newPatient.billingSummary")}
                     </p>
                   </div>
+                  {selectedProcedures.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                      <BillingIcon className="h-10 w-10 text-amber-300 dark:text-amber-600 mb-2" />
+                      <p className="text-sm text-amber-600/70 dark:text-amber-400/60">
+                        {t("newPatient.noProceduresAdded")}
+                      </p>
+                      <p className="text-xs text-amber-500/50 dark:text-amber-400/40 mt-1">
+                        {t("newPatient.billingSummaryEmpty", "Add procedures to see billing details")}
+                      </p>
+                    </div>
+                  ) : null}
                   {subtotalAfn > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
@@ -1279,7 +1289,7 @@ const NewPatient: React.FC = () => {
                   {subtotalUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.subtotal")} (USD)
+                        {t("newPatient.subtotal")} ($)
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         ${formatCurrency(subtotalUsd)}
@@ -1299,7 +1309,7 @@ const NewPatient: React.FC = () => {
                   {discountUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.discountUsd", "Discount (USD)")}
+                        {t("newPatient.discountUsd", "Discount ($)")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         ${formatCurrency(discountUsd)}
@@ -1319,7 +1329,7 @@ const NewPatient: React.FC = () => {
                   {paidAmountUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.paidAmountUsd", "Paid (USD)")}
+                        {t("newPatient.paidAmountUsd", "Paid ($)")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         ${formatCurrency(paidAmountUsd)}
@@ -1340,7 +1350,7 @@ const NewPatient: React.FC = () => {
                   {totalDueUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {t("newPatient.totalDue")} (USD)
+                        {t("newPatient.totalDue")} ($)
                       </p>
                       <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
                         ${formatCurrency(totalDueUsd)}
@@ -1361,7 +1371,7 @@ const NewPatient: React.FC = () => {
                   {outstandingUsd > 0 && (
                     <div className="flex justify-between items-center py-1 mt-2">
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
-                        {t("newPatient.outstanding")} (USD)
+                        {t("newPatient.outstanding")} ($)
                       </p>
                       <p className="text-lg font-bold text-red-600 dark:text-red-400">
                         ${formatCurrency(outstandingUsd)}

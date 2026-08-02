@@ -47,8 +47,8 @@ CREATE TABLE procedures (
     visit_id TEXT NOT NULL REFERENCES visits(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     additional_note TEXT,
-    procedure_price_afn REAL NOT NULL DEFAULT 0 CHECK (procedure_price_afn >= 0),
-    procedure_price_usd REAL NOT NULL DEFAULT 0 CHECK (procedure_price_usd >= 0),
+    procedure_price_afn REAL DEFAULT 0 CHECK (procedure_price_afn >= 0),
+    procedure_price_usd REAL DEFAULT 0 CHECK (procedure_price_usd >= 0),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );

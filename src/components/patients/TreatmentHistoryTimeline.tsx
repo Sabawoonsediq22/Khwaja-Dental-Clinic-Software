@@ -10,7 +10,7 @@ import TreatmentHistoryFilterModal from "./TreatmentHistoryFilterModal";
 import TreatmentHistoryDownloadModal from "./TreatmentHistoryDownloadModal";
 import TreatmentStatusChangeModal from "./TreatmentStatusChangeModal";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { getCurrencySymbol } from "../common/getCurrencySymbol";
+
 import { statusConfig } from "../common/badgeStatusConfig";
 
 const isTauri = typeof window !== "undefined" && "__TAURI__" in window;
@@ -36,8 +36,10 @@ interface FlattenedEntry {
     toothNumbers: number[];
     additionalNote: string | undefined;
     quantity: number;
-    unitPrice: number;
-    totalPrice: number;
+    unitPriceAfn: number;
+    unitPriceUsd: number;
+    totalPriceAfn: number;
+    totalPriceUsd: number;
   };
   expandKey: string;
 }
@@ -58,8 +60,10 @@ const flattenTreatments = (treatments: TreatmentEntry[]): FlattenedEntry[] => {
           toothNumbers: procedure.tooth_numbers ?? [],
           additionalNote: procedure.additional_note,
           quantity: procedure.quantity,
-          unitPrice: procedure.unit_price,
-          totalPrice: procedure.total_price,
+          unitPriceAfn: procedure.unit_price_afn,
+          unitPriceUsd: procedure.unit_price_usd,
+          totalPriceAfn: procedure.total_price_afn,
+          totalPriceUsd: procedure.total_price_usd,
         },
         expandKey: `${treatment.id}-proc-${index}`,
       });
@@ -241,8 +245,10 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                               </div>
                               <div className="flex items-center gap-3 ml-4">
                                 <span className="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                                  {entry.procedure.totalPrice.toLocaleString()}{" "}
-                                  {getCurrencySymbol(entry.procedure.name)}
+                                  {entry.procedure.totalPriceAfn.toLocaleString()} AFN
+                                  {entry.procedure.totalPriceUsd > 0 && (
+                                    <> / {entry.procedure.totalPriceUsd.toLocaleString()} USD</>
+                                  )}
                                 </span>
                                 <button
                                   onClick={() => toggleExpand(entry.expandKey)}
@@ -294,20 +300,28 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                     <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.unitPrice", "Unit Price")}</p>
                                       <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                        {entry.procedure.unitPrice.toLocaleString()} {getCurrencySymbol(entry.procedure.name)}
+                                        {entry.procedure.unitPriceAfn.toLocaleString()} AFN
+                                        {entry.procedure.unitPriceUsd > 0 && (
+                                          <> / {entry.procedure.unitPriceUsd.toLocaleString()} USD</>
+                                        )}
                                       </p>
                                     </div>
                                     <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.subtotal", "Subtotal")}</p>
                                       <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                        {(entry.procedure.unitPrice * entry.procedure.quantity).toLocaleString()} {getCurrencySymbol(entry.procedure.name)}
+                                        {(entry.procedure.unitPriceAfn * entry.procedure.quantity).toLocaleString()} AFN
+                                        {entry.procedure.unitPriceUsd > 0 && (
+                                          <> / {(entry.procedure.unitPriceUsd * entry.procedure.quantity).toLocaleString()} USD</>
+                                        )}
                                       </p>
                                     </div>
                                     <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.totalDue", "Total Due")}</p>
                                       <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">
-                                        {entry.procedure.totalPrice.toLocaleString()} {" "}
-                                        {getCurrencySymbol(entry.procedure.name)}
+                                        {entry.procedure.totalPriceAfn.toLocaleString()} AFN
+                                        {entry.procedure.totalPriceUsd > 0 && (
+                                          <> / {entry.procedure.totalPriceUsd.toLocaleString()} USD</>
+                                        )}
                                       </p>
                                     </div>
                                   </div>

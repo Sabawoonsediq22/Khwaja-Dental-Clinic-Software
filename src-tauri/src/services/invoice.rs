@@ -221,9 +221,8 @@ impl InvoiceService {
 
         let now = Utc::now().to_rfc3339();
 
-        let row: (f64, f64, f64) = sqlx::query_as(
+        let row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(p.procedure_price * tr.number_of_procedures), 0),
                COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0),
                COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0)
              FROM treatment_records tr
@@ -234,8 +233,8 @@ impl InvoiceService {
         .fetch_one(pool)
         .await?;
 
-        let subtotal_afn = row.1;
-        let subtotal_usd = row.2;
+        let subtotal_afn = row.0;
+        let subtotal_usd = row.1;
 
         let total_afn = (subtotal_afn - input.discount_afn).max(0.0);
         let total_usd = (subtotal_usd - input.discount_usd).max(0.0);
@@ -359,8 +358,6 @@ impl InvoiceService {
                     p.name as procedure_name,
                     p.additional_note,
                     tr.number_of_procedures as quantity,
-                    p.procedure_price as unit_price,
-                    (p.procedure_price * tr.number_of_procedures) as total_price,
                     p.procedure_price_afn as unit_price_afn,
                     p.procedure_price_usd as unit_price_usd,
                     (p.procedure_price_afn * tr.number_of_procedures) as total_price_afn,
