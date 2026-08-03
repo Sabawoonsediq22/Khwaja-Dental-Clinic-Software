@@ -126,13 +126,12 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
         onDoubleClick={handleDoubleClick}
         onContextMenu={handleContextMenu}
         className={cn(
-          "flex h-10 w-full select-none items-center",
-          "border-b",
+          "flex h-8 w-full select-none items-center",
           isDark
-            ? "bg-gray-800 border-[#3c3c3c] text-white"
-            : "bg-[#f3f3f3] border-[#d4d4d4] text-black",
+            ? "bg-gray-600 text-white"
+            : "bg-[#eafaf6] border-[#d4d4d4] text-black",
           !isFocused && (isDark ? "opacity-70" : "opacity-60"),
-          isRTL ? "pr-4" : "pr-2",
+          isRTL ? "pr-2" : "pr-2",
         )}
       >
         <div
@@ -145,16 +144,16 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
             <img
               src={clinicLogo}
               alt="Clinic Logo"
-              className="mx-2 h-5 w-5 object-contain shrink-0"
+              className="mx-[0.4rem] h-4 w-4 object-contain shrink-0"
             />
           )}
-          <span className="text-[13px] font-semibold leading-none tracking-tight select-none shrink-0">
+          <span className="text-[13px] leading-none tracking-tight select-none shrink-0">
             {t("product.name")}
           </span>
         </div>
 
         <div className="flex items-center justify-center px-4 shrink-0">
-          <TopHeaderSearch onClick={openSearch} className="h-7 w-96 lg:w-lg text-xs" />
+          <TopHeaderSearch onClick={openSearch} className="h-6 w-96 lg:w-lg text-xs" />
         </div>
 
         <div
@@ -170,7 +169,7 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
               buttonBase,
               isDark
                 ? "hover:bg-[#3c3c3c] active:bg-[#505050]"
-                : "hover:bg-[#e0e0e0] active:bg-[#cccccc]",
+                : "hover:bg-[#eeecec] active:bg-[#cccccc]",
             )}
           >
             <MinimizeIcon size="sm"/>
@@ -183,7 +182,7 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
               buttonBase,
               isDark
                 ? "hover:bg-[#3c3c3c] active:bg-[#505050]"
-                : "hover:bg-[#e0e0e0] active:bg-[#cccccc]",
+                : "hover:bg-[#eeecec] active:bg-[#cccccc]",
             )}
           >
             {isMaximized ? <RestoreIcon size="sm"/> : <MaximizeIcon size="sm"/>}
@@ -194,7 +193,7 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
             aria-label="Close"
             className={cn(
               buttonBase,
-              "hover:bg-[#e81123] hover:text-white active:bg-[#bf0f1d]",
+              "hover:bg-[#da0c1d] hover:text-white active:bg-[#bf0f1d]",
             )}
           >
             <CloseIcon size="sm"/>

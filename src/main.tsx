@@ -20,7 +20,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <QueryClientProvider client={queryClient}>
       <HashRouter>
         <App />
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-center" richColors />
       </HashRouter>
     </QueryClientProvider>
   </React.StrictMode>,

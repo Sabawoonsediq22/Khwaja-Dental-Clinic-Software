@@ -60,7 +60,7 @@ const BillingHeader: React.FC<BillingHeaderProps> = ({
             </span>
             <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
               {totalOutstandingAfn != null && totalOutstandingAfn > 0 ? `${totalOutstandingAfn.toLocaleString()} AFN` : `${totalOutstandingAmount.toLocaleString()} AFN`}
-              {totalOutstandingUsd != null && totalOutstandingUsd > 0 && ` + $${totalOutstandingUsd.toLocaleString()}`}
+              {totalOutstandingUsd != null && totalOutstandingUsd > 0 && ` | $${totalOutstandingUsd.toLocaleString()}`}
             </span>
           </div>
         </div>

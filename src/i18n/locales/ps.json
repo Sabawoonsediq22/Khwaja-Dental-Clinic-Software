@@ -98,11 +98,11 @@
       "add": "ناروغ زیات کړئ",
       "view": "کتل",
       "edit": "سمول",
-      "delete": "ړنګول",
+      "delete": "ډیلیټول",
       "newVisit": "نوې لیدنه",
       "addNew": "نوی ناروغ زیات کړئ",
       "saveChanges": "بدلونونه خوندي کړئ",
-      "deleting": "ړنګېږي..."
+      "deleting": "ډیلیټینګ..."
     },
     "filters": {
       "all": "ټول ناروغان",
@@ -306,8 +306,8 @@
     "closeDialog": "ډیالوګ وتړئ",
     "closeModal": "موډال وتړئ",
     "confirm": "تایید",
-    "delete": "ړنګول",
-    "deleting": "ړنګېږي...",
+    "delete": "ډیلیټول",
+    "deleting": "ډیلیټینګ...",
     "edit": "تغیرول"
   },
   "pagination": {
@@ -693,8 +693,8 @@
     "phoneNumber": "د تلیفون شمېره",
     "homeAddress": "کورنی پته",
     "noneRecorded": "هیڅ نه دی ثبت شوی",
-    "deletePatient": "ناروغ ړنګ کړئ",
-    "deleteConfirm": "آیا تاسو ډاډه یاست چې غواړئ {{name}} ړنګ کړئ؟",
+    "deletePatient": "ناروغ ډیلیټ کړئ",
+    "deleteConfirm": "آیا تاسو ډاډه یاست چې غواړئ {{name}} ډیلیټ کړئ؟",
     "deleteUndo": "دا کړنه نشي بیرته کېدای.",
     "saveChanges": "بدلونونه خوندي کړئ",
     "editPersonalInfo": "شخصي معلومات سم کړئ",
@@ -710,8 +710,8 @@
     "registeredSince": "له دې نیټې راهیسې ثبت شوی",
     "avatarFor": "د {{name}} لپاره انځور",
     "newVisit": "نوې لیدنه",
-    "delete": "ړنګول",
-    "deleteTitle": "ناروغ ړنګ کړئ",
+    "delete": "ډیلیټول",
+    "deleteTitle": "ناروغ ډیلیټ کړئ",
     "allergiesLabel": "حساسیتونه",
     "medicalConditionsLabel": "طبي حالتونه",
     "medicationsLabel": "اوسني درمل",
@@ -737,7 +737,7 @@
       "medicationsExample": "لکه: میټفورمین، لیسینوپریل"
     },
     "notifications": {
-      "deleted": "ناروغ په بریالیتوب سره ړنګ شو",
+      "deleted": "ناروغ په بریالیتوب سره ډیلیټ شو",
       "medicalUpdated": "طبي معلومات په بریالیتوب سره تازه شول",
       "medicalUpdateError": "د طبي معلوماتو په تازه کولو کې پاتې راغی",
       "statusUpdated": "د درملنې حالت ته تازه شو {{status}}",
@@ -872,9 +872,9 @@
     "successDesc": "{{count}} بیک اپ په بریالیتوب سره بشپړ شو",
     "failed": "بیک اپ ناکام شو",
     "failedDesc": "{{count}} بیک اپ ناکام شو",
-    "deleted": "د بیک اپ ریکارډ ړنګ شو",
-    "deleteError": "د بیک اپ په ړنګولو کې پاتې راغی",
-    "deleteConfirm": "آیا دا بیک اپ ریکارډ ړنګ کړم؟",
+    "deleted": "د بیک اپ ریکارډ ډیلیټ شو",
+    "deleteError": "د بیک اپ ډیلیټولو کې پاتې راغی",
+    "deleteConfirm": "آیا دا بیک اپ ریکارډ ډیلیټ کړم؟",
     "selectBackupFolder": "د بیک اپ خوندي کولو لپاره فولډر غوره کړئ",
     "history": "د بیک اپ تاریخ",
     "historyDesc": "د {{count}} بیک اپ ریکارډ(ونه) ښودل",

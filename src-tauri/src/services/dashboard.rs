@@ -11,9 +11,9 @@ impl DashboardService {
 
         let daily_revenue_row: (f64, f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(amount), 0.0),
+               
                COALESCE(SUM(amount_afn), 0.0),
-               COALESCE(SUM(amount_usd), 0.0)
+               
              FROM payments WHERE date(received_at) = ?"
         )
         .bind(&today)

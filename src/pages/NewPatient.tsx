@@ -1130,7 +1130,7 @@ const NewPatient: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <BillingStatusIcon isActive={discountAfn > 0} />
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t("newPatient.discountAfn", "Discount (AFN)")}
+                          {t("newPatient.discountAfn", "Discount")}
                         </p>
                       </div>
                       <div className="relative w-36">
@@ -1138,7 +1138,7 @@ const NewPatient: React.FC = () => {
                           type="number"
                           placeholder={t(
                             "newPatient.discountAfn",
-                            "AFN Discount",
+                            "Discount",
                           )}
                           onChange={(e) =>
                             handlePatientVisitChange(
@@ -1163,7 +1163,7 @@ const NewPatient: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <BillingStatusIcon isActive={discountUsd > 0} />
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t("newPatient.discountUsd", "Discount ($)")}
+                          {t("newPatient.discountUsd", "Discount")}
                         </p>
                       </div>
                       <div className="relative w-36">
@@ -1171,7 +1171,7 @@ const NewPatient: React.FC = () => {
                           type="number"
                           placeholder={t(
                             "newPatient.discountUsd",
-                            "$ Discount",
+                            "Discount",
                           )}
                           onChange={(e) =>
                             handlePatientVisitChange(
@@ -1196,7 +1196,7 @@ const NewPatient: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <BillingStatusIcon isActive={paidAmountAfn > 0} />
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t("newPatient.paidAmountAfn", "Paid (AFN)")}
+                          {t("newPatient.paidAmountAfn", "Paid")}
                         </p>
                       </div>
                       <div className="relative w-36">
@@ -1204,7 +1204,7 @@ const NewPatient: React.FC = () => {
                           type="number"
                           placeholder={t(
                             "newPatient.paidAmountAfn",
-                            "AFN Paid",
+                            "Paid",
                           )}
                           onChange={(e) =>
                             handlePatientVisitChange(
@@ -1229,7 +1229,7 @@ const NewPatient: React.FC = () => {
                       <div className="flex items-center gap-3">
                         <BillingStatusIcon isActive={paidAmountUsd > 0} />
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t("newPatient.paidAmountUsd", "Paid ($)")}
+                          {t("newPatient.paidAmountUsd", "Paid")}
                         </p>
                       </div>
                       <div className="relative w-36">
@@ -1237,7 +1237,7 @@ const NewPatient: React.FC = () => {
                           type="number"
                           placeholder={t(
                             "newPatient.paidAmountUsd",
-                            "$ Paid",
+                            "Paid",
                           )}
                           onChange={(e) =>
                             handlePatientVisitChange(
@@ -1279,17 +1279,17 @@ const NewPatient: React.FC = () => {
                   {subtotalAfn > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.subtotal")} ({billingCurrencySymbol})
+                        {t("newPatient.subtotal")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                        {formatCurrency(subtotalAfn)} {billingCurrencySymbol}
+                        {formatCurrency(subtotalAfn)} AFN
                       </p>
                     </div>
                   )}
                   {subtotalUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.subtotal")} ($)
+                        {t("newPatient.subtotal")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         ${formatCurrency(subtotalUsd)}
@@ -1299,7 +1299,7 @@ const NewPatient: React.FC = () => {
                   {discountAfn > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.discountAfn", "Discount (AFN)")}
+                        {t("newPatient.discountAfn", "Discount")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         {formatCurrency(discountAfn)} AFN
@@ -1309,7 +1309,7 @@ const NewPatient: React.FC = () => {
                   {discountUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.discountUsd", "Discount ($)")}
+                        {t("newPatient.discountUsd", "Discount")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         ${formatCurrency(discountUsd)}
@@ -1319,7 +1319,7 @@ const NewPatient: React.FC = () => {
                   {paidAmountAfn > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.paidAmountAfn", "Paid (AFN)")}
+                        {t("newPatient.paidAmountAfn", "Paid")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         {formatCurrency(paidAmountAfn)} AFN
@@ -1329,7 +1329,7 @@ const NewPatient: React.FC = () => {
                   {paidAmountUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {t("newPatient.paidAmountUsd", "Paid ($)")}
+                        {t("newPatient.paidAmountUsd", "Paid")}
                       </p>
                       <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
                         ${formatCurrency(paidAmountUsd)}
@@ -1342,17 +1342,17 @@ const NewPatient: React.FC = () => {
                   {totalDueAfn > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {t("newPatient.totalDue")} ({billingCurrencySymbol})
+                        {t("newPatient.totalDue")}
                       </p>
                       <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                        {formatCurrency(totalDueAfn)} {billingCurrencySymbol}
+                        {formatCurrency(totalDueAfn)} AFN
                       </p>
                     </div>
                   )}
                   {totalDueUsd > 0 && (
                     <div className="flex justify-between items-center py-1">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                        {t("newPatient.totalDue")} ($)
+                        {t("newPatient.totalDue")}
                       </p>
                       <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
                         ${formatCurrency(totalDueUsd)}
@@ -1365,17 +1365,17 @@ const NewPatient: React.FC = () => {
                   {outstandingAfn > 0 && (
                     <div className="flex justify-between items-center py-1 mt-2">
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
-                        {t("newPatient.outstanding")} ({billingCurrencySymbol})
+                        {t("newPatient.outstanding")}
                       </p>
                       <p className="text-lg font-bold text-red-600 dark:text-red-400">
-                        {formatCurrency(outstandingAfn)} {billingCurrencySymbol}
+                        {formatCurrency(outstandingAfn)} AFN
                       </p>
                     </div>
                   )}
                   {outstandingUsd > 0 && (
                     <div className="flex justify-between items-center py-1 mt-2">
                       <p className="text-sm font-bold text-gray-900 dark:text-white">
-                        {t("newPatient.outstanding")} ($)
+                        {t("newPatient.outstanding")}
                       </p>
                       <p className="text-lg font-bold text-red-600 dark:text-red-400">
                         ${formatCurrency(outstandingUsd)}
@@ -1404,7 +1404,6 @@ const NewPatient: React.FC = () => {
               variant="outline"
               onClick={() => navigate("/patients")}
               className="px-6 py-2 border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-              disabled={isSubmitting}
             >
               {t("newPatient.discardDraft")}
             </Button>

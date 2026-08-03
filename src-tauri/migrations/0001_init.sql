@@ -89,8 +89,8 @@ CREATE TABLE invoices (
 CREATE TABLE payments (
     id TEXT PRIMARY KEY,
     invoice_id TEXT NOT NULL REFERENCES invoices(id) ON DELETE CASCADE,
-    amount_afn REAL DEFAULT 0 CHECK(amount_afn > 0),
-    amount_usd REAL DEFAULT 0 CHECK(amount_usd > 0),
+    amount_afn REAL DEFAULT 0 CHECK(amount_afn >= 0),
+    amount_usd REAL DEFAULT 0 CHECK(amount_usd >= 0),
     method TEXT NOT NULL DEFAULT 'Cash',
     notes TEXT DEFAULT '',
     received_at TEXT NOT NULL DEFAULT (datetime('now'))

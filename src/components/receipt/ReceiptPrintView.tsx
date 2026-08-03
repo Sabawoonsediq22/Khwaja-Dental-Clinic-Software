@@ -10,6 +10,7 @@ import {
   getReceiptTotals,
 } from "./receiptUtils";
 import defaultLogo from "../../assets/favicon.svg";
+import { getCurrencySymbol } from "../common/getCurrencySymbol";
 
 interface ReceiptPrintViewProps {
   receipt?: ReceiptData | null;
@@ -120,9 +121,9 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
                     )}
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-gray-900 dark:text-white">
-                    {receipt.currency === "USD"
-                      ? formatCurrency(procedure.totalPriceUsd, "USD")
-                      : formatCurrency(procedure.totalPriceAfn, "AFN")}
+                    {procedure.unitPriceUsd > 0 && procedure.unitPriceUsd} {" "}
+                    {procedure.unitPriceAfn > 0 && procedure.unitPriceAfn} {" "}
+                    {getCurrencySymbol(procedure.procedureName)}
                   </td>
                 </tr>
               ))}
