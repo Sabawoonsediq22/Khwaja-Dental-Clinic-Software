@@ -9,12 +9,11 @@ impl DashboardService {
     pub async fn stats(pool: &SqlitePool) -> AppResult<DashboardStats> {
         let today = Utc::now().format("%Y-%m-%d").to_string();
 
-        let daily_revenue_row: (f64, f64, f64) = sqlx::query_as(
+        let daily_revenue_row: (f64, f64) = sqlx::query_as(
             "SELECT
-               
-               COALESCE(SUM(amount_afn), 0.0),
-               
-             FROM payments WHERE date(received_at) = ?"
+               COALESCE(SUM(paid_afn), 0.0),
+               COALESCE(SUM(paid_usd), 0.0)
+             FROM invoices WHERE date(issued_at) = ?"
         )
         .bind(&today)
         .fetch_one(pool)
@@ -52,12 +51,11 @@ impl DashboardService {
 
         let yesterday = (Utc::now() - Duration::days(1)).format("%Y-%m-%d").to_string();
 
-        let yesterday_revenue_row: (f64, f64, f64) = sqlx::query_as(
+        let yesterday_revenue_row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(amount), 0.0),
-               COALESCE(SUM(amount_afn), 0.0),
-               COALESCE(SUM(amount_usd), 0.0)
-             FROM payments WHERE date(received_at) = ?"
+               COALESCE(SUM(paid_afn), 0.0),
+               COALESCE(SUM(paid_usd), 0.0)
+             FROM invoices WHERE date(issued_at) = ?"
         )
         .bind(&yesterday)
         .fetch_one(pool)
@@ -78,18 +76,18 @@ impl DashboardService {
         .await?;
 
         Ok(DashboardStats {
-            daily_revenue: daily_revenue_row.0,
-            daily_revenue_afn: daily_revenue_row.1,
-            daily_revenue_usd: daily_revenue_row.2,
+            daily_revenue: daily_revenue_row.0 + daily_revenue_row.1,
+            daily_revenue_afn: daily_revenue_row.0,
+            daily_revenue_usd: daily_revenue_row.1,
             patients_today,
             outstanding_balance: outstanding_row.0,
             outstanding_balance_afn: outstanding_row.1,
             outstanding_balance_usd: outstanding_row.2,
             outstanding_invoices_count,
             procedures_performed,
-            yesterday_revenue: yesterday_revenue_row.0,
-            yesterday_revenue_afn: yesterday_revenue_row.1,
-            yesterday_revenue_usd: yesterday_revenue_row.2,
+            yesterday_revenue: yesterday_revenue_row.0 + yesterday_revenue_row.1,
+            yesterday_revenue_afn: yesterday_revenue_row.0,
+            yesterday_revenue_usd: yesterday_revenue_row.1,
             yesterday_patients,
             yesterday_procedures,
         })

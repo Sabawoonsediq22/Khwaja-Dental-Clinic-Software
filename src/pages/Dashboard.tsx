@@ -30,6 +30,12 @@ const formatAFN = (val: number) =>
     maximumFractionDigits: 2,
   }) + " AFN";
 
+const formatUSD = (val: number) =>
+  val.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }) + " $";
+
 const computeTrend = (
   today: number,
   yesterday: number,
@@ -97,9 +103,9 @@ const Dashboard: React.FC = () => {
 
     if (statsError || !stats) {
       return [
-        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0", icon: <CurrencyIcon size="lg" /> },
+        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0 AFN | 0 USD", icon: <CurrencyIcon size="lg" /> },
         { title: t("dashboard.stats.patientsToday", "Patients Today"), value: "0", icon: <PatientIcon size="lg" /> },
-        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: `0 ${t("billing.currency", "AFN")}`, secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" /> },
+        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN | 0 USD", secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" /> },
         { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), value: "00", icon: <ToothIcon size="lg" /> },
       ];
     }
@@ -115,9 +121,9 @@ const Dashboard: React.FC = () => {
             : <Badge variant="destructive" className="text-[10px] sm:text-xs font-bold px-2 py-0.5">{t("dashboard.high", "High")}</Badge>;
 
     return [
-      { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: formatAFN(stats.daily_revenue), icon: <CurrencyIcon size="lg" />, trend: computeTrend(stats.daily_revenue, stats.yesterday_revenue) },
+      { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: `${formatAFN(stats.daily_revenue_afn)} | ${formatUSD(stats.daily_revenue_usd)}`, icon: <CurrencyIcon size="lg" />, trend: computeTrend(stats.daily_revenue, stats.yesterday_revenue) },
       { title: t("dashboard.stats.patientsToday", "Patients Today"), value: String(stats.patients_today), icon: <PatientIcon size="lg" />, trend: computeTrend(stats.patients_today, stats.yesterday_patients) },
-      { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: formatAFN(stats.outstanding_balance), secondary: t("dashboard.invoiceCount", { count: stats.outstanding_invoices_count }), icon: <ClockIcon size="lg" />, badge: outstandingBadge },
+      { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: `${formatAFN(stats.outstanding_balance_afn)} | ${formatUSD(stats.outstanding_balance_usd)}`, secondary: t("dashboard.invoiceCount", { count: stats.outstanding_invoices_count }), icon: <ClockIcon size="lg" />, badge: outstandingBadge },
       { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), value: String(stats.procedures_performed).padStart(2, "0"), icon: <ToothIcon size="lg" />, trend: computeTrend(stats.procedures_performed, stats.yesterday_procedures) },
     ];
   }, [stats, statsLoading, statsError, t]);

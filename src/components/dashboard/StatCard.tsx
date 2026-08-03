@@ -20,7 +20,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, badge, trend, l
           <p className="text-[10px] sm:text-xs font-bold tracking-wide text-gray-500 dark:text-gray-400">
             {title}
           </p>
-          <p className="mt-2 text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+          <p className="mt-2 text-xl font-bold text-gray-900 dark:text-white tracking-tight">
             {loading ? (
               <span className="inline-flex items-center gap-2">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />

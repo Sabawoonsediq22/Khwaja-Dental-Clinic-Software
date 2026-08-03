@@ -7,7 +7,7 @@ export type StatisticsCardVariant = "success" | "info" | "warning" | "destructiv
 export interface StatisticsCardProps {
   label: string;
   value: string | number;
-  subtitle?: string;
+  subtitle?: string | boolean;
   variant?: StatisticsCardVariant;
   icon?: "check" | "clock" | "currency" | "custom";
   className?: string;

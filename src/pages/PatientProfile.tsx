@@ -398,12 +398,7 @@ const PatientProfile: React.FC = () => {
   const registeredDate = formatDate(patient.created_at);
   const totalSpentStatus =
     statistics?.outstanding_balance === 0
-      ? t("patientProfile.fullyPaid")
-      : statistics?.outstanding_balance
-        ? t("patientProfile.amountOutstanding", {
-            amount: statistics?.outstanding_balance.toLocaleString(),
-          })
-        : t("patientProfile.noVisits");
+      && t("patientProfile.fullyPaid")
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-900">
@@ -469,9 +464,7 @@ const PatientProfile: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <StatisticsCard
           label={t("patientProfile.totalSpentLabel")}
-          value={t("patientProfile.amountAfn", {
-            amount: (statistics?.total_spent || 0).toLocaleString(),
-          })}
+          value={`${(statistics?.total_spent_afn || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} AFN | ${(statistics?.total_spent_usd || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`}
           subtitle={totalSpentStatus}
           variant="success"
           icon="check"
