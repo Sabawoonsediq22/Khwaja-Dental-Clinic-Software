@@ -608,22 +608,33 @@ const NewPatient: React.FC = () => {
               </div>
 
               <div className="flex flex-col md:flex-row md:gap-4">
-                <FormField label={t("newPatient.gender")} className="flex-1">
-                  <Select
-                    value={patient.gender}
-                    onChange={(e) =>
-                      handlePatientChange("gender", e.target.value)
-                    }
-                    disabled={isSubmitting}
-                    className="w-full"
-                  >
-                    <option value="">
-                      -- {t("newPatient.selectGender")} --
-                    </option>
-                    <option value="Male">{t("newPatient.male")}</option>
-                    <option value="Female">{t("newPatient.female")}</option>
-                    <option value="Other">{t("newPatient.other")}</option>
-                  </Select>
+                <FormField label={t("newPatient.gender")} className="flex-1" error={errors.gender}>
+                  <div className="flex items-center gap-6 h-[38px]">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="Male"
+                        checked={patient.gender === "Male"}
+                        onChange={() => handlePatientChange("gender", "Male")}
+                        disabled={isSubmitting}
+                        className="h-4 w-4 text-primary border-gray-300 dark:border-gray-600 focus:ring-primary"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.male")}</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="gender"
+                        value="Female"
+                        checked={patient.gender === "Female"}
+                        onChange={() => handlePatientChange("gender", "Female")}
+                        disabled={isSubmitting}
+                        className="h-4 w-4 text-primary border-gray-300 dark:border-gray-600 focus:ring-primary"
+                      />
+                      <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.female")}</span>
+                    </label>
+                  </div>
                 </FormField>
 
                 <FormField

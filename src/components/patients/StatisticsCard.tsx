@@ -83,7 +83,7 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             {label}
           </p>
-          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+          <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
             {value}
           </p>
           {subtitle && (
