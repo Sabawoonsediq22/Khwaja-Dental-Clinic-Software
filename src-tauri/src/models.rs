@@ -699,7 +699,6 @@ pub struct GlobalSearchTreatment {
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct GlobalSearchPayment {
     pub id: String,
-    pub amount: f64,
     #[sqlx(default)]
     pub amount_afn: f64,
     #[sqlx(default)]

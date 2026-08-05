@@ -162,7 +162,7 @@ impl SearchService {
 
         // Payments
         let payments: Vec<GlobalSearchPayment> = sqlx::query_as(
-            "SELECT pay.id, pay.amount,
+            "SELECT pay.id,
                     COALESCE(pay.amount_afn, 0) as amount_afn,
                     COALESCE(pay.amount_usd, 0) as amount_usd,
                     pay.received_at, p.full_name as patient_name
@@ -183,7 +183,7 @@ impl SearchService {
                 id: pay.id.clone(),
                 result_type: "payment".to_string(),
                 title: format!("Payment - {}", pay.patient_name),
-                subtitle: format!("{:.2}", pay.amount),
+                subtitle: format!("AFN {:.2} / USD {:.2}", pay.amount_afn, pay.amount_usd),
                 route: Some(format!("/billing/payments/{}", pay.id)),
             });
         }
