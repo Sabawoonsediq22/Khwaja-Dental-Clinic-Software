@@ -67,7 +67,7 @@ const BillingTable: React.FC<BillingTableProps> = ({
               <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 whitespace-nowrap">
                 {t("billing.table.number", "NO.")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 whitespace-nowrap">
+              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.invoiceNumber", "INVOICE #")}
               </th>
               <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
@@ -102,8 +102,10 @@ const BillingTable: React.FC<BillingTableProps> = ({
                 <td className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
                   {index + 1}
                 </td>
-                <td className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {invoice.invoice_number}
+                <td className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">
+                  <div className="max-w-[120px] truncate" title={invoice.invoice_number}>
+                    {invoice.invoice_number}
+                  </div>
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex flex-col">
@@ -174,7 +176,7 @@ const BillingTable: React.FC<BillingTableProps> = ({
           >
             <div className="flex items-center justify-between gap-3">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate" title={invoice.invoice_number}>
                   {invoice.invoice_number}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
