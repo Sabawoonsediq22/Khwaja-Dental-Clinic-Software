@@ -98,7 +98,6 @@ const NewPatient: React.FC = () => {
     SelectedProcedure[]
   >([]);
   const [activeProcedureIndex, setActiveProcedureIndex] = useState<number>(0);
-  const [newProcedureName] = useState("");
 
   // X-ray, drag-drop, and dental chart state are independent from the main patient form.
   const [xrayFile, setXrayFile] = useState<File | null>(null);
@@ -124,7 +123,6 @@ const NewPatient: React.FC = () => {
     });
   };
 
-  const addProcedure = () => {};
 
   const removeProcedure = (index: number) => {
     setSelectedProcedures((prev) => {
@@ -589,7 +587,7 @@ const NewPatient: React.FC = () => {
 
               <div className="flex flex-col md:flex-row md:gap-4">
                 <FormField label={t("newPatient.gender")} className="flex-1" error={errors.gender}>
-                  <div className="flex items-center gap-6 h-[38px]">
+                  <div className="flex items-center gap-6 h-9.5">
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
                         type="radio"
@@ -1012,7 +1010,7 @@ const NewPatient: React.FC = () => {
                 )}
               </div>
 
-              <div className="lg:w-[340px] xl:w-[380px] shrink-0 p-6 flex flex-col">
+              <div className="lg:w-85 xl:w-95 shrink-0 p-6 flex flex-col">
                 <div className="flex items-center gap-2 mb-4">
                   <ImageIcon className="h-4 w-4 text-purple-600" />
                   <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -1020,7 +1018,7 @@ const NewPatient: React.FC = () => {
                   </p>
                 </div>
                 <div
-                  className="flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed cursor-pointer transition-all border-purple-200 bg-purple-50/30 dark:border-gray-600 dark:bg-gray-700/30 hover:border-purple-400 hover:bg-purple-100/40 min-h-[18rem]"
+                  className="flex-1 flex flex-col items-center justify-center rounded-xl border-2 border-dashed cursor-pointer transition-all border-purple-200 bg-purple-50/30 dark:border-gray-600 dark:bg-gray-700/30 hover:border-purple-400 hover:bg-purple-100/40 min-h-72"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {xrayPreview ? (
