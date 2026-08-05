@@ -87,7 +87,6 @@ const NewVisit: React.FC = () => {
     SelectedProcedure[]
   >([]);
   const [activeProcedureIndex, setActiveProcedureIndex] = useState<number>(0);
-  const [newProcedureName, setNewProcedureName] = useState("");
 
   const [discount, setDiscount] = useState("");
   const [paidAmount, setPaidAmount] = useState("");
@@ -114,12 +113,14 @@ const NewVisit: React.FC = () => {
     });
   };
 
-  const addProcedure = () => {
+  const addProcedure = (procedureName: string) => {
+    if (!procedureName) return;
+    
     const selectedProcedure = PROCEDURES.find(
-      (p) => p.name === newProcedureName,
+      (p) => p.name === procedureName,
     );
     const newProc: SelectedProcedure = {
-      procedureName: newProcedureName,
+      procedureName: procedureName,
       additionalNotes: "",
       procedurePrice: selectedProcedure?.price ?? 0,
       priceAfn: selectedProcedure?.price_afn ?? 0,
@@ -133,7 +134,6 @@ const NewVisit: React.FC = () => {
       setActiveProcedureIndex(next.length - 1);
       return next;
     });
-    setNewProcedureName("");
   };
 
   const removeProcedure = (index: number) => {
@@ -572,9 +572,12 @@ const NewVisit: React.FC = () => {
                 <div className="flex flex-col md:flex-row gap-4 items-end">
                   <FormField label={t("newVisit.procedure")} className="flex-1">
                     <Select
-                      value={newProcedureName}
+                      value=""
                       onChange={(e) => {
-                        setNewProcedureName(e.target.value);
+                        const selectedValue = e.target.value;
+                        if (selectedValue) {
+                          addProcedure(selectedValue);
+                        }
                       }}
                       className="cursor-pointer w-full"
                       disabled={isSubmitting}
@@ -588,14 +591,6 @@ const NewVisit: React.FC = () => {
                       ))}
                     </Select>
                   </FormField>
-                  <Button
-                    type="button"
-                    onClick={addProcedure}
-                    disabled={isSubmitting || !newProcedureName}
-                    className="cursor-pointer"
-                  >
-                    {t("newPatient.addProcedure")}
-                  </Button>
                 </div>
 
                 {selectedProcedures.length === 0 ? (

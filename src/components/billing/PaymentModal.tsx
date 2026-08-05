@@ -29,11 +29,26 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [currency, setCurrency] = useState<"AFN" | "USD">("AFN");
 
   const maxAmount = currency === "AFN" ? outstandingAfn || outstandingAmount : outstandingUsd;
+  const effectiveMax = maxAmount || outstandingAmount;
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "") {
+      setAmount("");
+      return;
+    }
+    const parsed = parseFloat(value);
+    if (!isNaN(parsed) && parsed > effectiveMax) {
+      setAmount(effectiveMax.toString());
+    } else {
+      setAmount(value);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const paymentAmount = parseFloat(amount);
-    if (isNaN(paymentAmount) || paymentAmount <= 0 || paymentAmount > (maxAmount || outstandingAmount)) {
+    if (isNaN(paymentAmount) || paymentAmount <= 0 || paymentAmount > effectiveMax) {
       return;
     }
 
@@ -63,9 +78,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 type="number"
                 step="0.01"
                 min="0.01"
-                max={maxAmount || outstandingAmount}
+                max={effectiveMax}
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={handleAmountChange}
                 placeholder={t("billing.enterAmount", "Enter amount")}
                 required
                 className="w-full"
@@ -81,11 +96,16 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             </select>
           </div>
           <p className="text-xs text-gray-500 mt-1">
-            {outstandingAfn > 0 && `${t("billing.outstandingAmount", "Outstanding")}: ${outstandingAfn.toLocaleString()} AFN`}
+            {outstandingAfn > 0 && t("billing.outstandingAmount", "Outstanding: {{amount}} AFN", { amount: outstandingAfn.toLocaleString() })}
             {outstandingAfn > 0 && outstandingUsd > 0 && " | "}
             {outstandingUsd > 0 && `$${outstandingUsd.toLocaleString()}`}
-            {outstandingAfn === 0 && outstandingUsd === 0 && `${t("billing.outstandingAmount", "Outstanding")}: ${outstandingAmount.toLocaleString()} AFN`}
+            {outstandingAfn === 0 && outstandingUsd === 0 && t("billing.outstandingAmount", "Outstanding: {{amount}} AFN", { amount: outstandingAmount.toLocaleString() })}
           </p>
+          {amount !== "" && parseFloat(amount) > 0 && parseFloat(amount) >= effectiveMax && (
+            <p className="text-xs text-amber-600 mt-1">
+              {t("billing.amountClamped", "Amount cannot exceed the outstanding balance of {{max}}", { max: effectiveMax.toLocaleString() })}
+            </p>
+          )}
         </div>
 
         <div>

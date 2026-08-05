@@ -416,6 +416,7 @@
     "total": "Total",
     "paid": "Paid",
     "outstandingAmount": "Outstanding: {{amount}} AFN",
+    "amountClamped": "Amount cannot exceed the outstanding balance of {{max}}",
     "filters": {
       "status": "Status",
       "all": "All",
