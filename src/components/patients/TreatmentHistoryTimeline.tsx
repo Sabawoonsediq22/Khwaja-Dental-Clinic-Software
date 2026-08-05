@@ -34,6 +34,7 @@ interface FlattenedEntry {
   procedure: {
     name: string;
     toothNumbers: number[];
+    toothQuadrants: string[];
     additionalNote: string | undefined;
     quantity: number;
     unitPriceAfn: number;
@@ -58,6 +59,7 @@ const flattenTreatments = (treatments: TreatmentEntry[]): FlattenedEntry[] => {
         procedure: {
           name: procedure.name,
           toothNumbers: procedure.tooth_numbers ?? [],
+          toothQuadrants: procedure.tooth_quadrants ?? [],
           additionalNote: procedure.additional_note,
           quantity: procedure.quantity,
           unitPriceAfn: procedure.unit_price_afn,
@@ -91,12 +93,16 @@ const formatTime = (timeStr: string) => {
   });
 };
 
-const getProcedureTitle = (toothNumbers: number[], name: string) => {
+const getProcedureTitle = (toothNumbers: number[], toothQuadrants: string[], name: string) => {
   const validTeeth = toothNumbers.filter((t) => t > 0);
   if (!validTeeth || validTeeth.length === 0) {
     return name;
   }
-  return `${name} (Tooth: ${validTeeth.join(", ")})`;
+  const toothDescriptions = validTeeth.map((num, i) => {
+    const quadrant = toothQuadrants[i];
+    return quadrant ? `${num} (${quadrant})` : `${num}`;
+  });
+  return `${name} (Tooth: ${toothDescriptions.join(", ")})`;
 };
 
 const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
@@ -195,7 +201,7 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                   const isExpanded = expandedKey === entry.expandKey;
                   const statusStyle = statusConfig[entry.status] || statusConfig.Completed;
                   const showDateDivider = index === 0 || flattenedEntries[index - 1].date !== entry.date;
-                  const procedureTitle = getProcedureTitle(entry.procedure.toothNumbers, entry.procedure.name);
+                  const procedureTitle = getProcedureTitle(entry.procedure.toothNumbers, entry.procedure.toothQuadrants, entry.procedure.name);
 
                   return (
                     <div key={entry.expandKey}>

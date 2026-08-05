@@ -94,6 +94,7 @@ export interface TreatmentEntry {
     total_price_afn: number;
     total_price_usd: number;
     tooth_numbers?: number[];
+    tooth_quadrants?: string[];
   }[];
 }
 

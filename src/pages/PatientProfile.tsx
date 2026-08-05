@@ -97,6 +97,7 @@ const toTreatmentEntries = (
             total_price_afn: procedure.total_price_afn,
             total_price_usd: procedure.total_price_usd,
             tooth_numbers: procedure.teeth.map((tooth) => tooth.tooth_number),
+            tooth_quadrants: procedure.teeth.map((tooth) => tooth.tooth_quadrant),
           },
         ],
         images:

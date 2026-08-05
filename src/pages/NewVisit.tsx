@@ -318,7 +318,7 @@ const NewVisit: React.FC = () => {
           number_of_procedures: Math.max(proc.numberOfProcedures, 1),
           treatment_teeth: proc.selectedToothIds
             .map((id) => ({
-              tooth_number: parseInt(id, 10),
+              tooth_number: parseInt(id, 10) % 10,
               tooth_quadrant: getToothQuadrant(id),
             }))
             .filter((t) => t.tooth_number > 0 && t.tooth_quadrant.trim()),

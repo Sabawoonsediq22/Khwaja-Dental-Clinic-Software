@@ -30,7 +30,11 @@ const getTreatmentTitle = (t: TreatmentEntry): string => {
     if (!toothNumbers || toothNumbers.length === 0) {
       return p.name;
     }
-    return `${p.name} (Tooth: ${toothNumbers.join(", ")})`;
+    const toothDescriptions = toothNumbers.map((num, i) => {
+      const quadrant = p.tooth_quadrants?.[i];
+      return quadrant ? `${num} (${quadrant})` : `${num}`;
+    });
+    return `${p.name} (Tooth: ${toothDescriptions.join(", ")})`;
   }).join(", ");
   return procedureNames || t.title || "Treatment";
 };
