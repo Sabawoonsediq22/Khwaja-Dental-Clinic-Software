@@ -1,9 +1,6 @@
 import React from "react";
-import {
-  AreaChart,
-  Area,
-  ResponsiveContainer,
-} from "recharts";
+import Chart from "react-apexcharts";
+import type { ApexOptions } from "apexcharts";
 
 interface SparklineChartProps {
   data: { day: string; value: number }[];
@@ -28,29 +25,77 @@ const SparklineChart: React.FC<SparklineChartProps> = ({
     );
   }
 
+  const options: ApexOptions = {
+    chart: {
+      type: "area",
+      height: "100%",
+      sparkline: { enabled: true },
+      toolbar: { show: false },
+      background: "transparent",
+      animations: {
+        enabled: true,
+        easing: "easeinout",
+        speed: 600,
+      },
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2,
+      lineCap: "round",
+    },
+    colors: [color],
+    fill: {
+      type: "gradient",
+      gradient: {
+        shade: "light",
+        type: "vertical",
+        shadeIntensity: 0.35,
+        opacityFrom: 0.35,
+        opacityTo: 0.0,
+        stops: [0, 100],
+      },
+    },
+    xaxis: {
+      labels: { show: false },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      show: false,
+    },
+    grid: { show: false },
+    dataLabels: { enabled: false },
+    tooltip: {
+      enabled: true,
+      theme: "light",
+      style: { fontSize: "11px" },
+      y: { formatter: (val: number) => String(val) },
+      marker: { show: false },
+    },
+    markers: {
+      size: 0,
+      hover: {
+        size: 3,
+        sizeOffset: 2,
+      },
+    },
+  };
+
+  const series = [
+    {
+      name: "value",
+      data: data.map((d) => d.value),
+    },
+  ];
+
   return (
     <div className="w-full" style={{ height }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
-          <defs>
-            <linearGradient id={`sparkGrad-${color.replace("#", "")}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.35} />
-              <stop offset="100%" stopColor={color} stopOpacity={0} />
-            </linearGradient>
-          </defs>
-          <Area
-            type="monotone"
-            dataKey="value"
-            stroke={color}
-            strokeWidth={2}
-            fill={`url(#sparkGrad-${color.replace("#", "")})`}
-            dot={false}
-            activeDot={{ r: 3, fill: color, stroke: "#fff", strokeWidth: 1.5 }}
-            animationDuration={600}
-            animationEasing="ease-out"
-          />
-        </AreaChart>
-      </ResponsiveContainer>
+      <Chart
+        options={options}
+        series={series}
+        type="area"
+        height="100%"
+      />
     </div>
   );
 };

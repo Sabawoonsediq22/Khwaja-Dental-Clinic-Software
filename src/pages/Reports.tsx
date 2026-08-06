@@ -2,18 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner } from "../components/ui";
 import { useReportSummary, useMonthlyRevenue } from "../hooks/useReports";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell,
-} from "recharts";
+import Chart from "react-apexcharts";
 import { CurrencyIcon, PatientIcon, ToothIcon, CalendarIcon, DownloadIcon, FileIcon } from "../shared/icons/icons";
 import type { MonthlyRevenuePoint, DailyTrendPoint } from "../types/ApiTypes";
 import { exportPatientsReport, exportFinancialReport, exportTreatmentReport } from "../lib/export";
@@ -25,6 +14,25 @@ const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
+
+const useDarkMode = () => {
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+};
 
 interface StatCardProps {
   title: string;
@@ -91,28 +99,9 @@ const formatMonth = (monthStr: string) => {
   return MONTH_NAMES[parseInt(m, 10) - 1] || monthStr;
 };
 
-interface CustomTooltipProps {
-  active?: boolean;
-  payload?: { value: number; dataKey?: string; name?: string }[];
-  label?: string;
-}
-
-const RevenueTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
-  if (!active || !payload || !payload.length) return null;
-  return (
-    <div className="rounded-xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95">
-      <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
-      {payload.map((entry, idx) => (
-        <p key={idx} className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
-          {entry.dataKey === "revenueAfn" ? formatAFN(entry.value) : formatUSD(entry.value)}
-        </p>
-      ))}
-    </div>
-  );
-};
-
 const Reports: React.FC = () => {
   const { t } = useTranslation();
+  const isDark = useDarkMode();
   const { data: summary, isLoading, error } = useReportSummary();
   const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
   const [exporting, setExporting] = useState<string | null>(null);
@@ -274,79 +263,105 @@ const Reports: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="h-56 sm:h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorRevenueAfn" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0d9488" stopOpacity={0.35} />
-                      <stop offset="50%" stopColor="#0d9488" stopOpacity={0.12} />
-                      <stop offset="100%" stopColor="#0d9488" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorRevenueUsd" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
-                      <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.12} />
-                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#e5e7eb"
-                    vertical={false}
-                    className="dark:stroke-gray-700"
-                  />
-                  <XAxis
-                    dataKey="monthLabel"
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval="preserveStartEnd"
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    axisLine={false}
-                    tickLine={false}
-                    tickFormatter={(val) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val)}
-                    width={40}
-                  />
-                  <Tooltip content={<RevenueTooltip />} cursor={{ stroke: "#0d9488", strokeWidth: 1, strokeDasharray: "4 4" }} />
-                  <Area
-                    type="monotone"
-                    dataKey="revenueAfn"
-                    stroke="#0d9488"
-                    strokeWidth={2.5}
-                    fillOpacity={1}
-                    fill="url(#colorRevenueAfn)"
-                    name="AFN"
-                    dot={false}
-                    activeDot={{
-                      r: 5,
-                      fill: "#0d9488",
-                      stroke: "#fff",
-                      strokeWidth: 2,
-                    }}
-                    animationDuration={800}
-                    animationEasing="ease-out"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="revenueUsd"
-                    stroke="#3b82f6"
-                    strokeWidth={2.5}
-                    fillOpacity={1}
-                    fill="url(#colorRevenueUsd)"
-                    name="USD"
-                    dot={false}
-                    activeDot={{
-                      r: 5,
-                      fill: "#3b82f6",
-                      stroke: "#fff",
-                      strokeWidth: 2,
-                    }}
-                    animationDuration={800}
-                    animationEasing="ease-out"
-                  />
-                </AreaChart>
-              </ResponsiveContainer>
+              <Chart
+                options={{
+                  chart: {
+                    type: "line",
+                    height: "100%",
+                    toolbar: { show: false },
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    background: "transparent",
+                    animations: {
+                      enabled: true,
+                      easing: "easeinout",
+                      speed: 600,
+                      animateGradually: { enabled: true, delay: 150 },
+                    },
+                  },
+                  stroke: {
+                    curve: "smooth",
+                    width: [2.5, 2.5],
+                    lineCap: "round",
+                  },
+                  grid: {
+                    show: true,
+                    borderColor: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)",
+                    strokeDashArray: 4,
+                    position: "back",
+                    xaxis: { lines: { show: false } },
+                    yaxis: { lines: { show: true } },
+                    padding: { top: 10, right: 10, bottom: 0, left: 10 },
+                  },
+                  colors: ["#0d9488", "#3b82f6"],
+                  xaxis: {
+                    categories: chartData.map((d) => d.monthLabel),
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                      style: {
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        colors: isDark ? "#6b7280" : "#9ca3af",
+                      },
+                      offsetY: 6,
+                    },
+                    crosshairs: {
+                      show: true,
+                      stroke: { color: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)", width: 1, dashArray: 4 },
+                    },
+                  },
+                  yaxis: {
+                    show: true,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                      style: {
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        colors: isDark ? "#6b7280" : "#9ca3af",
+                      },
+                      offsetX: -6,
+                      formatter: (val: number) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val),
+                    },
+                  },
+                  legend: { show: false },
+                  tooltip: {
+                    shared: true,
+                    intersect: false,
+                    theme: isDark ? "dark" : "light",
+                    style: { fontSize: "12px" },
+                    marker: { show: false },
+                    x: { show: false },
+                    y: {
+                      formatter: (val: number, opts: any) => {
+                        return opts.seriesIndex === 0 ? formatAFN(val) : formatUSD(val);
+                      },
+                    },
+                  },
+                  markers: {
+                    size: [0, 0],
+                    hover: {
+                      size: 5,
+                      sizeOffset: 3,
+                    },
+                  },
+                  dataLabels: { enabled: false },
+                  responsive: [
+                    {
+                      breakpoint: 640,
+                      options: {
+                        chart: { height: 220 },
+                      },
+                    },
+                  ],
+                }}
+                series={[
+                  { name: "AFN", data: chartData.map((d) => d.revenueAfn) },
+                  { name: "USD", data: chartData.map((d) => d.revenueUsd) },
+                ]}
+                type="line"
+                height="100%"
+              />
             </div>
             <div className="mt-2 flex items-center justify-center gap-4 text-xs text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1.5">
@@ -369,38 +384,85 @@ const Reports: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="h-56 sm:h-64 w-full">
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={visitStatusData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} className="dark:stroke-gray-700" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    axisLine={false}
-                    tickLine={false}
-                    allowDecimals={false}
-                    width={30}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 12,
-                      border: "1px solid #e5e7eb",
-                      boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-                      backgroundColor: "#ffffff",
-                    }}
-                    cursor={{ fill: "#f9fafb" }}
-                  />
-                  <Bar dataKey="value" name={t("reports.charts.count", "Count")} radius={[6, 6, 0, 0]} maxBarSize={48}>
-                    {visitStatusData.map((entry) => (
-                      <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={{
+                  chart: {
+                    type: "bar",
+                    height: "100%",
+                    toolbar: { show: false },
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    background: "transparent",
+                    animations: {
+                      enabled: true,
+                      easing: "easeinout",
+                      speed: 600,
+                    },
+                  },
+                  plotOptions: {
+                    bar: {
+                      borderRadius: 6,
+                      columnWidth: "55%",
+                      distributed: true,
+                    },
+                  },
+                  grid: {
+                    show: true,
+                    borderColor: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)",
+                    strokeDashArray: 4,
+                    position: "back",
+                    xaxis: { lines: { show: false } },
+                    yaxis: { lines: { show: true } },
+                    padding: { top: 10, right: 10, bottom: 0, left: 10 },
+                  },
+                  colors: visitStatusData.map((d) => d.fill),
+                  xaxis: {
+                    categories: visitStatusData.map((d) => d.name),
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                      style: {
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        colors: isDark ? "#6b7280" : "#9ca3af",
+                      },
+                    },
+                  },
+                  yaxis: {
+                    show: true,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                      style: {
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        colors: isDark ? "#6b7280" : "#9ca3af",
+                      },
+                      offsetX: -6,
+                    },
+                  },
+                  dataLabels: { enabled: false },
+                  tooltip: {
+                    theme: isDark ? "dark" : "light",
+                    style: { fontSize: "12px" },
+                    y: { formatter: (val: number) => String(val) },
+                  },
+                  legend: { show: false },
+                  responsive: [
+                    {
+                      breakpoint: 640,
+                      options: {
+                        chart: { height: 220 },
+                      },
+                    },
+                  ],
+                }}
+                series={[{
+                  name: t("reports.charts.count", "Count"),
+                  data: visitStatusData.map((d) => d.value),
+                }]}
+                type="bar"
+                height="100%"
+              />
             </div>
           </CardContent>
         </Card>

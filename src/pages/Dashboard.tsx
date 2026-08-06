@@ -6,13 +6,12 @@ import { useDashboardStats, usePatientsFlow, useProcedureDistribution, useRecent
 import { useUpdateVisitStatus } from "../hooks/useVisits";
 import { toast } from "../lib/toast-utils";
 import StatCard from "../components/dashboard/StatCard";
-import { Bar, CartesianGrid, Cell, Line, Tooltip, XAxis, YAxis } from "recharts";
-import { ProcedureDistribution } from "../types/ApiTypes";
 import RecentPatientsTable from "../components/dashboard/RecentPatientsTable";
 import { ActivityIcon, ClockIcon, CurrencyIcon, PatientIcon, PlusIcon, ToothIcon } from "../shared/icons/icons";
 import { Badge, Button } from "../components/ui";
 import ChartCard from "../components/dashboard/ChartCard";
-import { ResponsiveContainer, LineChart, BarChart } from "recharts";
+import Chart from "react-apexcharts";
+import type { ApexOptions } from "apexcharts";
 
 const COLORS = [
   "#006A71", "#005E8A", "#F2C12E", "#9B5DE5", "#00C49A",
@@ -59,11 +58,31 @@ interface StatCardDef {
 
 const FLOW_MODES = ["daily", "weekly"] as const;
 
+const useDarkMode = () => {
+  const [isDark, setIsDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.classList.contains("dark"));
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+    return () => observer.disconnect();
+  }, []);
+
+  return isDark;
+};
+
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [flowMode, setFlowMode] = useState<"daily" | "weekly">("weekly");
   const [lastUpdated, setLastUpdated] = useState(new Date());
+  const isDark = useDarkMode();
 
   const { data: stats, isLoading: statsLoading, isError: statsError } =
     useDashboardStats();
@@ -128,7 +147,184 @@ const Dashboard: React.FC = () => {
     ];
   }, [stats, statsLoading, statsError, t]);
 
+  const flowChartOptions: ApexOptions = React.useMemo(() => {
+    const textColor = isDark ? "#6b7280" : "#9ca3af";
+    const gridColor = isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)";
+    return {
+      chart: {
+        type: "area",
+        height: "100%",
+        toolbar: { show: false },
+        sparkline: { enabled: false },
+        fontFamily: "Inter, system-ui, sans-serif",
+        background: "transparent",
+        animations: {
+          enabled: true,
+          easing: "easeinout",
+          speed: 600,
+          animateGradually: { enabled: true, delay: 150 },
+        },
+        dropShadow: {
+          enabled: true,
+          top: 4,
+          left: 0,
+          blur: 12,
+          opacity: 0.06,
+          color: "#000",
+        },
+      },
+      stroke: {
+        curve: "smooth",
+        width: 2.5,
+        lineCap: "round",
+      },
+      grid: {
+        show: true,
+        borderColor: gridColor,
+        strokeDashArray: 4,
+        position: "back",
+        xaxis: { lines: { show: false } },
+        yaxis: { lines: { show: true } },
+        padding: { top: 10, right: 10, bottom: 0, left: 10 },
+      },
+      colors: ["#3b82f6", "#10b981"],
+      fill: {
+        type: "gradient",
+        gradient: {
+          shade: "light",
+          type: "vertical",
+          shadeIntensity: 0.35,
+          opacityFrom: 0.28,
+          opacityTo: 0.04,
+          stops: [0, 80, 100],
+        },
+      },
+      xaxis: {
+        categories: (flowData ?? []).map((d) => d.label),
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        labels: {
+          style: {
+            fontSize: "11px",
+            fontWeight: 500,
+            colors: textColor,
+          },
+          offsetY: 6,
+        },
+        crosshairs: {
+          show: true,
+          stroke: { color: gridColor, width: 1, dashArray: 4 },
+        },
+      },
+      yaxis: {
+        show: true,
+        axisBorder: { show: false },
+        axisTicks: { show: false },
+        min: 0,
+        labels: {
+          style: {
+            fontSize: "11px",
+            fontWeight: 500,
+            colors: textColor,
+          },
+          offsetX: -6,
+        },
+      },
+      legend: {
+        show: true,
+        position: "top",
+        horizontalAlign: "right",
+        fontSize: "12px",
+        fontWeight: 500,
+        fontFamily: "Inter, system-ui, sans-serif",
+        markers: {
+          radius: 2,
+          strokeWidth: 0,
+          size: 8,
+          offsetX: -2,
+        },
+        itemMargin: { horizontal: 12, vertical: 0 },
+        labels: {
+          colors: isDark ? "#d1d5db" : "#374151",
+          useSeriesColors: false,
+        },
+      },
+      tooltip: {
+        shared: true,
+        intersect: false,
+        theme: isDark ? "dark" : "light",
+        style: { fontSize: "12px" },
+        marker: { show: false },
+        x: { show: false },
+        custom: function ({ series, dataPointIndex, w }: any) {
+          const label = w.globals.labels[dataPointIndex];
+          const checkIn = series[0][dataPointIndex];
+          const completed = series[1][dataPointIndex];
+          return `
+            <div style="
+              padding: 12px 16px;
+              border-radius: 12px;
+              background: ${isDark ? "#1f2937" : "#ffffff"};
+              box-shadow: 0 8px 32px rgba(0,0,0,${isDark ? "0.4" : "0.1"}), 0 1px 3px rgba(0,0,0,${isDark ? "0.2" : "0.06"});
+              border: 1px solid ${isDark ? "#374151" : "#f3f4f6"};
+              font-family: Inter, system-ui, sans-serif;
+            ">
+              <div style="
+                font-size: 11px;
+                font-weight: 600;
+                color: ${isDark ? "#9ca3af" : "#6b7280"};
+                margin-bottom: 8px;
+                letter-spacing: 0.03em;
+              ">${label}</div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0;"></span>
+                  <span style="font-size: 12px; color: ${isDark ? "#d1d5db" : "#374151"}; font-weight: 500;">${t("dashboard.checkIns", "Check-ins")}</span>
+                  <span style="font-size: 13px; font-weight: 700; color: ${isDark ? "#f9fafb" : "#111827"}; margin-left: auto;">${checkIn}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; flex-shrink: 0;"></span>
+                  <span style="font-size: 12px; color: ${isDark ? "#d1d5db" : "#374151"}; font-weight: 500;">${t("dashboard.completed", "Completed")}</span>
+                  <span style="font-size: 13px; font-weight: 700; color: ${isDark ? "#f9fafb" : "#111827"}; margin-left: auto;">${completed}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        },
+      },
+      markers: {
+        size: 0,
+        hover: {
+          size: 5,
+          sizeOffset: 3,
+        },
+      },
+      dataLabels: { enabled: false },
+      responsive: [
+        {
+          breakpoint: 640,
+          options: {
+            chart: { height: 220 },
+            legend: { fontSize: "10px" },
+          },
+        },
+      ],
+    };
+  }, [flowData, isDark, t]);
 
+  const flowChartSeries: ApexOptions["series"] = React.useMemo(
+    () => [
+      {
+        name: t("dashboard.checkIns", "Check-ins"),
+        data: (flowData ?? []).map((d) => d.check_ins),
+      },
+      {
+        name: t("dashboard.completed", "Completed"),
+        data: (flowData ?? []).map((d) => d.completed),
+      },
+    ],
+    [flowData, t],
+  );
 
   return (
     <div className="space-y-4 sm:space-y-6 xl:space-y-8">
@@ -199,63 +395,13 @@ const Dashboard: React.FC = () => {
             </div>
           }
         >
-          <div className="h-56 sm:h-64 lg:h-72 w-full -ml-2">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <LineChart data={flowData ?? []} margin={{ top: 8, right: 8, left: -8, bottom: 0 }}>
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  stroke="#e5e7eb"
-                  vertical={false}
-                  className="dark:stroke-gray-700"
-                />
-                <XAxis
-                  dataKey="label"
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  axisLine={false}
-                  tickLine={false}
-                  dy={8}
-                />
-                <YAxis
-                  tick={{ fontSize: 11, fill: "#9ca3af" }}
-                  axisLine={false}
-                  tickLine={false}
-                  allowDecimals={false}
-                  width={30}
-                />
-                <Tooltip
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: "1px solid #e5e7eb",
-                    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                    backgroundColor: "white",
-                    fontSize: 12,
-                  }}
-                  labelStyle={{ fontWeight: 700, marginBottom: 4 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="check_ins"
-                  stroke="#006A71"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 5, fill: "#006A71", stroke: "#fff", strokeWidth: 2 }}
-                  name={t("dashboard.checkIns", "Check-ins")}
-                  animationDuration={600}
-                  animationEasing="ease-out"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="completed"
-                  stroke="#005E8A"
-                  strokeWidth={2.5}
-                  dot={false}
-                  activeDot={{ r: 5, fill: "#005E8A", stroke: "#fff", strokeWidth: 2 }}
-                  name={t("dashboard.completed", "Completed")}
-                  animationDuration={800}
-                  animationEasing="ease-out"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="h-56 sm:h-64 lg:h-72 w-full">
+            <Chart
+              options={flowChartOptions}
+              series={flowChartSeries}
+              type="area"
+              height="100%"
+            />
           </div>
         </ChartCard>
 
@@ -266,50 +412,96 @@ const Dashboard: React.FC = () => {
         >
           <div className="h-56 sm:h-64 lg:h-72 w-full">
             {procData && procData.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-                <BarChart data={procData} margin={{ top: 20, right: 8, left: -8, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} className="dark:stroke-gray-700" />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 10, fill: "#6b7280" }}
-                    axisLine={false}
-                    tickLine={false}
-                    interval={0}
-                    angle={-20}
-                    textAnchor="end"
-                    height={50}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 11, fill: "#9ca3af" }}
-                    axisLine={false}
-                    tickLine={false}
-                    allowDecimals={false}
-                    width={30}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      borderRadius: 12,
-                      border: "1px solid #e5e7eb",
-                      boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                      backgroundColor: "white",
-                      fontSize: 12,
-                    }}
-                    formatter={(value: unknown, name: unknown) => [value as number, name as string]}
-                  />
-                  <Bar
-                    dataKey="count"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={48}
-                    animationDuration={600}
-                    animationEasing="ease-out"
-                    label={{ position: "top", fontSize: 11, fontWeight: 600, fill: "#374151" }}
-                  >
-                    {procData.map((_: ProcedureDistribution, i: number) => (
-                      <Cell key={_.name} fill={COLORS[i % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+              <Chart
+                options={{
+                  chart: {
+                    type: "bar",
+                    height: "100%",
+                    toolbar: { show: false },
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    background: "transparent",
+                    animations: {
+                      enabled: true,
+                      easing: "easeinout",
+                      speed: 600,
+                    },
+                  },
+                  plotOptions: {
+                    bar: {
+                      borderRadius: 6,
+                      columnWidth: "55%",
+                      distributed: true,
+                    },
+                  },
+                  grid: {
+                    show: true,
+                    borderColor: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)",
+                    strokeDashArray: 4,
+                    position: "back",
+                    xaxis: { lines: { show: false } },
+                    yaxis: { lines: { show: true } },
+                    padding: { top: 10, right: 10, bottom: 0, left: 10 },
+                  },
+                  colors: COLORS.slice(0, procData.length),
+                  xaxis: {
+                    categories: procData.map((d) => d.name),
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                      style: {
+                        fontSize: "10px",
+                        fontWeight: 500,
+                        colors: isDark ? "#6b7280" : "#6b7280",
+                      },
+                      rotate: -20,
+                      rotateAlways: false,
+                    },
+                  },
+                  yaxis: {
+                    show: true,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                      style: {
+                        fontSize: "11px",
+                        fontWeight: 500,
+                        colors: isDark ? "#6b7280" : "#9ca3af",
+                      },
+                      offsetX: -6,
+                    },
+                  },
+                  dataLabels: {
+                    enabled: true,
+                    offsetY: -12,
+                    style: {
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      colors: [isDark ? "#e5e7eb" : "#374151"],
+                    },
+                  },
+                  tooltip: {
+                    theme: isDark ? "dark" : "light",
+                    style: { fontSize: "12px" },
+                    y: { formatter: (val: number) => String(val) },
+                  },
+                  legend: { show: false },
+                  responsive: [
+                    {
+                      breakpoint: 640,
+                      options: {
+                        chart: { height: 220 },
+                        xaxis: { labels: { style: { fontSize: "9px" } } },
+                      },
+                    },
+                  ],
+                }}
+                series={[{
+                  name: t("dashboard.count", "Count"),
+                  data: procData.map((d) => d.count),
+                }]}
+                type="bar"
+                height="100%"
+              />
             ) : (
               <div className="flex flex-col items-center justify-center h-full text-gray-400 dark:text-gray-500 gap-2">
                 <span className="text-xs font-medium">{t("dashboard.noDataAvailable", "No data available")}</span>
