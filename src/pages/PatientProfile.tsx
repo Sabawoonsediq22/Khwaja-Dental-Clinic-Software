@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, Modal, LoadingSpinner } from "../components/ui";
@@ -30,7 +30,8 @@ import {
   LocationIcon,
 } from "../shared/icons/icons";
 import { toast } from "sonner";
-import type { PatientVisitWithTreatments } from "../types/ApiTypes";
+import type { PatientVisitWithTreatments, Invoice } from "../types/ApiTypes";
+import { api } from "../lib/api";
 import i18n from "../i18n";
 
 const formatDate = (dateStr: string | null | undefined): string => {
@@ -130,6 +131,34 @@ const PatientProfile: React.FC = () => {
   const medicalInfo = medicalInfoQuery.data;
   const statistics = statisticsQuery.data;
   const treatmentHistory = toTreatmentEntries(treatmentHistoryQuery.data ?? []);
+
+  const [visitInvoices, setVisitInvoices] = useState<Map<string, Invoice>>(new Map());
+
+  useEffect(() => {
+    const visits = treatmentHistoryQuery.data ?? [];
+    const uniqueVisitIds = [...new Set(visits.map((v) => v.visit_id))];
+
+    const fetchInvoices = async () => {
+      const invoiceMap = new Map<string, Invoice>();
+      await Promise.all(
+        uniqueVisitIds.map(async (visitId) => {
+          try {
+            const invoice = await api.invoices.getForVisit(visitId);
+            if (invoice) {
+              invoiceMap.set(visitId, invoice);
+            }
+          } catch (error) {
+            console.error(`Failed to fetch invoice for visit ${visitId}:`, error);
+          }
+        })
+      );
+      setVisitInvoices(invoiceMap);
+    };
+
+    if (uniqueVisitIds.length > 0) {
+      fetchInvoices();
+    }
+  }, [treatmentHistoryQuery.data]);
 
   const lastVisitProcedure = React.useMemo(() => {
     if (!treatmentHistory || treatmentHistory.length === 0) return null;
@@ -513,6 +542,7 @@ const PatientProfile: React.FC = () => {
           patientId={patient?.id}
           patientName={patient?.full_name}
           onStatusChange={handleStatusChange}
+          visitInvoices={visitInvoices}
         />
       </div>
 

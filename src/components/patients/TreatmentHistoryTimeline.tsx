@@ -10,6 +10,7 @@ import TreatmentHistoryFilterModal from "./TreatmentHistoryFilterModal";
 import TreatmentHistoryDownloadModal from "./TreatmentHistoryDownloadModal";
 import TreatmentStatusChangeModal from "./TreatmentStatusChangeModal";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import type { Invoice } from "../../types/ApiTypes";
 
 import { statusConfig } from "../common/badgeStatusConfig";
 
@@ -22,6 +23,7 @@ interface TreatmentHistoryTimelineProps {
   patientName?: string;
   className?: string;
   onStatusChange?: (visitId: string, newStatus: string) => void;
+  visitInvoices?: Map<string, Invoice>;
 }
 
 interface FlattenedEntry {
@@ -42,12 +44,19 @@ interface FlattenedEntry {
     totalPriceAfn: number;
     totalPriceUsd: number;
   };
+  invoice?: {
+    paidAfn: number;
+    paidUsd: number;
+    outstandingAfn: number;
+    outstandingUsd: number;
+  };
   expandKey: string;
 }
 
-const flattenTreatments = (treatments: TreatmentEntry[]): FlattenedEntry[] => {
+const flattenTreatments = (treatments: TreatmentEntry[], visitInvoices?: Map<string, Invoice>): FlattenedEntry[] => {
   const entries: FlattenedEntry[] = [];
   treatments.forEach((treatment) => {
+    const invoice = visitInvoices?.get(treatment.visitId);
     treatment.procedures?.forEach((procedure, index) => {
       entries.push({
         visitId: treatment.visitId,
@@ -67,6 +76,14 @@ const flattenTreatments = (treatments: TreatmentEntry[]): FlattenedEntry[] => {
           totalPriceAfn: procedure.total_price_afn,
           totalPriceUsd: procedure.total_price_usd,
         },
+        invoice: invoice
+          ? {
+              paidAfn: invoice.paid_afn,
+              paidUsd: invoice.paid_usd,
+              outstandingAfn: invoice.outstanding_afn,
+              outstandingUsd: invoice.outstanding_usd,
+            }
+          : undefined,
         expandKey: `${treatment.id}-proc-${index}`,
       });
     });
@@ -112,6 +129,7 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
   patientName,
   className,
   onStatusChange,
+  visitInvoices,
 }) => {
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -143,7 +161,7 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
     return filePath;
   };
 
-  const flattenedEntries = useMemo(() => flattenTreatments(filteredTreatments), [filteredTreatments]);
+  const flattenedEntries = useMemo(() => flattenTreatments(filteredTreatments, visitInvoices), [filteredTreatments, visitInvoices]);
 
   useEffect(() => {
     setFilteredTreatments((prev) =>
@@ -251,12 +269,12 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                               </div>
                               <div className="flex items-center gap-3 ml-4">
                                 <span className="text-sm font-bold text-gray-900 dark:text-white whitespace-nowrap">
-                                  {entry.procedure.totalPriceAfn > 0 && (
-                                    <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
-                                  )}
-                                  {entry.procedure.totalPriceUsd > 0 && (
-                                    <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
-                                  )}
+                                  {entry.procedure.totalPriceAfn > 0
+                                    ? <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
+                                    : entry.procedure.totalPriceUsd > 0
+                                      ? <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
+                                      : null
+                                  }
                                 </span>
                                 <button
                                   onClick={() => toggleExpand(entry.expandKey)}
@@ -300,44 +318,72 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {t("patientProfile.billingDetails", "Billing Details")}
                                   </span>
-                                  <div className="grid md:grid-cols-4 grid-cols-2 gap-y-2 gap-x-4 pt-2">
-                                    <div>
+                                  <div className="space-y-2 pt-1">
+                                    <div className="flex items-center justify-between py-1">
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.quantity", "Quantity")}</p>
-                                      <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">{entry.procedure.quantity}</p>
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">{entry.procedure.quantity}</p>
                                     </div>
-                                    <div>
+                                    <div className="flex items-center justify-between py-1">
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.unitPrice", "Unit Price")}</p>
-                                      <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                        {entry.procedure.totalPriceAfn > 0 && (
-                                      <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
-                                    )}
-                                    {entry.procedure.totalPriceUsd > 0 && (
-                                    <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
-                                      )}
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {entry.procedure.unitPriceAfn > 0
+                                          ? <>{entry.procedure.unitPriceAfn.toLocaleString()} AFN</>
+                                          : entry.procedure.unitPriceUsd > 0
+                                            ? <>{entry.procedure.unitPriceUsd.toLocaleString()} $</>
+                                            : <span className="text-gray-400">-</span>
+                                        }
                                       </p>
                                     </div>
-                                    <div>
+                                    <div className="flex items-center justify-between py-1">
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.subtotal", "Subtotal")}</p>
-                                      <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5">
-                                        {entry.procedure.unitPriceAfn > 0 && (
-                                          <>{(entry.procedure.unitPriceAfn * entry.procedure.quantity).toLocaleString()} AFN</>
-                                        )}
-                                        {entry.procedure.unitPriceUsd > 0 && (
-                                          <>{(entry.procedure.unitPriceUsd * entry.procedure.quantity).toLocaleString()} $</>
-                                        )}
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                        {entry.procedure.unitPriceAfn > 0
+                                          ? <>{(entry.procedure.unitPriceAfn * entry.procedure.quantity).toLocaleString()} AFN</>
+                                          : entry.procedure.unitPriceUsd > 0
+                                            ? <>{(entry.procedure.unitPriceUsd * entry.procedure.quantity).toLocaleString()} $</>
+                                            : <span className="text-gray-400">-</span>
+                                        }
                                       </p>
                                     </div>
-                                    <div>
-                                      <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.totalDue", "Total Due")}</p>
-                                      <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">
-                                        {entry.procedure.totalPriceAfn > 0 && (
-                                          <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
-                                        )}
-                                        {entry.procedure.totalPriceUsd > 0 && (
-                                          <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
-                                        )}
+                                    <div className="border-t border-gray-200 dark:border-gray-600 my-1" />
+                                    <div className="flex items-center justify-between py-1">
+                                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newPatient.totalDue", "Total Due")}</p>
+                                      <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                                        {entry.procedure.totalPriceAfn > 0
+                                          ? <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
+                                          : entry.procedure.totalPriceUsd > 0
+                                            ? <>{entry.procedure.totalPriceUsd.toLocaleString()} $</>
+                                            : <span className="text-gray-400">-</span>
+                                        }
                                       </p>
                                     </div>
+                                    {entry.invoice && (
+                                      <>
+                                        <div className="border-t border-gray-200 dark:border-gray-600 my-1" />
+                                        <div className="flex items-center justify-between py-1">
+                                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("patientProfile.paid", "Paid")}</p>
+                                          <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                            {entry.invoice.paidAfn > 0
+                                              ? <>{entry.invoice.paidAfn.toLocaleString()} AFN</>
+                                              : entry.invoice.paidUsd > 0
+                                                ? <>{entry.invoice.paidUsd.toLocaleString()} $</>
+                                                : <span className="text-gray-400">-</span>
+                                            }
+                                          </p>
+                                        </div>
+                                        <div className="flex items-center justify-between py-1">
+                                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("patientProfile.outstanding", "Outstanding")}</p>
+                                          <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                                            {entry.invoice.outstandingAfn > 0
+                                              ? <>{entry.invoice.outstandingAfn.toLocaleString()} AFN</>
+                                              : entry.invoice.outstandingUsd > 0
+                                                ? <>{entry.invoice.outstandingUsd.toLocaleString()} $</>
+                                                : <span className="text-gray-400">-</span>
+                                            }
+                                          </p>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
                                 </div>
 

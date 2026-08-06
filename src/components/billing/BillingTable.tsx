@@ -103,7 +103,7 @@ const BillingTable: React.FC<BillingTableProps> = ({
                   {index + 1}
                 </td>
                 <td className="py-3 px-4 text-sm font-medium text-gray-600 dark:text-gray-300">
-                  <div className="max-w-[120px] truncate" title={invoice.invoice_number}>
+                  <div className="max-w-20 truncate" title={invoice.invoice_number}>
                     {invoice.invoice_number}
                   </div>
                 </td>
