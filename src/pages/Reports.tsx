@@ -266,7 +266,7 @@ const Reports: React.FC = () => {
               <Chart
                 options={{
                   chart: {
-                    type: "line",
+                    type: "bar",
                     height: "100%",
                     toolbar: { show: false },
                     fontFamily: "Inter, system-ui, sans-serif",
@@ -274,14 +274,21 @@ const Reports: React.FC = () => {
                     animations: {
                       enabled: true,
                       easing: "easeinout",
-                      speed: 600,
-                      animateGradually: { enabled: true, delay: 150 },
+                      speed: 700,
+                    },
+                  },
+                  plotOptions: {
+                    bar: {
+                      borderRadius: 6,
+                      columnWidth: "60%",
+                      borderRadiusApplication: "end",
+                      borderRadiusWhenStacked: "last",
                     },
                   },
                   stroke: {
-                    curve: "smooth",
-                    width: [2.5, 2.5],
-                    lineCap: "round",
+                    show: true,
+                    width: 0,
+                    colors: ["transparent"],
                   },
                   grid: {
                     show: true,
@@ -292,7 +299,18 @@ const Reports: React.FC = () => {
                     yaxis: { lines: { show: true } },
                     padding: { top: 10, right: 10, bottom: 0, left: 10 },
                   },
-                  colors: ["#0d9488", "#3b82f6"],
+                  colors: ["#0d9488", "#60a5fa"],
+                  fill: {
+                    type: "gradient",
+                    gradient: {
+                      shade: "light",
+                      type: "vertical",
+                      shadeIntensity: 0.3,
+                      opacityFrom: 1,
+                      opacityTo: 0.85,
+                      stops: [0, 100],
+                    },
+                  },
                   xaxis: {
                     categories: chartData.map((d) => d.monthLabel),
                     axisBorder: { show: false },
@@ -304,10 +322,6 @@ const Reports: React.FC = () => {
                         colors: isDark ? "#6b7280" : "#9ca3af",
                       },
                       offsetY: 6,
-                    },
-                    crosshairs: {
-                      show: true,
-                      stroke: { color: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)", width: 1, dashArray: 4 },
                     },
                   },
                   yaxis: {
@@ -324,7 +338,24 @@ const Reports: React.FC = () => {
                       formatter: (val: number) => val >= 1000 ? `${(val / 1000).toFixed(0)}k` : String(val),
                     },
                   },
-                  legend: { show: false },
+                  legend: {
+                    show: true,
+                    position: "top",
+                    horizontalAlign: "right",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    markers: {
+                      strokeWidth: 0,
+                      size: 8,
+                      offsetX: -2,
+                    },
+                    itemMargin: { horizontal: 12, vertical: 0 },
+                    labels: {
+                      colors: isDark ? "#d1d5db" : "#374151",
+                      useSeriesColors: false,
+                    },
+                  },
                   tooltip: {
                     shared: true,
                     intersect: false,
@@ -338,19 +369,13 @@ const Reports: React.FC = () => {
                       },
                     },
                   },
-                  markers: {
-                    size: [0, 0],
-                    hover: {
-                      size: 5,
-                      sizeOffset: 3,
-                    },
-                  },
                   dataLabels: { enabled: false },
                   responsive: [
                     {
                       breakpoint: 640,
                       options: {
                         chart: { height: 220 },
+                        legend: { fontSize: "10px" },
                       },
                     },
                   ],
@@ -359,7 +384,7 @@ const Reports: React.FC = () => {
                   { name: "AFN", data: chartData.map((d) => d.revenueAfn) },
                   { name: "USD", data: chartData.map((d) => d.revenueUsd) },
                 ]}
-                type="line"
+                type="bar"
                 height="100%"
               />
             </div>
