@@ -281,7 +281,6 @@ const NewVisit: React.FC = () => {
     const result = validateFormFields(
       patientId,
       visitDate,
-      chiefComplaint,
       selectedProcedures,
       discountAfnValue + discountUsdValue,
       paidAmountAfnValue + paidAmountUsdValue,
@@ -545,8 +544,6 @@ const NewVisit: React.FC = () => {
 
                 <FormField
                   label={t("newVisit.chiefComplaint")}
-                  error={errors.chiefComplaint}
-                  required
                 >
                   <FormTextarea
                     value={chiefComplaint}

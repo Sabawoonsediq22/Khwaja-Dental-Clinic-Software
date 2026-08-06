@@ -17,7 +17,6 @@ export interface ValidationResult {
 export const validateNewVisitForm = (
   patientId: string | undefined,
   visitDate: string,
-  chiefComplaint: string,
   selectedProcedures: SelectedProcedure[],
   discountAmount: number,
   paidAmountValue: number,
@@ -31,10 +30,6 @@ export const validateNewVisitForm = (
 
   if (!visitDate) {
     errors.visitDate = t("newVisit.errors.dateRequired");
-  }
-
-  if (!chiefComplaint.trim()) {
-    errors.chiefComplaint = t("newVisit.errors.chiefComplaintRequired");
   }
 
   for (const proc of selectedProcedures) {
