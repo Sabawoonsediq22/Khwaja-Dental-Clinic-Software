@@ -29,6 +29,7 @@ const MONTH_NAMES = [
 interface StatCardProps {
   title: string;
   value: string;
+  valueUsd?: string;
   icon: React.ReactNode;
   trendData?: DailyTrendPoint[];
   trendColor?: string;
@@ -38,16 +39,21 @@ interface StatCardProps {
   };
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trendData, trendColor = "#0d9488", change }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trendData, trendColor = "#0d9488", change }) => (
   <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow dark:border-gray-700 dark:bg-gray-800 flex flex-col">
     <div className="flex items-start justify-between">
       <div className="min-w-0 flex-1">
         <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
           {title}
         </p>
-        <p className="mt-1.5 text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+        <p className="mt-1.5 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           {value}
         </p>
+        {valueUsd && (
+          <p className="mt-0.5 text-xl font-semibold text-gray-500 dark:text-gray-400">
+            {valueUsd}
+          </p>
+        )}
         {change && (
           <p className={`mt-1 text-xs font-semibold inline-flex items-center gap-1 ${
             change.positive === undefined
@@ -77,6 +83,9 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon, trendData, tren
 const formatAFN = (val: number) =>
   val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " AFN";
 
+const formatUSD = (val: number) =>
+  "$" + val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 const formatMonth = (monthStr: string) => {
   const [, m] = monthStr.split("-");
   return MONTH_NAMES[parseInt(m, 10) - 1] || monthStr;
@@ -84,7 +93,7 @@ const formatMonth = (monthStr: string) => {
 
 interface CustomTooltipProps {
   active?: boolean;
-  payload?: { value: number; name: string }[];
+  payload?: { value: number; dataKey?: string; name?: string }[];
   label?: string;
 }
 
@@ -93,9 +102,11 @@ const RevenueTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }
   return (
     <div className="rounded-xl border border-gray-200 bg-white/95 px-4 py-3 shadow-lg backdrop-blur-sm dark:border-gray-700 dark:bg-gray-800/95">
       <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{label}</p>
-      <p className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
-        {formatAFN(payload[0].value)}
-      </p>
+      {payload.map((entry, idx) => (
+        <p key={idx} className="mt-1 text-sm font-semibold text-gray-900 dark:text-white">
+          {entry.dataKey === "revenueAfn" ? formatAFN(entry.value) : formatUSD(entry.value)}
+        </p>
+      ))}
     </div>
   );
 };
@@ -146,7 +157,8 @@ const Reports: React.FC = () => {
       },
       {
         title: t("reports.stats.revenue", "Revenue"),
-        value: formatAFN(summary.revenue_this_month),
+        value: formatAFN(summary.revenue_this_month_afn),
+        valueUsd: formatUSD(summary.revenue_this_month_usd),
         icon: <CurrencyIcon size="md" />,
         trendData: summary.revenue_trend,
         trendColor: "#22c55e",
@@ -154,7 +166,8 @@ const Reports: React.FC = () => {
       },
       {
         title: t("reports.stats.outstanding", "Outstanding"),
-        value: formatAFN(summary.outstanding_balance),
+        value: formatAFN(summary.outstanding_balance_afn),
+        valueUsd: formatUSD(summary.outstanding_balance_usd),
         icon: <CurrencyIcon size="md" />,
         trendData: summary.outstanding_trend,
         trendColor: "#f59e0b",
@@ -181,9 +194,14 @@ const Reports: React.FC = () => {
     );
   }
 
-  const chartData: (MonthlyRevenuePoint & { monthLabel: string })[] =
+  const chartData: (MonthlyRevenuePoint & { monthLabel: string; revenueAfn: number; revenueUsd: number })[] =
     monthlyRevenue && monthlyRevenue.length > 0
-      ? monthlyRevenue.map((p) => ({ ...p, monthLabel: formatMonth(p.month) }))
+      ? monthlyRevenue.map((p) => ({
+          ...p,
+          monthLabel: formatMonth(p.month),
+          revenueAfn: p.revenue_afn,
+          revenueUsd: p.revenue_usd,
+        }))
       : summary
         ? [
             {
@@ -191,6 +209,8 @@ const Reports: React.FC = () => {
               revenue: summary.revenue_this_month,
               revenue_afn: summary.revenue_this_month_afn,
               revenue_usd: summary.revenue_this_month_usd,
+              revenueAfn: summary.revenue_this_month_afn,
+              revenueUsd: summary.revenue_this_month_usd,
               monthLabel: formatMonth(new Date().toISOString().slice(0, 7)),
             },
           ]
@@ -257,10 +277,15 @@ const Reports: React.FC = () => {
               <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -8, bottom: 0 }}>
                   <defs>
-                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="colorRevenueAfn" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#0d9488" stopOpacity={0.35} />
                       <stop offset="50%" stopColor="#0d9488" stopOpacity={0.12} />
                       <stop offset="100%" stopColor="#0d9488" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorRevenueUsd" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="50%" stopColor="#3b82f6" stopOpacity={0.12} />
+                      <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
@@ -286,12 +311,12 @@ const Reports: React.FC = () => {
                   <Tooltip content={<RevenueTooltip />} cursor={{ stroke: "#0d9488", strokeWidth: 1, strokeDasharray: "4 4" }} />
                   <Area
                     type="monotone"
-                    dataKey="revenue"
+                    dataKey="revenueAfn"
                     stroke="#0d9488"
                     strokeWidth={2.5}
                     fillOpacity={1}
-                    fill="url(#colorRevenue)"
-                    name={t("reports.charts.revenue", "Revenue")}
+                    fill="url(#colorRevenueAfn)"
+                    name="AFN"
                     dot={false}
                     activeDot={{
                       r: 5,
@@ -302,8 +327,36 @@ const Reports: React.FC = () => {
                     animationDuration={800}
                     animationEasing="ease-out"
                   />
+                  <Area
+                    type="monotone"
+                    dataKey="revenueUsd"
+                    stroke="#3b82f6"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#colorRevenueUsd)"
+                    name="USD"
+                    dot={false}
+                    activeDot={{
+                      r: 5,
+                      fill: "#3b82f6",
+                      stroke: "#fff",
+                      strokeWidth: 2,
+                    }}
+                    animationDuration={800}
+                    animationEasing="ease-out"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
+            </div>
+            <div className="mt-2 flex items-center justify-center gap-4 text-xs text-gray-500 dark:text-gray-400">
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#0d9488]" />
+                AFN
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="inline-block h-2.5 w-2.5 rounded-full bg-[#3b82f6]" />
+                USD
+              </span>
             </div>
           </CardContent>
         </Card>
