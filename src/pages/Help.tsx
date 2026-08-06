@@ -264,7 +264,11 @@ const Help: React.FC = () => {
             <TabsTrigger
               key={tab.id}
               value={tab.id}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none data-[state=active]:bg-white dark:hover:text-gray-300 transition-colors bg-blue-500 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700 cursor-pointer"
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg transition-colors cursor-pointer ${
+                activeTab === tab.id
+                  ? "bg-blue-500 text-white border-b-2 border-blue-500"
+                  : "bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+              }`}
             >
               <tab.icon size="xs" />
               {tab.label}
