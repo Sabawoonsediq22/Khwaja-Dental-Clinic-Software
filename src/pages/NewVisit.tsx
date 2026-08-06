@@ -88,8 +88,10 @@ const NewVisit: React.FC = () => {
   >([]);
   const [activeProcedureIndex, setActiveProcedureIndex] = useState<number>(0);
 
-  const [discount, setDiscount] = useState("");
-  const [paidAmount, setPaidAmount] = useState("");
+  const [discountAfn, setDiscountAfn] = useState("");
+  const [discountUsd, setDiscountUsd] = useState("");
+  const [paidAmountAfn, setPaidAmountAfn] = useState("");
+  const [paidAmountUsd, setPaidAmountUsd] = useState("");
   const [xrayFile, setXrayFile] = useState<File | null>(null);
   const [xrayPreview, setXrayPreview] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -193,8 +195,10 @@ const NewVisit: React.FC = () => {
     });
   };
 
-  const discountAmount = parseFloat(discount) || 0;
-  const paidAmountValue = parseFloat(paidAmount) || 0;
+  const discountAfnValue = parseFloat(discountAfn) || 0;
+  const discountUsdValue = parseFloat(discountUsd) || 0;
+  const paidAmountAfnValue = parseFloat(paidAmountAfn) || 0;
+  const paidAmountUsdValue = parseFloat(paidAmountUsd) || 0;
   const subtotalAfn = selectedProcedures.reduce(
     (sum, p) =>
       sum + p.priceAfn * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
@@ -205,12 +209,19 @@ const NewVisit: React.FC = () => {
       sum + p.priceUsd * (parseInt(p.numberOfProcedures.toString(), 10) || 1),
     0,
   );
-  const totalDueAfn = Math.max(subtotalAfn - discountAmount, 0);
-  const totalDueUsd = Math.max(subtotalUsd, 0);
-  const paidAmountAfn = Math.min(paidAmountValue, totalDueAfn);
-  const paidAmountUsd = 0;
-  const outstandingAfn = Math.max(totalDueAfn - paidAmountAfn, 0);
-  const outstandingUsd = Math.max(totalDueUsd - paidAmountUsd, 0);
+  const numProc = selectedProcedures.reduce(
+    (sum, p) => sum + (parseInt(p.numberOfProcedures.toString(), 10) || 0),
+    0,
+  );
+  const totalDueAfn = Math.max(subtotalAfn - discountAfnValue, 0);
+  const totalDueUsd = Math.max(subtotalUsd - discountUsdValue, 0);
+  const cappedPaidAfn = Math.min(paidAmountAfnValue, totalDueAfn);
+  const cappedPaidUsd = Math.min(paidAmountUsdValue, totalDueUsd);
+  const outstandingAfn = Math.max(totalDueAfn - cappedPaidAfn, 0);
+  const outstandingUsd = Math.max(totalDueUsd - cappedPaidUsd, 0);
+  const billingCurrencySymbol = getCurrencySymbol(
+    selectedProcedures[0]?.procedureName || "",
+  );
 
   const BillingStatusIcon: React.FC<{
     isActive: boolean;
@@ -272,8 +283,8 @@ const NewVisit: React.FC = () => {
       visitDate,
       chiefComplaint,
       selectedProcedures,
-      discountAmount,
-      paidAmountValue,
+      discountAfnValue + discountUsdValue,
+      paidAmountAfnValue + paidAmountUsdValue,
       t,
     );
     setErrors(result.errors);
@@ -343,10 +354,10 @@ const NewVisit: React.FC = () => {
 
       const createdInvoice = await api.invoices.create({
         visit_id: createdVisit.id,
-        discount_afn: discountAmount,
-        discount_usd: 0,
-        paid_amount_afn: paidAmountAfn,
-        paid_amount_usd: paidAmountUsd,
+        discount_afn: discountAfnValue > 0 ? discountAfnValue : 0,
+        discount_usd: discountUsdValue > 0 ? discountUsdValue : 0,
+        paid_amount_afn: cappedPaidAfn,
+        paid_amount_usd: cappedPaidUsd,
       });
 
       queryClient.invalidateQueries({
@@ -812,10 +823,10 @@ const NewVisit: React.FC = () => {
             </div>
           </section>
 
-          <section className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <div className="rounded-t-lg border-b border-gray-200 bg-gray-100 dark:bg-gray-700 p-4 dark:border-gray-700">
+          <section className="space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+            <div className="border-b bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-t-lg p-4">
               <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                <BillingIcon className="h-5 w-5 text-amber-600" />
+                <BillingIcon className="w-5 h-5 text-amber-600" />
                 {t("newVisit.billing")}
               </h3>
             </div>
@@ -840,28 +851,21 @@ const NewVisit: React.FC = () => {
                           />
                           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             {proc.procedureName ||
-                              t("newVisit.selectedProcedure")}
+                              t("newPatient.selectedProcedure")}
                           </p>
                         </div>
-                        {(proc.priceAfn > 0 || proc.priceUsd > 0) && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            {proc.priceAfn > 0 && (
-                              <span className="font-medium text-gray-700 dark:text-gray-300">
-                                {formatCurrency(proc.priceAfn)} AFN
-                              </span>
-                            )}
-                            {proc.priceAfn > 0 && proc.priceUsd > 0 && (
-                              <span className="text-gray-400 dark:text-gray-500">
-                                /
-                              </span>
-                            )}
-                            {proc.priceUsd > 0 && (
-                              <span className="font-medium text-gray-700 dark:text-gray-300">
-                                ${formatCurrency(proc.priceUsd)}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        <div className="relative w-36">
+                          <FormInput
+                            type="number"
+                            readOnly
+                            value={proc.procedurePrice || ""}
+                            className="w-full text-right pr-10"
+                            disabled={isSubmitting}
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                            {getCurrencySymbol(proc.procedureName)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   ))
@@ -869,141 +873,257 @@ const NewVisit: React.FC = () => {
                 <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
-                      <BillingStatusIcon
-                        isActive={selectedProcedures.length > 0}
-                      />
+                      <BillingStatusIcon isActive={numProc > 0} />
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t("newVisit.numberOfProcedures")}
                       </p>
                     </div>
-                    <div className="text-right text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {selectedProcedures.reduce(
-                        (sum, p) =>
-                          sum +
-                          (parseInt(p.numberOfProcedures.toString(), 10) || 0),
-                        0,
-                      )}
+                    <div className="w-26 mr-10 text-right text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {numProc}
                     </div>
                   </div>
                 </div>
-                <BillingRow
-                  iconActive={discountAmount > 0}
-                  label={t("newVisit.discount")}
-                  currency="AFN"
-                  value={discount}
-                  placeholder={t("newPatient.discount")}
-                  error={errors.discount}
-                  onChange={(event) => setDiscount(event.target.value)}
-                  disabled={isSubmitting}
-                />
-                <BillingRow
-                  iconActive={paidAmountValue > 0}
-                  label={t("newVisit.paidAmount")}
-                  currency="AFN"
-                  value={paidAmount}
-                  placeholder={t("newPatient.paidAmount")}
-                  error={errors.paidAmount}
-                  onChange={(event) => setPaidAmount(event.target.value)}
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              <div className="rounded-xl border-2 border-amber-200 bg-linear-to-b from-amber-50 to-orange-50 p-5 dark:border-gray-700 dark:from-gray-700/50 dark:to-gray-700/30 h-full flex flex-col justify-center">
-                <div className="mb-3">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-                    {t("newVisit.billingSummary")}
-                  </p>
-                </div>
                 {subtotalAfn > 0 && (
-                  <div className="flex items-center justify-between py-1">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {t("newVisit.subtotal")} (AFN)
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                      {formatCurrency(subtotalAfn)} AFN
-                    </p>
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <BillingStatusIcon isActive={discountAfnValue > 0} />
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t("newVisit.discount")} (AFN)
+                        </p>
+                      </div>
+                      <div className="relative w-36">
+                        <FormInput
+                          type="number"
+                          placeholder={t("newVisit.discount")}
+                          onChange={(e) => setDiscountAfn(e.target.value)}
+                          value={discountAfn}
+                          className="w-full text-right pr-10"
+                          disabled={isSubmitting}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          AFN
+                        </span>
+                      </div>
+                    </div>
+                    {errors.discount && <p className="mt-2 text-sm text-destructive">{errors.discount}</p>}
                   </div>
                 )}
                 {subtotalUsd > 0 && (
-                  <div className="flex items-center justify-between py-1">
-                    <p className="text-sm text-gray-600 dark:text-gray-300">
-                      {t("newVisit.subtotal")} ($)
-                    </p>
-                    <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                      ${formatCurrency(subtotalUsd)}
-                    </p>
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <BillingStatusIcon isActive={discountUsdValue > 0} />
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t("newVisit.discount")} ($)
+                        </p>
+                      </div>
+                      <div className="relative w-36">
+                        <FormInput
+                          type="number"
+                          placeholder={t("newVisit.discount")}
+                          onChange={(e) => setDiscountUsd(e.target.value)}
+                          value={discountUsd}
+                          className="w-full text-right pr-10"
+                          disabled={isSubmitting}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          $
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
-                <div className="flex items-center justify-between py-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {t("newVisit.discount")}
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {formatCurrency(discountAmount)} AFN
-                  </p>
-                </div>
-                <div className="flex items-center justify-between py-1">
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {t("newVisit.paidAmount")}
-                  </p>
-                  <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {formatCurrency(paidAmountAfn)} AFN
-                  </p>
-                </div>
-                <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
-                {totalDueAfn > 0 && (
-                  <div className="flex items-center justify-between py-1">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {t("newVisit.totalDue")} (AFN)
-                    </p>
-                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                      {formatCurrency(totalDueAfn)} AFN
-                    </p>
+                {subtotalAfn > 0 && (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <BillingStatusIcon isActive={paidAmountAfnValue > 0} />
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t("newVisit.paidAmount")} (AFN)
+                        </p>
+                      </div>
+                      <div className="relative w-36">
+                        <FormInput
+                          type="number"
+                          placeholder={t("newVisit.paidAmount")}
+                          onChange={(e) => setPaidAmountAfn(e.target.value)}
+                          value={paidAmountAfn}
+                          className="w-full text-right pr-10"
+                          disabled={isSubmitting}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          AFN
+                        </span>
+                      </div>
+                    </div>
+                    {errors.paidAmount && <p className="mt-2 text-sm text-destructive">{errors.paidAmount}</p>}
                   </div>
                 )}
-                {totalDueUsd > 0 && (
-                  <div className="flex items-center justify-between py-1">
-                    <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      {t("newVisit.totalDue")} ($)
-                    </p>
-                    <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
-                      ${formatCurrency(totalDueUsd)}
-                    </p>
+                {subtotalUsd > 0 && (
+                  <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <BillingStatusIcon isActive={paidAmountUsdValue > 0} />
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t("newVisit.paidAmount")} ($)
+                        </p>
+                      </div>
+                      <div className="relative w-36">
+                        <FormInput
+                          type="number"
+                          placeholder={t("newVisit.paidAmount")}
+                          onChange={(e) => setPaidAmountUsd(e.target.value)}
+                          value={paidAmountUsd}
+                          className="w-full text-right pr-10"
+                          disabled={isSubmitting}
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
+                          $
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 )}
-                <div className="mt-2 border-t-2 border-amber-500" />
-                {outstandingAfn > 0 && (
-                  <div className="flex items-center justify-between py-1 mt-2">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      {t("newVisit.outstanding")} (AFN)
-                    </p>
-                    <p className="text-lg font-bold text-red-600 dark:text-red-400">
-                      {formatCurrency(outstandingAfn)} AFN
-                    </p>
-                  </div>
-                )}
-                {outstandingUsd > 0 && (
-                  <div className="flex items-center justify-between py-1 mt-2">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white">
-                      {t("newVisit.outstanding")} ($)
-                    </p>
-                    <p className="text-lg font-bold text-red-600 dark:text-red-400">
-                      ${formatCurrency(outstandingUsd)}
+              </div>
+
+              <div className="space-y-4 flex-1">
+                <div className="rounded-xl border-2 border-amber-200 bg-linear-to-b from-amber-50 to-orange-50 p-5 dark:border-gray-700 dark:from-gray-700/50 dark:to-gray-700/30 h-full flex flex-col justify-center">
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                      {t("newVisit.billingSummary")}
                     </p>
                   </div>
-                )}
-                {outstandingAfn === 0 &&
-                  outstandingUsd === 0 &&
-                  selectedProcedures.length > 0 && (
-                    <div className="flex items-center justify-between py-1 mt-2">
-                      <p className="text-sm font-bold text-green-600 dark:text-green-400">
-                        {t("newVisit.outstanding")}
+                  {selectedProcedures.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-6 text-center">
+                      <BillingIcon className="h-10 w-10 text-amber-300 dark:text-amber-600 mb-2" />
+                      <p className="text-sm text-amber-600/70 dark:text-amber-400/60">
+                        {t("newPatient.noProceduresAdded")}
                       </p>
-                      <p className="text-lg font-bold text-green-600 dark:text-green-400">
-                        0 AFN
+                      <p className="text-xs text-amber-500/50 dark:text-amber-400/40 mt-1">
+                        {t("newPatient.billingSummaryEmpty", "Add procedures to see billing details")}
+                      </p>
+                    </div>
+                  ) : null}
+                  {subtotalAfn > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {t("newVisit.subtotal")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {formatCurrency(subtotalAfn)} AFN
                       </p>
                     </div>
                   )}
+                  {subtotalUsd > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {t("newVisit.subtotal")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        ${formatCurrency(subtotalUsd)}
+                      </p>
+                    </div>
+                  )}
+                  {discountAfnValue > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {t("newVisit.discount")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {formatCurrency(discountAfnValue)} AFN
+                      </p>
+                    </div>
+                  )}
+                  {discountUsdValue > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {t("newVisit.discount")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        ${formatCurrency(discountUsdValue)}
+                      </p>
+                    </div>
+                  )}
+                  {paidAmountAfnValue > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {t("newVisit.paidAmount")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        {formatCurrency(paidAmountAfnValue)} AFN
+                      </p>
+                    </div>
+                  )}
+                  {paidAmountUsdValue > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {t("newVisit.paidAmount")}
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                        ${formatCurrency(paidAmountUsdValue)}
+                      </p>
+                    </div>
+                  )}
+                  {selectedProcedures.length > 0 && (
+                    <div className="my-2 border-t border-amber-300 dark:border-gray-600" />
+                  )}
+                  {totalDueAfn > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {t("newVisit.totalDue")}
+                      </p>
+                      <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
+                        {formatCurrency(totalDueAfn)} AFN
+                      </p>
+                    </div>
+                  )}
+                  {totalDueUsd > 0 && (
+                    <div className="flex justify-between items-center py-1">
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {t("newVisit.totalDue")}
+                      </p>
+                      <p className="text-lg font-bold text-amber-700 dark:text-amber-400">
+                        ${formatCurrency(totalDueUsd)}
+                      </p>
+                    </div>
+                  )}
+                  {selectedProcedures.length > 0 && (
+                    <div className="mt-2 border-t-2 border-amber-500" />
+                  )}
+                  {outstandingAfn > 0 && (
+                    <div className="flex justify-between items-center py-1 mt-2">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                        {t("newVisit.outstanding")}
+                      </p>
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400">
+                        {formatCurrency(outstandingAfn)} AFN
+                      </p>
+                    </div>
+                  )}
+                  {outstandingUsd > 0 && (
+                    <div className="flex justify-between items-center py-1 mt-2">
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                        {t("newVisit.outstanding")}
+                      </p>
+                      <p className="text-lg font-bold text-red-600 dark:text-red-400">
+                        ${formatCurrency(outstandingUsd)}
+                      </p>
+                    </div>
+                  )}
+                  {outstandingAfn === 0 &&
+                    outstandingUsd === 0 &&
+                    selectedProcedures.length > 0 && (
+                      <div className="flex justify-between items-center py-1 mt-2">
+                        <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                          {t("newVisit.outstanding")}
+                        </p>
+                        <p className="text-lg font-bold text-green-600 dark:text-green-400">
+                          0 {billingCurrencySymbol}
+                        </p>
+                      </div>
+                    )}
+                </div>
               </div>
             </div>
           </section>
@@ -1024,57 +1144,6 @@ const NewVisit: React.FC = () => {
         </div>
       </form>
     </>
-  );
-};
-
-interface BillingRowProps {
-  label: string;
-  value: string;
-  placeholder?: string;
-  iconActive: boolean;
-  currency?: string;
-  error?: string;
-  disabled?: boolean;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-}
-
-const BillingRow: React.FC<BillingRowProps> = ({
-  label,
-  value,
-  placeholder,
-  iconActive,
-  currency,
-  error,
-  disabled,
-  onChange,
-}) => {
-  const Icon = iconActive ? CheckCircleIcon : CrossCircleIcon;
-
-  return (
-    <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-700/50">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Icon className={iconActive ? "text-green-500" : "text-red-500"} />
-          <p className="text-sm text-muted-foreground">{label}</p>
-        </div>
-        <div className="relative w-40">
-          <FormInput
-            type={currency ? "number" : "number"}
-            value={value}
-            placeholder={placeholder}
-            onChange={onChange}
-            disabled={disabled}
-            className="w-full pr-12 text-right"
-          />
-          {currency && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">
-              {currency}
-            </span>
-          )}
-        </div>
-      </div>
-      {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
-    </div>
   );
 };
 

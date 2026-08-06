@@ -67,7 +67,7 @@ impl ReportService {
         .await?;
 
         let revenue_this_month: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(paid_amount), 0.0) FROM invoices WHERE strftime('%Y', issued_at) = ?"
+            "SELECT COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) FROM invoices WHERE strftime('%Y', issued_at) = ?"
         )
         .bind(&year_str)
         .fetch_one(pool)
@@ -126,7 +126,7 @@ impl ReportService {
 
         // Daily revenue trend (current month)
         let revenue_rows: Vec<(i64, f64)> = sqlx::query_as(
-            "SELECT CAST(strftime('%d', received_at) AS INTEGER) as day_num, COALESCE(SUM(amount), 0.0) as val
+            "SELECT CAST(strftime('%d', received_at) AS INTEGER) as day_num, COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) as val
              FROM payments
              WHERE strftime('%Y-%m', received_at) = ?
              GROUP BY strftime('%d', received_at)
@@ -174,7 +174,7 @@ impl ReportService {
         .await?;
 
         let prev_revenue: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(amount), 0.0) FROM payments
+            "SELECT COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) FROM payments
              WHERE received_at >= ? AND received_at < ?"
         )
         .bind(&prev_start_str)
@@ -244,7 +244,7 @@ impl ReportService {
     pub async fn monthly_revenue(pool: &SqlitePool) -> AppResult<Vec<MonthlyRevenuePoint>> {
         let rows: Vec<(String, f64, f64, f64)> = sqlx::query_as(
             "SELECT strftime('%Y-%m', issued_at) as month,
-                    COALESCE(SUM(paid_amount), 0.0) as revenue,
+                    COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) as revenue,
                     COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
                     COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
              FROM invoices

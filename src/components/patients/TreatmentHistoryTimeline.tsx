@@ -314,18 +314,18 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                   </div>
                                 )}
 
-                                <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4 space-y-3">
+                                <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-4">
                                   <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                     {t("patientProfile.billingDetails", "Billing Details")}
                                   </span>
-                                  <div className="space-y-2 pt-1">
-                                    <div className="flex items-center justify-between py-1">
+                                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3 pt-3">
+                                    <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.quantity", "Quantity")}</p>
-                                      <p className="text-sm font-medium text-gray-900 dark:text-white">{entry.procedure.quantity}</p>
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">{entry.procedure.quantity}</p>
                                     </div>
-                                    <div className="flex items-center justify-between py-1">
+                                    <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.unitPrice", "Unit Price")}</p>
-                                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
                                         {entry.procedure.unitPriceAfn > 0
                                           ? <>{entry.procedure.unitPriceAfn.toLocaleString()} AFN</>
                                           : entry.procedure.unitPriceUsd > 0
@@ -334,9 +334,9 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                         }
                                       </p>
                                     </div>
-                                    <div className="flex items-center justify-between py-1">
+                                    <div>
                                       <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.subtotal", "Subtotal")}</p>
-                                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                                      <p className="text-sm font-medium text-gray-900 dark:text-white mt-0.5">
                                         {entry.procedure.unitPriceAfn > 0
                                           ? <>{(entry.procedure.unitPriceAfn * entry.procedure.quantity).toLocaleString()} AFN</>
                                           : entry.procedure.unitPriceUsd > 0
@@ -345,10 +345,9 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                         }
                                       </p>
                                     </div>
-                                    <div className="border-t border-gray-200 dark:border-gray-600 my-1" />
-                                    <div className="flex items-center justify-between py-1">
-                                      <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("newPatient.totalDue", "Total Due")}</p>
-                                      <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                                    <div>
+                                      <p className="text-xs text-gray-500 dark:text-gray-400">{t("newPatient.totalDue", "Total Due")}</p>
+                                      <p className="text-sm font-bold text-green-600 dark:text-green-400 mt-0.5">
                                         {entry.procedure.totalPriceAfn > 0
                                           ? <>{entry.procedure.totalPriceAfn.toLocaleString()} AFN</>
                                           : entry.procedure.totalPriceUsd > 0
@@ -359,10 +358,9 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                     </div>
                                     {entry.invoice && (
                                       <>
-                                        <div className="border-t border-gray-200 dark:border-gray-600 my-1" />
-                                        <div className="flex items-center justify-between py-1">
-                                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("patientProfile.paid", "Paid")}</p>
-                                          <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                                        <div>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.paid", "Paid")}</p>
+                                          <p className="text-sm font-bold text-blue-600 dark:text-blue-400 mt-0.5">
                                             {entry.invoice.paidAfn > 0
                                               ? <>{entry.invoice.paidAfn.toLocaleString()} AFN</>
                                               : entry.invoice.paidUsd > 0
@@ -371,9 +369,9 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                                             }
                                           </p>
                                         </div>
-                                        <div className="flex items-center justify-between py-1">
-                                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{t("patientProfile.outstanding", "Outstanding")}</p>
-                                          <p className="text-sm font-bold text-red-600 dark:text-red-400">
+                                        <div>
+                                          <p className="text-xs text-gray-500 dark:text-gray-400">{t("patientProfile.outstanding", "Outstanding")}</p>
+                                          <p className="text-sm font-bold text-red-600 dark:text-red-400 mt-0.5">
                                             {entry.invoice.outstandingAfn > 0
                                               ? <>{entry.invoice.outstandingAfn.toLocaleString()} AFN</>
                                               : entry.invoice.outstandingUsd > 0
