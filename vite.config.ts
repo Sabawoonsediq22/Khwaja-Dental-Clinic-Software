@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 
 const host = process.env.TAURI_DEV_HOST;
 
-export default defineConfig(async () => ({
+export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
@@ -28,12 +28,13 @@ export default defineConfig(async () => ({
     },
   },
 
+  esbuild: {
+    drop: ["console", "debugger"],
+  },
+
   build: {
     target: "es2021",
     minify: "esbuild",
-    esbuild: {
-      drop: ["console", "debugger"],
-    },
     rollupOptions: {
       output: {
         manualChunks: {
@@ -47,4 +48,4 @@ export default defineConfig(async () => ({
     sourcemap: false,
     chunkSizeWarningLimit: 500,
   },
-}));
+});
