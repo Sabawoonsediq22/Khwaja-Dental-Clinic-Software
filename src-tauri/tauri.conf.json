@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Khwaja Dental & Implants Clinic",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "identifier": "com.khwaja.dental-clinic",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "Khwaja Dental & Implants Clinic",
-        "width": 1000,
-        "height": 600,
+        "width": 1200,
+        "height": 700,
         "minWidth": 900,
         "minHeight": 600,
         "center": true,
@@ -22,41 +22,67 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost data:; style-src 'self' 'unsafe-inline'; font-src 'self' data:"
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self' data:; script-src 'self' 'unsafe-inline'; connect-src 'self' https://oauth2.googleapis.com https://www.googleapis.com ipc: http://ipc.localhost; worker-src 'self' blob:"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/Sabawoonsediq22/Khwaja-Dental-Clinic-Software/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMzODM2REY1Qzg4Mzg5MjgKUldRb2lZUEk5VzJETTlCQUtYUU1LQ1NxWG9GcWVMZGxiVUUrLzNLelplbTQ4SS9YYTZrdTBaZXoK",
+      "windows": {
+        "nsis": {
+          "installMode": "both"
+        }
+      }
     }
   },
   "bundle": {
     "active": true,
     "publisher": "Parsa Technology",
-    "targets": "nsis",
-    "icon": ["icons/icon.ico", "icons/icon.icns", "icons/icon.png"],
+    "targets": ["nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Medical",
+    "shortDescription": "Dental Clinic Management System",
+    "longDescription": "Khwaja Dental & Implants Clinic - Complete dental practice management solution with patient records, visit tracking, treatment planning, invoicing, billing, backups, and reporting.",
+    "copyright": "Copyright (C) 2026 Parsa Technology",
     "windows": {
-      "wix": {
-        "language": "en-US",
-        "template": "default"
-      },
       "nsis": {
-        "installMode": "currentUser",
+        "installMode": "both",
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
-        "startMenuFolder": "Khwaja-Dental-Clinic"
+        "startMenuFolder": "Khwaja Dental Clinic",
+        "displayLanguageSelector": false
       }
     },
     "macOS": {
-      "minimumSystemVersion": "10.15"
+      "minimumSystemVersion": "10.15",
+      "dmg": {
+        "appPosition": { "x": 180, "y": 170 },
+        "applicationFolderPosition": { "x": 480, "y": 170 },
+        "windowSize": { "width": 660, "height": 400 }
+      }
     },
     "linux": {
       "deb": {
-        "depends": []
+        "depends": [
+          "libwebkit2gtk-4.1-0",
+          "libgtk-3-0",
+          "libayatana-appindicator3-1",
+          "librsvg2-2",
+          "libsqlite3-0"
+        ]
+      },
+      "appimage": {
+        "bundleMediaFramework": false
       }
-    }
-  },
-  "plugins": {
-    "updater": {
-      "pubkey": "",
-      "endpoints": [
-        "https://releases.khwaja-clinic.com/update/{{target}}-{{arch}}/{{current_version}}"
-      ]
     }
   }
 }

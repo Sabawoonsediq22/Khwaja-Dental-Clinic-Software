@@ -12,6 +12,10 @@ fn main() {
     if dotenv_path.exists() {
         if let Ok(content) = std::fs::read_to_string(&dotenv_path) {
             for line in content.lines() {
+                let line = line.trim();
+                if line.is_empty() || line.starts_with('#') {
+                    continue;
+                }
                 if let Some((key, value)) = line.split_once('=') {
                     match key.trim() {
                         "GOOGLE_OAUTH_CLIENT_ID" => {
@@ -25,6 +29,10 @@ fn main() {
                 }
             }
         }
+    }
+
+    if client_id.is_empty() {
+        println!("cargo:warning=GOOGLE_OAUTH_CLIENT_ID not set. Google Drive features will be unavailable.");
     }
 
     let content = format!(

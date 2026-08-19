@@ -39,7 +39,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ["react", "react-dom", "react-router-dom"],
-          ui: ["@tanstack/react-query", "recharts"],
+          ui: ["@tanstack/react-query"],
           pdf: ["jspdf", "jspdf-autotable"],
           i18n: ["react-i18next", "i18next"],
         },

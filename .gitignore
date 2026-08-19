@@ -1,3 +1,14 @@
+# Dependencies
+node_modules
+
+# Build output
+dist
+dist-ssr
+
+# Environment files
+src-tauri/.env
+*.local
+
 # Logs
 logs
 *.log
@@ -6,11 +17,6 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
 
 # Editor directories and files
 .vscode/*
@@ -23,5 +29,13 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment files
-src-tauri/.env
+# OS files
+Thumbs.db
+Desktop.ini
+
+# Debug files
+*.pdb
+
+# Misc
+target-list.txt
+tauri-info.txt

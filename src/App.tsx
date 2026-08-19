@@ -5,6 +5,7 @@ import MainLayout from "./components/layouts/MainLayout";
 import "./i18n";
 import { LoadingSpinner } from "./components/ui";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { UpdateNotification } from "./components/common/UpdateNotification";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Patients = lazy(() => import("./pages/Patients"));
@@ -67,6 +68,7 @@ function App() {
           </Routes>
         </Suspense>
       </MainLayout>
+      <UpdateNotification />
     </ErrorBoundary>
   );
 }
