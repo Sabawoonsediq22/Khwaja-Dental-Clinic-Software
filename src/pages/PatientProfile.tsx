@@ -258,7 +258,7 @@ const PatientProfile: React.FC = () => {
 
   const handleViewAllVisits = () => {
     if (patient) {
-      navigate(`/patients/${patient.id}/visits`);
+      navigate(`/patients/${patient.id}`);
     }
   };
 
