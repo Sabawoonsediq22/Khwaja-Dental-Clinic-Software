@@ -5,6 +5,7 @@ import { api } from "../lib/api";
 
 import BackupSection from "../components/settings/BackupSection";
 import StatsCards from "../components/settings/StatsCards";
+import AboutSection from "../components/settings/AboutSection";
 import { useBackupSettings } from "../hooks/useBackup";
 import ClinicForm from "../components/settings/ClinicForm";
 
@@ -51,6 +52,8 @@ const Settings: React.FC = () => {
       </div>
 
       <StatsCards backups={[]} backupSettings={backupSettings} />
+
+      <AboutSection />
     </div>
   );
 };

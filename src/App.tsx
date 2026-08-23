@@ -15,7 +15,6 @@ const PatientProfile = lazy(() => import("./pages/PatientProfile"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Billing = lazy(() => import("./pages/Billing"));
-const About = lazy(() => import("./pages/About"));
 const Help = lazy(() => import("./pages/Help"));
 
 const PageLoader = () => (
@@ -62,7 +61,6 @@ function App() {
             <Route path="/visits/:id" element={<Patients />} />
             <Route path="/treatments/:id" element={<Patients />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/about" element={<About />} />
             <Route path="/help" element={<Help />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>

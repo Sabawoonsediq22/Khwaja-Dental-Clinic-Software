@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import {
-  AboutIcon,
   BillingIcon,
   CollapseIcon,
   ExpandIcon,
@@ -50,7 +49,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { name: t("nav.patients"), href: "/patients", icon: PatientIcon },
     { name: t("nav.billings"), href: "/billing", icon: BillingIcon },
     { name: t("nav.reports"), href: "/reports", icon: ReportsIcon },
-    { name: t("nav.about"), href: "/about", icon: AboutIcon },
     { name: t("nav.help"), href: "/help", icon: HelpIcon },
   ];
 
