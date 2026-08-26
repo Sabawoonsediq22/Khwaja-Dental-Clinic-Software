@@ -7,7 +7,7 @@ const inputVariants = cva(
   {
     variants: {
       variant: {
-        default: "border border-input hover:border-accent-foreground/20",
+        default: "border border-input hover:border-accent-foreground/20 border-gray-500 border rounded-md mt-1",
         destructive: "border border-destructive hover:border-destructive/80",
       },
       inputSize: {

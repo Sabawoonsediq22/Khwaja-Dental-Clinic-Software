@@ -129,6 +129,20 @@ async fn upload_xray(
 
 // Visit commands
 #[tauri::command]
+async fn list_all_visits(
+    state: State<'_, AppState>,
+    params: crate::models::VisitListParams,
+) -> Result<crate::models::VisitPageResult, String> {
+    let query = params.query.as_deref();
+    let status = params.status.as_deref();
+    let page = params.page.unwrap_or(1);
+    let per_page = params.per_page.unwrap_or(10);
+    VisitService::list_all(&state.db, query, status, page, per_page)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 async fn create_visit(
     state: State<'_, AppState>,
     input: CreateVisitInput,
@@ -1076,6 +1090,7 @@ pub fn run() {
             get_patient_xrays,
             upload_xray,
             create_visit,
+            list_all_visits,
             update_visit_status,
             get_patient_visits,
             get_patient_treatment_history,

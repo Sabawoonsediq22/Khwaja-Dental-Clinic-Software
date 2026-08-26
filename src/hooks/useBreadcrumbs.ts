@@ -22,12 +22,12 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
     const breadcrumbMap: Record<string, string> = {
       dashboard: t("nav.dashboard"),
       patients: t("nav.patients"),
+      visits: t("nav.visits"),
       billing: t("nav.billings"),
       reports: t("nav.reports"),
       settings: t("nav.settings"),
       about: t("nav.about"),
       help: t("nav.help"),
-      visits: t("newVisit.visits"),
       new: isNewVisitPage ? t("newVisit.title") : t("patients.new") || "New Patient",
     };
 

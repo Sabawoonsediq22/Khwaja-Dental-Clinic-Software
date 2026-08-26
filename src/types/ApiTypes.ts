@@ -522,3 +522,36 @@ export interface ErrorResponse {
   message: string;
   details: string | null;
 }
+
+export interface VisitListItem {
+  id: string;
+  patient_id: string;
+  patient_name: string;
+  patient_phone: string | null;
+  visit_date: string;
+  chief_complaint: string | null;
+  clinical_notes: string | null;
+  status: "Open" | "Completed" | "Cancelled";
+  procedures_count: number;
+  total_afn: number;
+  total_usd: number;
+  created_at: string;
+}
+
+export interface VisitPageResult {
+  items: VisitListItem[];
+  total: number;
+  page: number;
+  per_page: number;
+  total_pages: number;
+  open_count: number;
+  completed_count: number;
+  cancelled_count: number;
+}
+
+export interface VisitListParams {
+  query?: string;
+  status?: string;
+  page?: number;
+  perPage?: number;
+}

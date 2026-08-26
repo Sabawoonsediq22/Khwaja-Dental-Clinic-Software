@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   BillingIcon,
   CollapseIcon,
@@ -10,13 +11,16 @@ import {
   LayoutIcon,
   PatientIcon,
   ReportsIcon,
+  ClipboardListIcon,
   MoonIcon,
   SettingsIcon,
   SunIcon,
+  UpdateIcon,
 } from "../../shared/icons/icons";
 import { Button, Breadcrumbs } from "../ui/index";
 import { cn } from "../../lib/utils";
 import { useKeyboardShortcut } from "../../hooks/useKeyboardShortcut";
+import { useUpdate } from "../../hooks/useUpdate";
 import Logo from "../../assets/favicon.svg";
 import { api } from "../../lib/api";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
@@ -34,6 +38,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isRTL = i18n.language === "ps";
   const [isDark, setIsDark] = useState(false);
 
+  const {
+    updateAvailable,
+    updateInfo,
+    isDownloading,
+    downloadProgress,
+    installUpdate,
+  } = useUpdate();
+
+  const handleUpdate = async () => {
+    try {
+      await installUpdate();
+    } catch {
+      toast.error("Update failed. Please try again.");
+    }
+  };
+
   // Theme functions
   const applyTheme = (dark: boolean) => {
     document.documentElement.classList.toggle("dark", dark);
@@ -47,6 +67,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const navigation = [
     { name: t("nav.dashboard"), href: "/dashboard", icon: LayoutIcon },
     { name: t("nav.patients"), href: "/patients", icon: PatientIcon },
+    { name: t("nav.visits"), href: "/visits", icon: ClipboardListIcon },
     { name: t("nav.billings"), href: "/billing", icon: BillingIcon },
     { name: t("nav.reports"), href: "/reports", icon: ReportsIcon },
     { name: t("nav.help"), href: "/help", icon: HelpIcon },
@@ -222,6 +243,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             >
               {isDark ? <SunIcon size="lg" /> : <MoonIcon size="lg" />}
             </Button>
+
+            {/* Update button */}
+            {updateAvailable && (
+              <Button
+                onClick={handleUpdate}
+                variant="ghost"
+                size="icon"
+                disabled={isDownloading}
+                className={cn(
+                  "cursor-pointer border rounded-lg dark:border-gray-500 transition-colors relative",
+                  isDownloading
+                    ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
+                    : "bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50"
+                )}
+                title={isDownloading ? `Downloading... ${downloadProgress}%` : `Update to v${updateInfo?.version}`}
+              >
+                <UpdateIcon size="lg" />
+                {!isDownloading && (
+                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
+                )}
+              </Button>
+            )}
+
             {/* Settings button */}
             <NavLink
               to="/settings"

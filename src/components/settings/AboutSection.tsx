@@ -168,7 +168,7 @@ const AboutSection: React.FC = () => {
               label={t("about.contact.hours", "Hours")}
               value={t(
                 "about.contact.hours",
-                "Sat - Thu: 9:00 AM - 6:00 PM"
+                "Sat - Thu: 8:00 AM - 6:00 PM"
               )}
             />
           </div>

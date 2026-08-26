@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "patients": "Patients",
+    "visits": "All Visits",
     "billings": "Billing",
     "reports": "Reports",
     "about": "About Us",
@@ -517,7 +518,7 @@
       "address": "Behsood, Nangarhar, Afghanistan",
       "email": "info@parsatechnology.com",
       "website": "www.parsatechnology.com",
-      "hours": "Sat - Thu: 9:00 AM - 6:00 PM"
+      "hours": "Sat - Thu: 8:00 AM - 6:00 PM"
     },
     "copyright": "© {{year}} Parsa Technology. All rights reserved."
   },
@@ -923,6 +924,47 @@
     "genderRequired": "Gender is required",
     "ageRange": "Age must be between 1 and 120",
     "addressMaxLength": "Address must be 200 characters or less"
+  },
+  "allVisits": {
+    "title": "All Visits",
+    "description": "Browse and manage all patient visits across the clinic.",
+    "searchPlaceholder": "Search by visit ID, patient name, phone or complaint...",
+    "totalVisits": "Total Visits",
+    "procedures": "procedures",
+    "loading": "Loading visits...",
+    "errorLoading": "Error loading visits",
+    "filters": {
+      "status": "Status",
+      "all": "All",
+      "open": "Open",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "status": {
+      "open": "Open",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "no": "NO.",
+      "patient": "PATIENT",
+      "visitId": "VISIT ID",
+      "date": "DATE",
+      "complaint": "COMPLAINT",
+      "procedures": "PROCEDURES",
+      "total": "TOTAL",
+      "status": "STATUS",
+      "actions": "ACTIONS",
+      "empty": "No visits match your current search and filters."
+    },
+    "actions": {
+      "viewPatient": "View Patient",
+      "viewProfile": "View Profile"
+    },
+    "notifications": {
+      "statusUpdated": "Visit status updated to {{status}}",
+      "statusUpdateError": "Failed to update visit status"
+    }
   },
   "product": {
     "name": "Khwaja Dental & Implants Clinic"

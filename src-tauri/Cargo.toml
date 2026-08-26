@@ -1,6 +1,6 @@
 [package]
 name = "khwaja-dental-clinic"
-version = "1.0.0"
+version = "1.0.1"
 description = "Dental Clinic Management System"
 authors = ["Parsa Technology"]
 edition = "2021"

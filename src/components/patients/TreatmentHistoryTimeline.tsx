@@ -291,7 +291,7 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
                             </div>
 
                             {isExpanded && (
-                              <div className="px-4 pb-4 space-y-3 border-t border-gray-100 dark:border-gray-700/50">
+                              <div className="px-4 pb-4 space-y-3">
                                 {entry.notes && (
                                   <div className="pt-3">
                                     <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">

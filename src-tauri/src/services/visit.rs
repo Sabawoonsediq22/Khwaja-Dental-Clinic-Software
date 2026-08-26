@@ -182,4 +182,111 @@ impl VisitService {
 
         Ok(result)
     }
+
+    pub async fn list_all(
+        pool: &SqlitePool,
+        query: Option<&str>,
+        status: Option<&str>,
+        page: u32,
+        per_page: u32,
+    ) -> AppResult<VisitPageResult> {
+        let offset = (page.saturating_sub(1)) * per_page;
+
+        let mut where_clauses = Vec::new();
+        let mut bind_values: Vec<String> = Vec::new();
+
+        if let Some(q) = query {
+            if !q.trim().is_empty() {
+                let pattern = format!("%{}%", q.trim());
+                where_clauses.push(
+                    "(v.id LIKE ?1 OR v.chief_complaint LIKE ?1 OR p.full_name LIKE ?1 OR p.phone LIKE ?1)"
+                );
+                bind_values.push(pattern);
+            }
+        }
+
+        if let Some(s) = status {
+            if !s.is_empty() && s != "All" {
+                where_clauses.push("v.status = ?");
+                bind_values.push(s.to_string());
+            }
+        }
+
+        let where_sql = if where_clauses.is_empty() {
+            String::new()
+        } else {
+            format!("WHERE {}", where_clauses.join(" AND "))
+        };
+
+        // Count total
+        let count_sql = format!(
+            "SELECT COUNT(*) FROM visits v
+             JOIN patients p ON p.id = v.patient_id
+             {}",
+            where_sql
+        );
+        let mut count_query = sqlx::query_scalar::<_, i64>(&count_sql);
+        for val in &bind_values {
+            count_query = count_query.bind(val);
+        }
+        let total = count_query.fetch_one(pool).await?;
+
+        let total_pages = (total as f64 / per_page as f64).ceil() as i64;
+
+        // Fetch items
+        let items_sql = format!(
+            "SELECT v.id,
+                    v.patient_id,
+                    p.full_name as patient_name,
+                    p.phone as patient_phone,
+                    v.visit_date,
+                    v.chief_complaint,
+                    v.clinical_notes,
+                    v.status,
+                    COALESCE(proc.procedures_count, 0) as procedures_count,
+                    COALESCE(inv.total_afn, 0) as total_afn,
+                    COALESCE(inv.total_usd, 0) as total_usd,
+                    v.created_at
+             FROM visits v
+             JOIN patients p ON p.id = v.patient_id
+             LEFT JOIN (
+                 SELECT visit_id, COUNT(*) as procedures_count
+                 FROM treatment_records
+                 GROUP BY visit_id
+             ) proc ON proc.visit_id = v.id
+             LEFT JOIN invoices inv ON inv.visit_id = v.id
+             {}
+             ORDER BY v.visit_date DESC
+             LIMIT ?{} OFFSET ?{}",
+            where_sql,
+            bind_values.len() + 1,
+            bind_values.len() + 2,
+        );
+
+        let mut items_query = sqlx::query_as::<_, VisitListItem>(&items_sql);
+        for val in &bind_values {
+            items_query = items_query.bind(val);
+        }
+        items_query = items_query.bind(per_page as i64).bind(offset as i64);
+        let items = items_query.fetch_all(pool).await?;
+
+        // Status counts
+        let open_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM visits WHERE status = 'Open'")
+            .fetch_one(pool).await?;
+        let completed_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM visits WHERE status = 'Completed'")
+            .fetch_one(pool).await?;
+        let cancelled_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM visits WHERE status = 'Cancelled'")
+            .fetch_one(pool).await?;
+
+        Ok(VisitPageResult {
+            items,
+            total,
+            page,
+            per_page,
+            total_pages,
+            open_count,
+            completed_count,
+            cancelled_count,
+        })
+    }
 }

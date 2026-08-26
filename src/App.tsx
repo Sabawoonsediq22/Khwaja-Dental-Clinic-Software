@@ -5,7 +5,6 @@ import MainLayout from "./components/layouts/MainLayout";
 import "./i18n";
 import { LoadingSpinner } from "./components/ui";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
-import { UpdateNotification } from "./components/common/UpdateNotification";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Patients = lazy(() => import("./pages/Patients"));
@@ -16,6 +15,7 @@ const Reports = lazy(() => import("./pages/Reports"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Billing = lazy(() => import("./pages/Billing"));
 const Help = lazy(() => import("./pages/Help"));
+const AllVisits = lazy(() => import("./pages/AllVisits"));
 
 const PageLoader = () => (
   <div className="flex h-[60vh] items-center justify-center">
@@ -58,6 +58,7 @@ function App() {
             <Route path="/billing/invoices/:id" element={<Billing />} />
             <Route path="/billing/receipts/:id" element={<Billing />} />
             <Route path="/billing/payments/:id" element={<Billing />} />
+            <Route path="/visits" element={<AllVisits />} />
             <Route path="/visits/:id" element={<Patients />} />
             <Route path="/treatments/:id" element={<Patients />} />
             <Route path="/reports" element={<Reports />} />
@@ -66,7 +67,6 @@ function App() {
           </Routes>
         </Suspense>
       </MainLayout>
-      <UpdateNotification />
     </ErrorBoundary>
   );
 }

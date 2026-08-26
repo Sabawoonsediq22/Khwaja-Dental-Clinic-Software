@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "ډشبورډ",
     "patients": "ناروغان",
+    "visits": "ټولې لیدنې",
     "billings": "بلینګ",
     "reports": "رپورټونه",
     "about": "زموږ په اړه",
@@ -901,6 +902,47 @@
     "genderRequired": "جنس اړین دی",
     "ageRange": "عمر باید د ۱ او ۱۲۰ ترمنځ وي",
     "addressMaxLength": "پته باید ۲۰۰ توري یا لږ وي"
+  },
+  "allVisits": {
+    "title": "ټولې لیدنې",
+    "description": "د ټولو ناروغانو لیدنې د کلینیک په ټولو کې وګورئ او اداره کړئ.",
+    "searchPlaceholder": "د لیدنې پېژندنه، د ناروغ نوم، تلیفون یا شکایت له مخې وپلټئ...",
+    "totalVisits": "ټولې لیدنې",
+    "procedures": "درملنې",
+    "loading": "لیدنې بارېږي...",
+    "errorLoading": "د لیدنو په بارولو کې تېروتنه",
+    "filters": {
+      "status": "حالت",
+      "all": "ټول",
+      "open": "خلاص",
+      "completed": "بشپړ شوی",
+      "cancelled": "لغوه شوی"
+    },
+    "status": {
+      "open": "خلاص",
+      "completed": "بشپړ شوی",
+      "cancelled": "لغوه شوی"
+    },
+    "table": {
+      "no": "شمېره",
+      "patient": "ناروغ",
+      "visitId": "د لیدنې پېژندنه",
+      "date": "نیټه",
+      "complaint": "شکایت",
+      "procedures": "درملنې",
+      "total": "ټولټال",
+      "status": "حالت",
+      "actions": "کړنې",
+      "empty": "د ستاسو د لټون او فلتر سره سم لیدنې ونه موندل شول."
+    },
+    "actions": {
+      "viewPatient": "ناروغ وګورئ",
+      "viewProfile": "پروفایل وګورئ"
+    },
+    "notifications": {
+      "statusUpdated": "د لیدنې حالت ته تازه شو {{status}}",
+      "statusUpdateError": "د لیدنې حالت په تازه کولو کې پاتې راغی"
+    }
   },
   "product": {
     "name": "خواجه د غاښونو او امپلانټ کلینیک"

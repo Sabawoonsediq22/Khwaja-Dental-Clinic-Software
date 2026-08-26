@@ -781,3 +781,41 @@ pub struct GDriveStatus {
     pub email: Option<String>,
     pub last_sync_at: Option<String>,
 }
+
+// All Visits list types
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct VisitListItem {
+    pub id: String,
+    pub patient_id: String,
+    pub patient_name: String,
+    pub patient_phone: Option<String>,
+    pub visit_date: String,
+    pub chief_complaint: Option<String>,
+    pub clinical_notes: Option<String>,
+    pub status: String,
+    pub procedures_count: i64,
+    pub total_afn: f64,
+    pub total_usd: f64,
+    pub created_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct VisitPageResult {
+    pub items: Vec<VisitListItem>,
+    pub total: i64,
+    pub page: u32,
+    pub per_page: u32,
+    pub total_pages: i64,
+    pub open_count: i64,
+    pub completed_count: i64,
+    pub cancelled_count: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct VisitListParams {
+    pub query: Option<String>,
+    pub status: Option<String>,
+    pub page: Option<u32>,
+    pub per_page: Option<u32>,
+}

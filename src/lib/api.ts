@@ -27,6 +27,8 @@ import type {
   PatientVisitWithTreatments,
   ReceiptData,
   CreateInvoiceInput,
+  VisitPageResult,
+  VisitListParams,
 } from "../types/ApiTypes";
 
 import { SearchResult } from "../types/SearchTypes";
@@ -111,6 +113,8 @@ export const api = {
       invoke<Visit>("update_visit_status", { id, status }),
     list: (patientId: string) =>
       invoke<Visit[]>("get_patient_visits", { patientId }),
+    listAll: (params: VisitListParams) =>
+      invoke<VisitPageResult>("list_all_visits", { params }),
     getWithTreatments: (patientId: string) =>
       invoke<PatientVisitWithTreatments[]>("get_patient_treatment_history", {
         patientId,

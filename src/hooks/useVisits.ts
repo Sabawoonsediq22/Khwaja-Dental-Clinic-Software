@@ -1,12 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "../lib/api";
-import type { CreateVisitInput } from "../types/ApiTypes";
+import type { CreateVisitInput, VisitListParams } from "../types/ApiTypes";
 
 export function useVisits(patientId: string) {
   return useQuery({
     queryKey: ["visits", patientId],
     queryFn: () => api.visits.list(patientId),
     enabled: !!patientId,
+  });
+}
+
+export function useAllVisits(params: VisitListParams) {
+  return useQuery({
+    queryKey: ["all-visits", params],
+    queryFn: () => api.visits.listAll(params),
   });
 }
 
@@ -18,6 +25,7 @@ export function useCreateVisit() {
       qc.invalidateQueries({ queryKey: ["visits", input.patient_id], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["treatment-history", input.patient_id], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["patients", input.patient_id, "statistics"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["all-visits"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["invoices"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["reports"], refetchType: "all" });
     },

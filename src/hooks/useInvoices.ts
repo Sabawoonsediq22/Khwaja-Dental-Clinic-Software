@@ -36,6 +36,7 @@ export function useAddPayment() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["invoices"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["payments"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["patients"], refetchType: "all" });
       // Ensure any open receipt previews refresh after a payment
       qc.invalidateQueries({ queryKey: ["receipt"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["reports"], refetchType: "all" });
@@ -54,6 +55,7 @@ export function useRecordPayment() {
         queryKey: ["payments", variables.invoice_id],
         refetchType: "all",
       });
+      qc.invalidateQueries({ queryKey: ["patients"], refetchType: "all" });
       // Refresh receipts related to this invoice/visit/patient
       qc.invalidateQueries({ queryKey: ["receipt"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["reports"], refetchType: "all" });

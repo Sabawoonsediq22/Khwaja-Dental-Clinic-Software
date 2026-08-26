@@ -39,6 +39,7 @@ export function useUpdate(): UseUpdateReturn {
       }
     } catch (error) {
       console.error("Failed to check for updates:", error);
+      toast.error("Failed to check for updates. Please try again later.");
     }
   }, []);
 

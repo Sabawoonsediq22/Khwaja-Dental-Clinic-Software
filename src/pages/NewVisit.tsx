@@ -376,6 +376,10 @@ const NewVisit: React.FC = () => {
         refetchType: "all",
       });
       queryClient.invalidateQueries({
+        queryKey: ["all-visits"],
+        refetchType: "all",
+      });
+      queryClient.invalidateQueries({
         queryKey: ["invoices"],
         refetchType: "all",
       });
