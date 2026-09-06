@@ -870,12 +870,14 @@ pub struct ResetPasswordInput {
 pub struct AuthResponse {
     pub token: String,
     pub username: String,
+    pub user_id: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SetupResponse {
     pub token: String,
     pub username: String,
+    pub user_id: String,
     pub recovery_key: String,
 }
 

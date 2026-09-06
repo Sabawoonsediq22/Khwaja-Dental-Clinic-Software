@@ -527,11 +527,13 @@ export interface ErrorResponse {
 export interface AuthResponse {
   token: string;
   username: string;
+  user_id: string;
 }
 
 export interface SetupResponse {
   token: string;
   username: string;
+  user_id: string;
   recovery_key: string;
 }
 

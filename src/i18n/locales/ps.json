@@ -997,6 +997,9 @@
     "invalidSession": "ناسم یا پاتې شوی ناسته",
     "invalidRecoveryKey": "ناسم ریکووری کی",
     "incorrectCurrentPassword": "اوسنی رمز ناسم دی",
-    "userAlreadyExists": "کارن مخکې نه شته دی"
+    "userAlreadyExists": "کارن مخکې نه شته دی",
+    "changePasswordDesc": "خپل حساب رمز تازه کړئ",
+    "currentPasswordPlaceholder": "اوسنی رمز دننه کړئ",
+    "changing": "بدل کېږي..."
   }
 }

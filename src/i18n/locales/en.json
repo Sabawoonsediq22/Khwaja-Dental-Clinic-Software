@@ -1019,6 +1019,9 @@
     "invalidSession": "Invalid or expired session",
     "invalidRecoveryKey": "Invalid recovery key",
     "incorrectCurrentPassword": "Current password is incorrect",
-    "userAlreadyExists": "User already exists"
+    "userAlreadyExists": "User already exists",
+    "changePasswordDesc": "Update your account password",
+    "currentPasswordPlaceholder": "Enter current password",
+    "changing": "Changing..."
   }
 }

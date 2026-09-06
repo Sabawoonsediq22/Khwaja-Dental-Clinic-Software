@@ -5,6 +5,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   username: string | null;
+  userId: string | null;
   token: string | null;
   login: (username: string, password: string, rememberMe: boolean) => Promise<void>;
   setup: (username: string, password: string) => Promise<string>;
@@ -22,6 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [hasUsers, setHasUsers] = useState(false);
 
@@ -38,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
               const response = await api.auth.verifySession(storedToken);
               setToken(response.token);
               setUsername(response.username);
+              setUserId(response.user_id);
               setIsAuthenticated(true);
               localStorage.setItem(SESSION_KEY, response.token);
             } catch {
@@ -59,6 +62,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.auth.login({ username, password }, rememberMe);
       setToken(response.token);
       setUsername(response.username);
+      setUserId(response.user_id);
       setIsAuthenticated(true);
       setHasUsers(true);
       if (rememberMe) {
@@ -73,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const response = await api.auth.setup({ username, password });
       setToken(response.token);
       setUsername(response.username);
+      setUserId(response.user_id);
       setIsAuthenticated(true);
       setHasUsers(true);
       localStorage.setItem(SESSION_KEY, response.token);
@@ -91,13 +96,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     setToken(null);
     setUsername(null);
+    setUserId(null);
     setIsAuthenticated(false);
     localStorage.removeItem(SESSION_KEY);
   }, [token]);
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, username, token, login, setup, logout, hasUsers }}
+      value={{ isAuthenticated, isLoading, username, userId, token, login, setup, logout, hasUsers }}
     >
       {children}
     </AuthContext.Provider>

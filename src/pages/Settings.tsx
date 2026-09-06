@@ -8,6 +8,7 @@ import StatsCards from "../components/settings/StatsCards";
 import AboutSection from "../components/settings/AboutSection";
 import { useBackupSettings } from "../hooks/useBackup";
 import ClinicForm from "../components/settings/ClinicForm";
+import ChangePasswordForm from "../components/settings/ChangePasswordForm";
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -48,6 +49,7 @@ const Settings: React.FC = () => {
         </div>
         <div className="space-y-6">
           <BackupSection />
+          <ChangePasswordForm />
         </div>
       </div>
 

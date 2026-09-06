@@ -69,6 +69,7 @@ impl AuthService {
         Ok(SetupResponse {
             token,
             username: input.username,
+            user_id: id,
             recovery_key,
         })
     }
@@ -96,6 +97,7 @@ impl AuthService {
         Ok(AuthResponse {
             token,
             username: user.username,
+            user_id: user.id,
         })
     }
 
@@ -111,6 +113,7 @@ impl AuthService {
         Ok(AuthResponse {
             token: session.token,
             username: session.username,
+            user_id: session.user_id,
         })
     }
 
@@ -178,6 +181,7 @@ impl AuthService {
         Ok(AuthResponse {
             token,
             username: user.username,
+            user_id: user.id,
         })
     }
 
