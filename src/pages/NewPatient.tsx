@@ -587,7 +587,7 @@ const NewPatient: React.FC = () => {
               <div className="flex flex-col md:flex-row md:gap-4">
                 <FormField label={t("newPatient.gender")} className="flex-1" error={errors.gender}>
                   <div className="flex items-center justify-between gap-4 h-9.5 mt-1">
-                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md ${patient.gender === "Male" ? "bg-blue-100 border-blue-500" : ""}`}>
+                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md dark:text-white ${patient.gender === "Male" ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:border-blue-500" : "border-gray-300 dark:border-gray-600 dark:bg-gray-700"}`}>
                       <input
                         type="radio"
                         name="gender"
@@ -599,7 +599,7 @@ const NewPatient: React.FC = () => {
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.male")}</span>
                     </label>
-                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md ${patient.gender === "Female" ? "bg-blue-100 border-blue-500" : ""}`}>
+                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md dark:text-white ${patient.gender === "Female" ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:border-blue-500" : "border-gray-300 dark:border-gray-600 dark:bg-gray-700"}`}>
                       <input
                         type="radio"
                         name="gender"
