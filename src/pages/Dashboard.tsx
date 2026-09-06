@@ -33,7 +33,7 @@ const formatUSD = (val: number) =>
   "$" + val.toLocaleString("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }) + " USD";
+  });
 
 const computeTrend = (
   today: number,
@@ -126,9 +126,9 @@ const Dashboard: React.FC = () => {
 
     if (statsError || !stats) {
       return [
-        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0 AFN", secondaryValue: "$ 0.00 USD", icon: <CurrencyIcon size="lg" />, accent: "green" },
+        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0 AFN", secondaryValue: "$ 0.00", icon: <CurrencyIcon size="lg" />, accent: "green" },
         { title: t("dashboard.stats.patientsToday", "Patients Today"), value: "0", icon: <PatientIcon size="lg" />, accent: "blue" },
-        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN", secondaryValue: "$ 0.00 USD", secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" />, accent: "orange" },
+        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN", secondaryValue: "$ 0.00", secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" />, accent: "orange" },
         { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), value: "00", icon: <ToothIcon size="lg" />, accent: "purple" },
       ];
     }

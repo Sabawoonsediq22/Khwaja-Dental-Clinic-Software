@@ -7,6 +7,7 @@ export type StatisticsCardVariant = "success" | "info" | "warning" | "destructiv
 export interface StatisticsCardProps {
   label: string;
   value: string | number;
+  secondaryValue?: string;
   subtitle?: string | boolean;
   variant?: StatisticsCardVariant;
   icon?: "check" | "clock" | "currency" | "custom";
@@ -39,6 +40,7 @@ const variantConfig: Record<StatisticsCardVariant, { bg: string; text: string; i
 const StatisticsCard: React.FC<StatisticsCardProps> = ({
   label,
   value,
+  secondaryValue,
   subtitle,
   variant = "success",
   icon,
@@ -83,9 +85,14 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             {label}
           </p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white mt-1">
+          <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 font-mono tabular-nums">
             {value}
           </p>
+          {secondaryValue && (
+            <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 mt-1.5 tabular-nums">
+              {secondaryValue}
+            </span>
+          )}
           {subtitle && (
             <p className={cn("text-xs mt-2", config.text)}>{subtitle}</p>
           )}

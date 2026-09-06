@@ -54,26 +54,28 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trend
         <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
           {title}
         </p>
-        <p className="mt-1.5 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+        <p className="mt-1.5 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white font-mono tabular-nums">
           {value}
         </p>
         {valueUsd && (
-          <p className="mt-0.5 text-xl font-semibold text-gray-500 dark:text-gray-400">
+          <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 mt-1.5 tabular-nums">
             {valueUsd}
-          </p>
+          </span>
         )}
         {change && (
-          <p className={`mt-1 text-xs font-semibold inline-flex items-center gap-1 ${
-            change.positive === undefined
-              ? "text-gray-500 dark:text-gray-400"
-              : change.positive
-                ? "text-green-600 dark:text-green-500"
-                : "text-red-600 dark:text-red-500"
-          }`}>
-            {change.positive === true && "↑"}
-            {change.positive === false && "↓"}
-            {change.value}
-          </p>
+          <div className="mt-2">
+            <span className={`text-xs font-semibold inline-flex items-center gap-1 px-2 py-0.5 rounded-full ${
+              change.positive === undefined
+                ? "text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50"
+                : change.positive
+                  ? "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-500/10"
+                  : "text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-500/10"
+            }`}>
+              {change.positive === true && "↑"}
+              {change.positive === false && "↓"}
+              {change.value}
+            </span>
+          </div>
         )}
       </div>
       <div className="rounded-lg bg-blue-50 p-2 sm:p-3 text-primary dark:bg-blue-900/30 shrink-0 ml-3">
@@ -81,7 +83,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trend
       </div>
     </div>
     {trendData && (
-      <div className="mt-2 -mx-1">
+      <div className="mt-3 -mx-1">
         <SparklineChart data={trendData} color={trendColor} height={50} />
       </div>
     )}
@@ -89,7 +91,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trend
 );
 
 const formatAFN = (val: number) =>
-  val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " AFN";
+  val.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + " AFN";
 
 const formatUSD = (val: number) =>
   "$" + val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
