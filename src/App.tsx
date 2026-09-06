@@ -5,6 +5,9 @@ import MainLayout from "./components/layouts/MainLayout";
 import "./i18n";
 import { LoadingSpinner } from "./components/ui";
 import { ErrorBoundary } from "./components/common/ErrorBoundary";
+import { useAuth } from "./contexts/AuthContext";
+import Login from "./pages/Login";
+import Setup from "./pages/Setup";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Patients = lazy(() => import("./pages/Patients"));
@@ -25,21 +28,38 @@ const PageLoader = () => (
 
 function App() {
   const { i18n } = useTranslation();
-  const [isLoading, setIsLoading] = useState(true);
+  const { isAuthenticated, isLoading, hasUsers } = useAuth();
+  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
     document.documentElement.dir = ["ps"].includes(i18n.language)
       ? "rtl"
       : "ltr";
     document.documentElement.lang = i18n.language;
-    setIsLoading(false);
+    setAppReady(true);
   }, [i18n.language]);
 
-  if (isLoading) {
+  if (isLoading || !appReady) {
     return (
       <div className="flex h-screen items-center justify-center">
         <LoadingSpinner size="lg" />
       </div>
+    );
+  }
+
+  if (!hasUsers) {
+    return (
+      <ErrorBoundary>
+        <Setup />
+      </ErrorBoundary>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <ErrorBoundary>
+        <Login />
+      </ErrorBoundary>
     );
   }
 

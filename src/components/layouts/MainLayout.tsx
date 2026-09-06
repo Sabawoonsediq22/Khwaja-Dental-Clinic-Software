@@ -25,6 +25,7 @@ import Logo from "../../assets/favicon.svg";
 import { api } from "../../lib/api";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import TitleBar from "./TitleBar";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -37,6 +38,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isRTL = i18n.language === "ps";
   const [isDark, setIsDark] = useState(false);
+  const { logout } = useAuth();
 
   const {
     updateAvailable,
@@ -52,6 +54,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     } catch {
       toast.error("Update failed. Please try again.");
     }
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success(t("auth.logoutSuccess"));
   };
 
   // Theme functions
@@ -265,6 +272,29 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 )}
               </Button>
             )}
+
+            {/* Logout button */}
+            <Button
+              onClick={handleLogout}
+              variant="ghost"
+              size="icon"
+              className="cursor-pointer border rounded-lg dark:border-gray-500 hover:bg-muted/50 transition-colors"
+              title={t("auth.logout")}
+            >
+              <svg
+                className="h-5 w-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+            </Button>
 
             {/* Settings button */}
             <NavLink

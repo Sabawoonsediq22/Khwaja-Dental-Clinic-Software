@@ -42,6 +42,12 @@ pub enum AppError {
 
     #[error("permission denied: {0}")]
     PermissionDenied(String),
+
+    #[error("bad request: {0}")]
+    BadRequest(String),
+
+    #[error("unauthorized: {0}")]
+    Unauthorized(String),
 }
 
 pub type AppResult<T> = Result<T, AppError>;
@@ -69,6 +75,8 @@ impl From<AppError> for ErrorResponse {
             AppError::Encryption(_) => "ENCRYPTION_ERROR",
             AppError::Integrity(_) => "INTEGRITY_ERROR",
             AppError::PermissionDenied(_) => "PERMISSION_DENIED",
+            AppError::BadRequest(_) => "BAD_REQUEST",
+            AppError::Unauthorized(_) => "UNAUTHORIZED",
         };
         ErrorResponse {
             code: code.to_string(),

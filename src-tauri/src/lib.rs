@@ -1027,6 +1027,77 @@ async fn run_auto_backup(app: &tauri::AppHandle, pool: &sqlx::SqlitePool, config
     }
 }
 
+// Auth commands
+#[tauri::command]
+async fn has_users(state: State<'_, AppState>) -> Result<HasUsersResponse, String> {
+    let has = AuthService::has_users(&state.db)
+        .await
+        .map_err(|e| e.to_string())?;
+    Ok(HasUsersResponse { has_users: has })
+}
+
+#[tauri::command]
+async fn setup_user(
+    state: State<'_, AppState>,
+    input: SetupUserInput,
+) -> Result<SetupResponse, String> {
+    AuthService::setup(&state.db, input)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn login(
+    state: State<'_, AppState>,
+    input: LoginInput,
+    remember_me: bool,
+) -> Result<AuthResponse, String> {
+    AuthService::login(&state.db, input, remember_me)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn verify_session(
+    state: State<'_, AppState>,
+    token: String,
+) -> Result<AuthResponse, String> {
+    AuthService::verify_session(&state.db, &token)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn logout(
+    state: State<'_, AppState>,
+    token: String,
+) -> Result<(), String> {
+    AuthService::logout(&state.db, &token)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn reset_password(
+    state: State<'_, AppState>,
+    input: ResetPasswordInput,
+) -> Result<AuthResponse, String> {
+    AuthService::reset_password(&state.db, input)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+async fn change_password(
+    state: State<'_, AppState>,
+    user_id: String,
+    input: ChangePasswordInput,
+) -> Result<(), String> {
+    AuthService::change_password(&state.db, &user_id, input)
+        .await
+        .map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     env_logger::init();
@@ -1131,6 +1202,13 @@ pub fn run() {
             list_gdrive_backup_files,
             restore_gdrive_file,
             restore_local_file,
+            has_users,
+            setup_user,
+            login,
+            verify_session,
+            logout,
+            change_password,
+            reset_password,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

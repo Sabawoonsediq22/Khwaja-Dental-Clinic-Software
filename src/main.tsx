@@ -5,6 +5,7 @@ import "./index.css";
 import { Toaster } from "./components/ui";
 import { HashRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,8 +20,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <HashRouter>
-        <App />
-        <Toaster position="top-center" richColors />
+        <AuthProvider>
+          <App />
+          <Toaster position="top-center" richColors />
+        </AuthProvider>
       </HashRouter>
     </QueryClientProvider>
   </React.StrictMode>,

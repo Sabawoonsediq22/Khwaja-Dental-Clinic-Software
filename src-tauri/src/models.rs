@@ -819,3 +819,67 @@ pub struct VisitListParams {
     pub page: Option<u32>,
     pub per_page: Option<u32>,
 }
+
+// Auth types
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct UserRow {
+    pub id: String,
+    pub username: String,
+    pub password_hash: String,
+    pub salt: String,
+    pub recovery_key: Option<String>,
+    pub created_at: String,
+    pub updated_at: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, FromRow)]
+pub struct SessionRow {
+    pub token: String,
+    pub user_id: String,
+    pub expires_at: String,
+    pub created_at: String,
+    #[sqlx(default)]
+    pub username: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SetupUserInput {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct LoginInput {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ChangePasswordInput {
+    pub old_password: String,
+    pub new_password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ResetPasswordInput {
+    pub recovery_key: String,
+    pub new_password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthResponse {
+    pub token: String,
+    pub username: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SetupResponse {
+    pub token: String,
+    pub username: String,
+    pub recovery_key: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct HasUsersResponse {
+    pub has_users: bool,
+}

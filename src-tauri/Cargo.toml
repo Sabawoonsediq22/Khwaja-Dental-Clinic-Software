@@ -32,6 +32,8 @@ sha2 = "0.10"
 urlencoding = "2"
 dotenvy = "0.15"
 ring = "0.17"
+rand = "0.8"
+hex = "0.4"
 log = "0.4"
 env_logger = "0.11"
 

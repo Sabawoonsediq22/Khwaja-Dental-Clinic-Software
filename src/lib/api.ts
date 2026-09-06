@@ -29,6 +29,13 @@ import type {
   CreateInvoiceInput,
   VisitPageResult,
   VisitListParams,
+  AuthResponse,
+  HasUsersResponse,
+  LoginInput,
+  SetupUserInput,
+  ChangePasswordInput,
+  ResetPasswordInput,
+  SetupResponse,
 } from "../types/ApiTypes";
 
 import { SearchResult } from "../types/SearchTypes";
@@ -50,6 +57,20 @@ import type {
 } from "../types/ApiTypes";
 
 export const api = {
+  auth: {
+    hasUsers: () => invoke<HasUsersResponse>("has_users"),
+    setup: (input: SetupUserInput) =>
+      invoke<SetupResponse>("setup_user", { input }),
+    login: (input: LoginInput, rememberMe: boolean) =>
+      invoke<AuthResponse>("login", { input, rememberMe }),
+    verifySession: (token: string) =>
+      invoke<AuthResponse>("verify_session", { token }),
+    logout: (token: string) => invoke<void>("logout", { token }),
+    changePassword: (userId: string, input: ChangePasswordInput) =>
+      invoke<void>("change_password", { userId, input }),
+    resetPassword: (input: ResetPasswordInput) =>
+      invoke<AuthResponse>("reset_password", { input }),
+  },
   patients: {
     list: (params: {
       query?: string;

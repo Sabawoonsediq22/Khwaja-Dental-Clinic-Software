@@ -523,6 +523,42 @@ export interface ErrorResponse {
   details: string | null;
 }
 
+// Auth types
+export interface AuthResponse {
+  token: string;
+  username: string;
+}
+
+export interface SetupResponse {
+  token: string;
+  username: string;
+  recovery_key: string;
+}
+
+export interface HasUsersResponse {
+  has_users: boolean;
+}
+
+export interface LoginInput {
+  username: string;
+  password: string;
+}
+
+export interface SetupUserInput {
+  username: string;
+  password: string;
+}
+
+export interface ChangePasswordInput {
+  old_password: string;
+  new_password: string;
+}
+
+export interface ResetPasswordInput {
+  recovery_key: string;
+  new_password: string;
+}
+
 export interface VisitListItem {
   id: string;
   patient_id: string;
