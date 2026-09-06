@@ -101,7 +101,7 @@ const StatCard: React.FC<StatCardProps> = ({
                   <div className="h-8 w-24 rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse" />
                 </div>
               ) : (
-                <p className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white leading-none font-mono tabular-nums">
+                <p className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white leading-none font-mono tabular-nums">
                   {value}
                 </p>
               )}
@@ -109,7 +109,7 @@ const StatCard: React.FC<StatCardProps> = ({
 
             {secondaryValue && !loading && (
               <div className="mt-2">
-                <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 tabular-nums">
+                <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-700 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 tabular-nums">
                   {secondaryValue}
                 </span>
               </div>

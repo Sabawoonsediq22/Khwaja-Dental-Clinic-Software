@@ -58,7 +58,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trend
           {value}
         </p>
         {valueUsd && (
-          <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-500 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 mt-1.5 tabular-nums">
+          <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-700 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 mt-1.5 tabular-nums">
             {valueUsd}
           </span>
         )}
