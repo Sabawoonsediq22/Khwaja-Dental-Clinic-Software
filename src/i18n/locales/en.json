@@ -948,13 +948,12 @@
     "table": {
       "no": "NO.",
       "patient": "PATIENT",
-      "visitId": "VISIT ID",
       "date": "DATE",
       "complaint": "COMPLAINT",
       "procedures": "PROCEDURES",
       "total": "TOTAL",
       "status": "STATUS",
-      "actions": "ACTIONS",
+      "procedureName": "PROCEDURE NAME",
       "empty": "No visits match your current search and filters."
     },
     "actions": {

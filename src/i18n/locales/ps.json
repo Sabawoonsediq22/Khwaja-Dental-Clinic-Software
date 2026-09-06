@@ -926,13 +926,12 @@
     "table": {
       "no": "شمېره",
       "patient": "ناروغ",
-      "visitId": "د لیدنې پېژندنه",
       "date": "نیټه",
       "complaint": "شکایت",
       "procedures": "درملنې",
       "total": "ټولټال",
       "status": "حالت",
-      "actions": "کړنې",
+      "procedureName": "درملنې نوم",
       "empty": "د ستاسو د لټون او فلتر سره سم لیدنې ونه موندل شول."
     },
     "actions": {

@@ -1,9 +1,10 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { PatientAvatar, Badge } from "../ui";
+import { PatientAvatar, Badge, LoadingSpinner } from "../ui";
 import { VisitsTableProps } from "../../types/VisitTypes";
-import { Popover } from "../ui/Popover";
+import { usePatientTreatmentHistory } from "../../hooks/useVisits";
+import type { PatientVisitWithTreatments } from "../../types/ApiTypes";
 
 function formatDate(date: string | null | undefined): string {
   if (!date) return "-";
@@ -18,6 +19,42 @@ const statusVariant: Record<string, "default" | "success" | "destructive" | "war
   Open: "warning",
   Completed: "success",
   Cancelled: "destructive",
+};
+
+interface ProcedureNamesCellProps {
+  visitId: string;
+  patientId: string;
+  proceduresCount: number;
+}
+
+const ProcedureNamesCell: React.FC<ProcedureNamesCellProps> = ({ visitId, patientId, proceduresCount }) => {
+  const { t } = useTranslation();
+  const { data: treatmentHistory, isLoading } = usePatientTreatmentHistory(patientId);
+
+  const visitTreatments = treatmentHistory?.find(
+    (v: PatientVisitWithTreatments) => v.visit_id === visitId
+  );
+  const procedures = visitTreatments?.procedures || [];
+
+  if (proceduresCount === 0) {
+    return <span className="text-gray-400">-</span>;
+  }
+
+  if (isLoading) {
+    return <LoadingSpinner size="sm" />;
+  }
+
+  if (procedures.length === 0) {
+    return <span className="text-gray-400">{t("allVisits.table.noProcedures", "No procedures found")}</span>;
+  }
+
+  return (
+    <div className="flex flex-col">
+      {procedures.map((proc, idx) => (
+        <span key={idx} className="text-xs">{proc.procedure_name}</span>
+      ))}
+    </div>
+  );
 };
 
 const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
@@ -51,9 +88,6 @@ const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
                 {t("allVisits.table.patient", "PATIENT")}
               </th>
               <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
-                {t("allVisits.table.visitId", "VISIT ID")}
-              </th>
-              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("allVisits.table.date", "DATE")}
               </th>
               <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 hidden lg:table-cell">
@@ -62,14 +96,14 @@ const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
               <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 text-center">
                 {t("allVisits.table.procedures", "PROCEDURES")}
               </th>
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 text-center">
+                {t("allVisits.table.procedureName", "PROCEDURE NAME")}
+              </th>
               <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 text-right">
                 {t("allVisits.table.total", "TOTAL")}
               </th>
               <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("allVisits.table.status", "STATUS")}
-              </th>
-              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 w-16">
-                {t("allVisits.table.actions", "ACTIONS")}
               </th>
             </tr>
           </thead>
@@ -98,9 +132,6 @@ const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
                     </div>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-sm font-mono text-gray-600 dark:text-gray-300 whitespace-nowrap">
-                  {visit.id}
-                </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 whitespace-nowrap">
                   {formatDate(visit.visit_date)}
                 </td>
@@ -109,6 +140,13 @@ const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 text-center">
                   {visit.procedures_count}
+                </td>
+                <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300" onClick={(e) => e.stopPropagation()}>
+                  <ProcedureNamesCell
+                    visitId={visit.id}
+                    patientId={visit.patient_id}
+                    proceduresCount={visit.procedures_count}
+                  />
                 </td>
                 <td className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300 text-right whitespace-nowrap">
                   {visit.total_afn > 0 || visit.total_usd > 0 ? (
@@ -122,23 +160,16 @@ const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
                   )}
                 </td>
                 <td className="py-3 px-4">
-                  <Badge variant={statusVariant[visit.status] || "default"}>
+                  <Badge
+                    variant={statusVariant[visit.status] || "default"}
+                    className="cursor-pointer hover:opacity-80"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/patients/${visit.patient_id}`);
+                    }}
+                  >
                     {t(`allVisits.status.${visit.status.toLowerCase()}`, visit.status)}
                   </Badge>
-                </td>
-                <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
-                  <Popover
-                    actions={[
-                      {
-                        label: t("allVisits.actions.viewPatient", "View Patient"),
-                        onClick: () => navigate(`/patients/${visit.patient_id}`),
-                      },
-                      {
-                        label: t("allVisits.actions.viewProfile", "View Profile"),
-                        onClick: () => navigate(`/patients/${visit.patient_id}`),
-                      },
-                    ]}
-                  />
                 </td>
               </tr>
             ))}
@@ -161,12 +192,16 @@ const VisitsTable: React.FC<VisitsTableProps> = ({ visits }) => {
                   <span className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                     {visit.patient_name}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {visit.id}
-                  </span>
                 </div>
               </div>
-              <Badge variant={statusVariant[visit.status] || "default"}>
+              <Badge 
+                variant={statusVariant[visit.status] || "default"}
+                className="cursor-pointer hover:opacity-80"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/patients/${visit.patient_id}`);
+                }}
+              >
                 {t(`allVisits.status.${visit.status.toLowerCase()}`, visit.status)}
               </Badge>
             </div>
