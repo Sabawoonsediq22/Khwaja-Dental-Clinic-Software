@@ -394,6 +394,20 @@
       "financialDesc": "فاکتورونه او د تادیاتو تاریخ صادر کړئ",
       "treatment": "د درملنې رپورټ",
       "treatmentDesc": "د درملنې تاریخ او پروسیجرونه صادر کړئ"
+    },
+    "filter": {
+      "period": "وخت وټاکئ",
+      "today": "نن",
+      "thisWeek": "دغه اونۍ",
+      "thisMonth": "دغه میاشت",
+      "custom": "دلته نیټه وټاکئ",
+      "startDate": "پیل نیټه",
+      "endDate": "پای نیټه",
+      "selectStart": "پیل نیټه وټاکئ",
+      "selectEnd": "پای نیټه وټاکئ",
+      "vsYesterday": "پر سمه ځل",
+      "vsLastWeek": "پر تیره اونۍ",
+      "vsLastMonth": "پر تیره میاشت"
     }
   },
   "billing": {

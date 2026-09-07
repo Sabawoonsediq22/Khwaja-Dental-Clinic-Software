@@ -395,6 +395,20 @@
       "financialDesc": "Export invoices and payment history",
       "treatment": "Treatment Report",
       "treatmentDesc": "Export treatment history and procedures"
+    },
+    "filter": {
+      "period": "Period",
+      "today": "Today",
+      "thisWeek": "This week",
+      "thisMonth": "This month",
+      "custom": "Custom Range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "selectStart": "Select start",
+      "selectEnd": "Select end",
+      "vsYesterday": "vs yesterday",
+      "vsLastWeek": "vs last week",
+      "vsLastMonth": "vs last month"
     }
   },
   "billing": {

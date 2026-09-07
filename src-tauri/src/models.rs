@@ -429,6 +429,13 @@ pub struct MonthlyRevenuePoint {
     pub revenue_usd: f64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ReportFilter {
+    pub filter_type: String, // "daily", "weekly", "monthly", "custom"
+    pub start_date: Option<String>, // "YYYY-MM-DD" for custom
+    pub end_date: Option<String>,   // "YYYY-MM-DD" for custom
+}
+
 // Dashboard
 #[derive(Debug, Serialize, Deserialize)]
 pub struct DashboardStats {

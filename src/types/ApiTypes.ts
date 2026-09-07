@@ -350,6 +350,12 @@ export interface DailyTrendPoint {
   value: number;
 }
 
+export interface ReportFilter {
+  filter_type: string; // "daily", "weekly", "monthly", "custom"
+  start_date?: string; // "YYYY-MM-DD" for custom
+  end_date?: string;   // "YYYY-MM-DD" for custom
+}
+
 export interface ReportSummary {
   active_patients: number;
   total_visits_this_month: number;

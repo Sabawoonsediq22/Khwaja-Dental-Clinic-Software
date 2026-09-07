@@ -287,15 +287,15 @@ async fn global_search(
 
 // Reports commands
 #[tauri::command]
-async fn get_report_summary(state: State<'_, AppState>) -> Result<ReportSummary, String> {
-    ReportService::summary(&state.db)
+async fn get_report_summary(state: State<'_, AppState>, filter: ReportFilter) -> Result<ReportSummary, String> {
+    ReportService::summary(&state.db, &filter)
         .await
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn get_monthly_revenue(state: State<'_, AppState>) -> Result<Vec<MonthlyRevenuePoint>, String> {
-    ReportService::monthly_revenue(&state.db)
+async fn get_monthly_revenue(state: State<'_, AppState>, filter: ReportFilter) -> Result<Vec<MonthlyRevenuePoint>, String> {
+    ReportService::monthly_revenue(&state.db, &filter)
         .await
         .map_err(|e| e.to_string())
 }

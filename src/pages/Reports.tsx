@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner } from "../components/ui";
+import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner, Select, DatePicker } from "../components/ui";
 import { useReportSummary, useMonthlyRevenue } from "../hooks/useReports";
 import Chart from "react-apexcharts";
 import { CurrencyIcon, PatientIcon, ToothIcon, CalendarIcon, DownloadIcon, FileIcon } from "../shared/icons/icons";
-import type { MonthlyRevenuePoint, DailyTrendPoint } from "../types/ApiTypes";
+import type { MonthlyRevenuePoint, DailyTrendPoint, ReportFilter } from "../types/ApiTypes";
 import { exportPatientsReport, exportFinancialReport, exportTreatmentReport } from "../lib/export";
 import type { ReportFormat } from "../lib/export";
 import { toast } from "../lib/toast-utils";
@@ -104,10 +104,25 @@ const formatMonth = (monthStr: string) => {
 const Reports: React.FC = () => {
   const { t } = useTranslation();
   const isDark = useDarkMode();
-  const { data: summary, isLoading, error } = useReportSummary();
-  const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue();
   const [exporting, setExporting] = useState<string | null>(null);
   const [format, setFormat] = useState<ReportFormat>("pdf");
+  const [filterType, setFilterType] = useState<string>("monthly");
+  const [customStartDate, setCustomStartDate] = useState<Date | undefined>(undefined);
+  const [customEndDate, setCustomEndDate] = useState<Date | undefined>(undefined);
+
+  const reportFilter = useMemo<ReportFilter>(() => {
+    if (filterType === "custom") {
+      return {
+        filter_type: "custom",
+        start_date: customStartDate ? customStartDate.toISOString().split("T")[0] : undefined,
+        end_date: customEndDate ? customEndDate.toISOString().split("T")[0] : undefined,
+      };
+    }
+    return { filter_type: filterType };
+  }, [filterType, customStartDate, customEndDate]);
+
+  const { data: summary, isLoading, error } = useReportSummary(reportFilter);
+  const { data: monthlyRevenue, isLoading: revenueLoading } = useMonthlyRevenue(reportFilter);
 
   const statCards = useMemo(() => {
     if (!summary) return [];
@@ -123,8 +138,13 @@ const Reports: React.FC = () => {
     const pct = (cur: number, prev: number): { value: string; positive: boolean } | undefined => {
       if (prev <= 0) return undefined;
       const change = ((cur - prev) / prev) * 100;
+      const periodLabel = filterType === "daily"
+        ? t("reports.filter.vsYesterday", "vs yesterday")
+        : filterType === "weekly"
+          ? t("reports.filter.vsLastWeek", "vs last week")
+          : t("reports.filter.vsLastMonth", "vs last month");
       return {
-        value: `${Math.abs(change).toFixed(1)}% vs last month`,
+        value: `${Math.abs(change).toFixed(1)}% ${periodLabel}`,
         positive: change >= 0,
       };
     };
@@ -165,7 +185,7 @@ const Reports: React.FC = () => {
         change: pct(currentOutstanding, summary.prev_outstanding),
       },
     ];
-  }, [summary, t]);
+  }, [summary, t, filterType]);
 
   if (isLoading || revenueLoading) {
     return (
@@ -249,6 +269,56 @@ const Reports: React.FC = () => {
           {t("reports.title", "Reports")}
         </h1>
       </div>
+
+      <Card>
+        <CardContent className="py-4">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+            <div className="flex-1 min-w-0">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+                {t("reports.filter.period", "Period")}
+              </label>
+              <Select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="w-full sm:w-48"
+              >
+                <option value="daily">{t("reports.filter.today", "Today")}</option>
+                <option value="weekly">{t("reports.filter.thisWeek", "This week")}</option>
+                <option value="monthly">{t("reports.filter.thisMonth", "This month")}</option>
+                <option value="custom">{t("reports.filter.custom", "Custom Range")}</option>
+              </Select>
+            </div>
+            {filterType === "custom" && (
+              <>
+                <div className="flex-1 min-w-0">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+                    {t("reports.filter.startDate", "Start Date")}
+                  </label>
+                  <DatePicker
+                    value={customStartDate}
+                    onChange={setCustomStartDate}
+                    placeholder={t("reports.filter.selectStart", "Select start")}
+                    maxDate={customEndDate}
+                    className="w-full"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+                    {t("reports.filter.endDate", "End Date")}
+                  </label>
+                  <DatePicker
+                    value={customEndDate}
+                    onChange={setCustomEndDate}
+                    placeholder={t("reports.filter.selectEnd", "Select end")}
+                    minDate={customStartDate}
+                    className="w-full"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {statCards.map((card, idx) => (

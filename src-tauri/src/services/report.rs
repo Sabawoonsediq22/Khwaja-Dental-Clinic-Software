@@ -1,7 +1,7 @@
 use sqlx::SqlitePool;
 use crate::models::*;
 use crate::services::errors::AppResult;
-use chrono::{Utc, Datelike, NaiveDate};
+use chrono::{Utc, Datelike, NaiveDate, Duration};
 
 fn days_in_month(year: i32, month: u32) -> i64 {
     let (y, m) = if month == 12 { (year + 1, 1) } else { (year, month + 1) };
@@ -12,21 +12,22 @@ fn days_in_month(year: i32, month: u32) -> i64 {
         .day() as i64
 }
 
-fn fill_daily_trends(
-    year: i32,
-    month: u32,
-    rows: Vec<(i64, f64)>,
+fn fill_range_daily_trends(
+    start: NaiveDate,
+    end: NaiveDate,
+    rows: Vec<(String, f64)>,
 ) -> Vec<DailyTrendPoint> {
-    let total = days_in_month(year, month);
-    let mut map = std::collections::HashMap::<i64, f64>::new();
-    for (day, val) in rows {
-        map.insert(day, val);
+    let mut map = std::collections::HashMap::<String, f64>::new();
+    for (day_str, val) in rows {
+        map.insert(day_str, val);
     }
-    let mut result = Vec::with_capacity(total as usize);
-    for d in 1..=total {
-        let day_str = format!("{:02}", d);
-        let value = map.get(&d).copied().unwrap_or(0.0);
-        result.push(DailyTrendPoint { day: day_str, value });
+    let mut result = Vec::new();
+    let mut current = start;
+    while current <= end {
+        let day_str = current.format("%Y-%m-%d").to_string();
+        let value = map.get(&day_str).copied().unwrap_or(0.0);
+        result.push(DailyTrendPoint { day: current.format("%m-%d").to_string(), value });
+        current = current + Duration::days(1);
     }
     result
 }
@@ -34,58 +35,99 @@ fn fill_daily_trends(
 pub struct ReportService;
 
 impl ReportService {
-    pub async fn summary(pool: &SqlitePool) -> AppResult<ReportSummary> {
+    pub async fn summary(pool: &SqlitePool, filter: &ReportFilter) -> AppResult<ReportSummary> {
         let now = Utc::now();
-        let year = now.year();
-        let month = now.month();
-        let year_str = now.format("%Y").to_string();
-        let month_str = now.format("%Y-%m").to_string();
+
+        let (start_date, end_date, prev_start, prev_end) = match filter.filter_type.as_str() {
+            "daily" => {
+                let today = now.format("%Y-%m-%d").to_string();
+                let yesterday = (now - Duration::days(1)).format("%Y-%m-%d").to_string();
+                (today.clone(), today, yesterday.clone(), yesterday)
+            }
+            "weekly" => {
+                let week_start = (now - Duration::days(6)).format("%Y-%m-%d").to_string();
+                let today = now.format("%Y-%m-%d").to_string();
+                let prev_week_start = (now - Duration::days(13)).format("%Y-%m-%d").to_string();
+                let prev_week_end = (now - Duration::days(7)).format("%Y-%m-%d").to_string();
+                (week_start, today, prev_week_start, prev_week_end)
+            }
+            "custom" => {
+                let start = filter.start_date.clone().unwrap_or_else(|| now.format("%Y-%m-%d").to_string());
+                let end = filter.end_date.clone().unwrap_or_else(|| now.format("%Y-%m-%d").to_string());
+                let start_dt = NaiveDate::parse_from_str(&start, "%Y-%m-%d").unwrap_or(now.date_naive());
+                let end_dt = NaiveDate::parse_from_str(&end, "%Y-%m-%d").unwrap_or(now.date_naive());
+                let duration = end_dt - start_dt;
+                let prev_end = start_dt - Duration::days(1);
+                let prev_start = prev_end - duration;
+                (start, end, prev_start.format("%Y-%m-%d").to_string(), prev_end.format("%Y-%m-%d").to_string())
+            }
+            _ => {
+                // monthly (default)
+                let month_start = now.format("%Y-%m-01").to_string();
+                let today = now.format("%Y-%m-%d").to_string();
+                let (prev_year, prev_month) = if now.month() == 1 { (now.year() - 1, 12u32) } else { (now.year(), now.month() - 1) };
+                let prev_month_start = format!("{}-{:02}-01", prev_year, prev_month);
+                let prev_month_end = format!("{}-{:02}-{}", prev_year, prev_month, days_in_month(prev_year, prev_month));
+                (month_start, today, prev_month_start, prev_month_end)
+            }
+        };
+
+        // Parse start/end dates for daily trend calculations
+        let start_dt = NaiveDate::parse_from_str(&start_date, "%Y-%m-%d").unwrap_or(now.date_naive());
+        let end_dt = NaiveDate::parse_from_str(&end_date, "%Y-%m-%d").unwrap_or(now.date_naive());
 
         let total_patients: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM patients")
             .fetch_one(pool)
             .await?;
 
-        let total_visits_this_month: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM visits WHERE strftime('%Y', visit_date) = ?"
+        let total_visits: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM visits WHERE visit_date >= ? AND visit_date <= ?"
         )
-        .bind(&year_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
-        let completed_visits_this_month: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM visits WHERE status = 'Completed' AND strftime('%Y', visit_date) = ?"
+        let completed_visits: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM visits WHERE status = 'Completed' AND visit_date >= ? AND visit_date <= ?"
         )
-        .bind(&year_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
-        let cancelled_visits_this_month: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM visits WHERE status = 'Cancelled' AND strftime('%Y', visit_date) = ?"
+        let cancelled_visits: i64 = sqlx::query_scalar(
+            "SELECT COUNT(*) FROM visits WHERE status = 'Cancelled' AND visit_date >= ? AND visit_date <= ?"
         )
-        .bind(&year_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
-        let revenue_this_month: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) FROM invoices WHERE strftime('%Y', issued_at) = ?"
+        let revenue: Option<f64> = sqlx::query_scalar(
+            "SELECT COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) FROM invoices WHERE issued_at >= ? AND issued_at <= ?"
         )
-        .bind(&year_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
-        let revenue_this_month_row: (f64, f64) = sqlx::query_as(
+        let revenue_row: (f64, f64) = sqlx::query_as(
             "SELECT
                COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0),
                COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0)
-             FROM invoices WHERE strftime('%Y', issued_at) = ?"
+             FROM invoices WHERE issued_at >= ? AND issued_at <= ?"
         )
-        .bind(&year_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
         let outstanding_balance: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial') AND issued_at >= ? AND issued_at <= ?"
         )
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
@@ -93,92 +135,91 @@ impl ReportService {
             "SELECT
                COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
                COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
-             FROM invoices WHERE status IN ('Unpaid', 'Partial')"
+             FROM invoices WHERE status IN ('Unpaid', 'Partial') AND issued_at >= ? AND issued_at <= ?"
         )
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_one(pool)
         .await?;
 
-        // Daily active patients trend (current month)
-        let active_patients_rows: Vec<(i64, f64)> = sqlx::query_as(
-            "SELECT CAST(strftime('%d', visit_date) AS INTEGER) as day_num, CAST(COUNT(DISTINCT patient_id) AS REAL) as val
+        // Daily trends using range-based queries
+        let active_patients_rows: Vec<(String, f64)> = sqlx::query_as(
+            "SELECT visit_date as day_str, CAST(COUNT(DISTINCT patient_id) AS REAL) as val
              FROM visits
-             WHERE strftime('%Y-%m', visit_date) = ?
-             GROUP BY strftime('%d', visit_date)
-             ORDER BY day_num"
+             WHERE visit_date >= ? AND visit_date <= ?
+             GROUP BY visit_date
+             ORDER BY day_str"
         )
-        .bind(&month_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_all(pool)
         .await?;
-        let active_patients_trend = fill_daily_trends(year, month, active_patients_rows);
+        let active_patients_trend = fill_range_daily_trends(start_dt, end_dt, active_patients_rows);
 
-        // Daily visits trend (current month)
-        let visits_rows: Vec<(i64, f64)> = sqlx::query_as(
-            "SELECT CAST(strftime('%d', visit_date) AS INTEGER) as day_num, CAST(COUNT(*) AS REAL) as val
+        let visits_rows: Vec<(String, f64)> = sqlx::query_as(
+            "SELECT visit_date as day_str, CAST(COUNT(*) AS REAL) as val
              FROM visits
-             WHERE strftime('%Y-%m', visit_date) = ?
-             GROUP BY strftime('%d', visit_date)
-             ORDER BY day_num"
+             WHERE visit_date >= ? AND visit_date <= ?
+             GROUP BY visit_date
+             ORDER BY day_str"
         )
-        .bind(&month_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_all(pool)
         .await?;
-        let visits_trend = fill_daily_trends(year, month, visits_rows);
+        let visits_trend = fill_range_daily_trends(start_dt, end_dt, visits_rows);
 
-        // Daily revenue trend (current month)
-        let revenue_rows: Vec<(i64, f64)> = sqlx::query_as(
-            "SELECT CAST(strftime('%d', received_at) AS INTEGER) as day_num, COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) as val
+        let revenue_rows: Vec<(String, f64)> = sqlx::query_as(
+            "SELECT date(received_at) as day_str, COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) as val
              FROM payments
-             WHERE strftime('%Y-%m', received_at) = ?
-             GROUP BY strftime('%d', received_at)
-             ORDER BY day_num"
+             WHERE received_at >= ? AND received_at <= ?
+             GROUP BY date(received_at)
+             ORDER BY day_str"
         )
-        .bind(&month_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_all(pool)
         .await?;
-        let revenue_trend = fill_daily_trends(year, month, revenue_rows);
+        let revenue_trend = fill_range_daily_trends(start_dt, end_dt, revenue_rows);
 
-        // Daily outstanding trend (current month)
-        let outstanding_rows: Vec<(i64, f64)> = sqlx::query_as(
-            "SELECT CAST(strftime('%d', issued_at) AS INTEGER) as day_num, COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) as val
+        let outstanding_rows: Vec<(String, f64)> = sqlx::query_as(
+            "SELECT date(issued_at) as day_str, COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) as val
              FROM invoices
-             WHERE strftime('%Y-%m', issued_at) = ?
-             GROUP BY strftime('%d', issued_at)
-             ORDER BY day_num"
+             WHERE issued_at >= ? AND issued_at <= ?
+             GROUP BY date(issued_at)
+             ORDER BY day_str"
         )
-        .bind(&month_str)
+        .bind(&start_date)
+        .bind(&end_date)
         .fetch_all(pool)
         .await?;
-        let outstanding_trend = fill_daily_trends(year, month, outstanding_rows);
+        let outstanding_trend = fill_range_daily_trends(start_dt, end_dt, outstanding_rows);
 
-        // Previous month comparisons
-        let prev_start = format!("{}-{:02}-01", year, month);
-        let (prev_year, prev_month) = if month == 1 { (year - 1, 12u32) } else { (year, month - 1) };
-        let prev_start_str = format!("{}-{:02}-01", prev_year, prev_month);
-
+        // Previous period comparisons
         let prev_active_patients: i64 = sqlx::query_scalar(
             "SELECT COUNT(DISTINCT patient_id) FROM visits
-             WHERE visit_date >= ? AND visit_date < ?"
+             WHERE visit_date >= ? AND visit_date <= ?"
         )
-        .bind(&prev_start_str)
         .bind(&prev_start)
+        .bind(&prev_end)
         .fetch_one(pool)
         .await?;
 
         let prev_total_visits: i64 = sqlx::query_scalar(
             "SELECT COUNT(*) FROM visits
-             WHERE visit_date >= ? AND visit_date < ?"
+             WHERE visit_date >= ? AND visit_date <= ?"
         )
-        .bind(&prev_start_str)
         .bind(&prev_start)
+        .bind(&prev_end)
         .fetch_one(pool)
         .await?;
 
         let prev_revenue: f64 = sqlx::query_scalar(
             "SELECT COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) FROM payments
-             WHERE received_at >= ? AND received_at < ?"
+             WHERE received_at >= ? AND received_at <= ?"
         )
-        .bind(&prev_start_str)
         .bind(&prev_start)
+        .bind(&prev_end)
         .fetch_one(pool)
         .await?;
 
@@ -187,19 +228,19 @@ impl ReportService {
                COALESCE(SUM(COALESCE(amount_afn, 0)), 0.0),
                COALESCE(SUM(COALESCE(amount_usd, 0)), 0.0)
              FROM payments
-             WHERE received_at >= ? AND received_at < ?"
+             WHERE received_at >= ? AND received_at <= ?"
         )
-        .bind(&prev_start_str)
         .bind(&prev_start)
+        .bind(&prev_end)
         .fetch_one(pool)
         .await?;
 
         let prev_outstanding: f64 = sqlx::query_scalar(
             "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices
-             WHERE issued_at >= ? AND issued_at < ?"
+             WHERE issued_at >= ? AND issued_at <= ?"
         )
-        .bind(&prev_start_str)
         .bind(&prev_start)
+        .bind(&prev_end)
         .fetch_one(pool)
         .await?;
 
@@ -208,24 +249,24 @@ impl ReportService {
                COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
                COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
              FROM invoices
-             WHERE issued_at >= ? AND issued_at < ?"
+             WHERE issued_at >= ? AND issued_at <= ?"
         )
-        .bind(&prev_start_str)
         .bind(&prev_start)
+        .bind(&prev_end)
         .fetch_one(pool)
         .await?;
 
         Ok(ReportSummary {
             active_patients: total_patients,
-            total_visits_this_month,
-            revenue_this_month: revenue_this_month.unwrap_or(0.0),
-            revenue_this_month_afn: revenue_this_month_row.0,
-            revenue_this_month_usd: revenue_this_month_row.1,
+            total_visits_this_month: total_visits,
+            revenue_this_month: revenue.unwrap_or(0.0),
+            revenue_this_month_afn: revenue_row.0,
+            revenue_this_month_usd: revenue_row.1,
             outstanding_balance: outstanding_balance.unwrap_or(0.0),
             outstanding_balance_afn: outstanding_balance_row.0,
             outstanding_balance_usd: outstanding_balance_row.1,
-            completed_visits_this_month,
-            cancelled_visits_this_month,
+            completed_visits_this_month: completed_visits,
+            cancelled_visits_this_month: cancelled_visits,
             active_patients_trend,
             visits_trend,
             revenue_trend,
@@ -241,19 +282,64 @@ impl ReportService {
         })
     }
 
-    pub async fn monthly_revenue(pool: &SqlitePool) -> AppResult<Vec<MonthlyRevenuePoint>> {
-        let rows: Vec<(String, f64, f64, f64)> = sqlx::query_as(
-            "SELECT strftime('%Y-%m', issued_at) as month,
-                    COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) as revenue,
-                    COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
-                    COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
-             FROM invoices
-             WHERE issued_at >= date('now', '-12 months')
-             GROUP BY strftime('%Y-%m', issued_at)
-             ORDER BY month ASC"
-        )
-        .fetch_all(pool)
-        .await?;
+    pub async fn monthly_revenue(pool: &SqlitePool, filter: &ReportFilter) -> AppResult<Vec<MonthlyRevenuePoint>> {
+        let now = Utc::now();
+
+        let (start_date, end_date) = match filter.filter_type.as_str() {
+            "daily" => {
+                let today = now.format("%Y-%m-%d").to_string();
+                (today.clone(), today)
+            }
+            "weekly" => {
+                let week_start = (now - Duration::days(6)).format("%Y-%m-%d").to_string();
+                let today = now.format("%Y-%m-%d").to_string();
+                (week_start, today)
+            }
+            "custom" => {
+                let start = filter.start_date.clone().unwrap_or_else(|| now.format("%Y-%m-%d").to_string());
+                let end = filter.end_date.clone().unwrap_or_else(|| now.format("%Y-%m-%d").to_string());
+                (start, end)
+            }
+            _ => {
+                // monthly (default) - show last 12 months
+                let twelve_months_ago = (now - Duration::days(365)).format("%Y-%m-%d").to_string();
+                let today = now.format("%Y-%m-%d").to_string();
+                (twelve_months_ago, today)
+            }
+        };
+
+        let rows: Vec<(String, f64, f64, f64)> = if filter.filter_type == "daily" || filter.filter_type == "weekly" || filter.filter_type == "custom" {
+            sqlx::query_as(
+                "SELECT date(issued_at) as month,
+                        COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) as revenue,
+                        COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
+                        COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
+                 FROM invoices
+                 WHERE issued_at >= ? AND issued_at <= ?
+                 GROUP BY date(issued_at)
+                 ORDER BY month ASC"
+            )
+            .bind(&start_date)
+            .bind(&end_date)
+            .fetch_all(pool)
+            .await?
+        } else {
+            sqlx::query_as(
+                "SELECT strftime('%Y-%m', issued_at) as month,
+                        COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) as revenue,
+                        COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
+                        COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
+                 FROM invoices
+                 WHERE issued_at >= ? AND issued_at <= ?
+                 GROUP BY strftime('%Y-%m', issued_at)
+                 ORDER BY month ASC"
+            )
+            .bind(&start_date)
+            .bind(&end_date)
+            .fetch_all(pool)
+            .await?
+        };
+
         Ok(rows.into_iter().map(|(month, revenue, revenue_afn, revenue_usd)| MonthlyRevenuePoint { month, revenue, revenue_afn, revenue_usd }).collect())
     }
 }

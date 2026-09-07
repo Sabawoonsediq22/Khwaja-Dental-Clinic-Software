@@ -19,6 +19,7 @@ import type {
   AddPaymentInput,
   MonthlyRevenuePoint,
   ReportSummary,
+  ReportFilter,
   AppSettings,
   UpdateSettingsInput,
   Xray,
@@ -164,8 +165,8 @@ export const api = {
       invoke<void>("update_procedure_additional_note", { id, additionalNote }),
   },
   reports: {
-    summary: () => invoke<ReportSummary>("get_report_summary"),
-    monthlyRevenue: () => invoke<MonthlyRevenuePoint[]>("get_monthly_revenue"),
+    summary: (filter: ReportFilter) => invoke<ReportSummary>("get_report_summary", { filter }),
+    monthlyRevenue: (filter: ReportFilter) => invoke<MonthlyRevenuePoint[]>("get_monthly_revenue", { filter }),
   },
   settings: {
     get: () => invoke<AppSettings>("get_settings"),
