@@ -49,7 +49,9 @@
       "lastVisit": "LAST VISIT",
       "status": "STATUS"
     },
-    "noRecentPatients": "No recent patients"
+    "noRecentPatients": "No recent patients",
+    "todayAppointments": "today's appointments",
+    "thisMonth": "this month"
   },
   "settings": {
     "language": "Language",

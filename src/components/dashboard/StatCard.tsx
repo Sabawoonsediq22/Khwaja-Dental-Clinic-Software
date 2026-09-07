@@ -18,6 +18,7 @@ interface StatCardProps {
   context?: string;
   sparklineData?: { day: string; value: number }[];
   className?: string;
+  onClick?: () => void;
 }
 
 const accentConfig: Record<CardAccent, { border: string; bg: string; icon: string; iconBg: string; glow: string; sparkline: string }> = {
@@ -68,11 +69,13 @@ const StatCard: React.FC<StatCardProps> = ({
   context,
   sparklineData,
   className,
+  onClick,
 }) => {
   const config = accentConfig[accent];
 
   return (
     <div
+      onClick={onClick}
       className={cn(
         "group relative rounded-2xl border border-gray-200/80 dark:border-gray-700/50",
         "bg-white dark:bg-gray-800/60 backdrop-blur-sm",
@@ -83,6 +86,7 @@ const StatCard: React.FC<StatCardProps> = ({
         "border-t-[3px]",
         config.border,
         config.glow,
+        onClick && "cursor-pointer",
         className,
       )}
     >

@@ -43,7 +43,7 @@ const computeTrend = (
   const rawPct = ((today - yesterday) / yesterday) * 100;
   const clamped = Math.max(-100, Math.min(100, rawPct));
   const sign = clamped >= 0 ? "+" : "";
-  return { value: `${sign}${clamped.toFixed(1)}% vs yesterday`, positive: clamped >= 0 };
+  return { value: `${sign}${clamped.toFixed(1)}%`, positive: clamped >= 0 };
 };
 
 interface StatCardDef {
@@ -58,6 +58,7 @@ interface StatCardDef {
   trend?: { value: string; positive: boolean };
   context?: string;
   sparklineData?: { day: string; value: number }[];
+  onClick?: () => void;
 }
 
 const FLOW_MODES = ["daily", "weekly"] as const;
@@ -128,7 +129,7 @@ const Dashboard: React.FC = () => {
       return [
         { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0 AFN", secondaryValue: "$ 0.00", icon: <CurrencyIcon size="lg" />, accent: "green" },
         { title: t("dashboard.stats.patientsToday", "Patients Today"), value: "0", icon: <PatientIcon size="lg" />, accent: "blue" },
-        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN", secondaryValue: "$ 0.00", secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" />, accent: "orange" },
+        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN", secondaryValue: "$ 0.00", secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" />, accent: "orange", onClick: () => navigate("/billing?filter=outstanding") },
         { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), value: "00", icon: <ToothIcon size="lg" />, accent: "purple" },
       ];
     }
@@ -161,7 +162,6 @@ const Dashboard: React.FC = () => {
         icon: <CurrencyIcon size="lg" />,
         accent: "green",
         trend: computeTrend(stats.daily_revenue, stats.yesterday_revenue),
-        context: t("dashboard.vsYesterday", "vs yesterday"),
         sparklineData: generateSparkline(stats.daily_revenue, stats.yesterday_revenue),
       },
       {
@@ -181,9 +181,7 @@ const Dashboard: React.FC = () => {
         icon: <ClockIcon size="lg" />,
         accent: "orange",
         badge: outstandingBadge,
-        context: stats.outstanding_invoices_count > 0
-          ? t("dashboard.overdueInvoices", "overdue invoices")
-          : t("dashboard.allClear", "all clear"),
+        onClick: () => navigate("/billing?filter=outstanding"),
       },
       {
         title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"),
@@ -422,6 +420,7 @@ const Dashboard: React.FC = () => {
             secondaryValue={stat.secondaryValue}
             context={stat.context}
             sparklineData={stat.sparklineData}
+            onClick={stat.onClick}
           />
         ))}
       </div>

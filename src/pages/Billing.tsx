@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { LoadingSpinner, Pagination } from "../components/ui";
 import BillingHeader from "../components/billing/BillingHeader";
@@ -8,7 +8,7 @@ import { ReceiptPreviewModal } from "../components/receipt";
 import { useInvoices, useAddPayment } from "../hooks/useInvoices";
 import { useDebounce } from "../hooks/useDebounce";
 import { useQueryClient } from "@tanstack/react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import type { InvoiceListItem } from "../types/ApiTypes";
 import { toast } from "sonner";
 
@@ -19,11 +19,16 @@ const Billing: React.FC = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const { id } = useParams<{ id?: string }>();
+  const [searchParams] = useSearchParams();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
     "All" | "Unpaid" | "Partial" | "Paid"
-  >("All");
+  >(() => {
+    const filter = searchParams.get("filter");
+    if (filter === "outstanding") return "All";
+    return "All";
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(PAGE_SIZE);
 
@@ -31,6 +36,8 @@ const Billing: React.FC = () => {
   const [showReceiptModal, setShowReceiptModal] = useState(false);
   const [selectedInvoice, setSelectedInvoice] =
     useState<InvoiceListItem | null>(null);
+
+  const filterOutstanding = searchParams.get("filter") === "outstanding";
 
   useEffect(() => {
     if (id) {
@@ -46,10 +53,32 @@ const Billing: React.FC = () => {
 
   const { data, isLoading, error } = useInvoices({
     query: debouncedSearchQuery || undefined,
-    status: selectedStatus !== "All" ? selectedStatus : undefined,
+    status: filterOutstanding
+      ? undefined
+      : selectedStatus !== "All"
+        ? selectedStatus
+        : undefined,
     page: currentPage,
-    perPage: itemsPerPage,
+    perPage: filterOutstanding ? 100 : itemsPerPage,
   });
+
+  const filteredInvoices = useMemo(() => {
+    if (!filterOutstanding) return data?.items ?? [];
+    return (data?.items ?? []).filter(
+      (inv) => (inv.outstanding_afn ?? 0) > 0 || (inv.outstanding_usd ?? 0) > 0,
+    );
+  }, [data?.items, filterOutstanding]);
+
+  const totalFiltered = filterOutstanding ? filteredInvoices.length : data?.total ?? 0;
+  const totalPages = filterOutstanding
+    ? Math.ceil(filteredInvoices.length / itemsPerPage)
+    : data?.total_pages ?? 1;
+
+  const paginatedInvoices = useMemo(() => {
+    if (!filterOutstanding) return filteredInvoices;
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredInvoices.slice(start, start + itemsPerPage);
+  }, [filteredInvoices, filterOutstanding, currentPage, itemsPerPage]);
 
   const addPaymentMutation = useAddPayment();
 
@@ -65,7 +94,7 @@ const Billing: React.FC = () => {
   };
 
   const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= (data?.total_pages ?? 1)) {
+    if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
@@ -110,16 +139,17 @@ const Billing: React.FC = () => {
     });
   };
 
-  const invoices = data?.items ?? [];
-  const totalOutstanding = invoices.reduce(
+  const invoices = paginatedInvoices;
+  const allInvoices = data?.items ?? [];
+  const totalOutstanding = allInvoices.reduce(
     (sum, inv) => sum + (inv.outstanding_afn ?? 0) + (inv.outstanding_usd ?? 0),
     0,
   );
-  const totalOutstandingAfn = invoices.reduce(
+  const totalOutstandingAfn = allInvoices.reduce(
     (sum, inv) => sum + (inv.outstanding_afn ?? 0),
     0,
   );
-  const totalOutstandingUsd = invoices.reduce(
+  const totalOutstandingUsd = allInvoices.reduce(
     (sum, inv) => sum + (inv.outstanding_usd ?? 0),
     0,
   );
@@ -128,13 +158,13 @@ const Billing: React.FC = () => {
     <div className="flex flex-col h-full">
       <BillingHeader
         invoices={invoices}
-        totalInvoices={data?.total ?? 0}
+        totalInvoices={filterOutstanding ? totalFiltered : (data?.total ?? 0)}
         totalOutstanding={totalOutstanding}
         totalOutstandingAmount={data?.total_outstanding ?? 0}
         totalOutstandingAfn={totalOutstandingAfn}
         totalOutstandingUsd={totalOutstandingUsd}
         searchQuery={searchQuery}
-        selectedStatus={selectedStatus}
+        selectedStatus={filterOutstanding ? "All" : selectedStatus}
         onSearchChange={handleSearchChange}
         onStatusChange={handleStatusChange}
         unpaidCount={data?.unpaid_count}
@@ -168,8 +198,8 @@ const Billing: React.FC = () => {
 
       <Pagination
         currentPage={currentPage}
-        totalPages={data?.total_pages ?? 1}
-        totalItems={data?.total ?? 0}
+        totalPages={totalPages}
+        totalItems={totalFiltered}
         itemsPerPage={itemsPerPage}
         onPageChange={handlePageChange}
         onItemsPerPageChange={handleItemsPerPageChange}

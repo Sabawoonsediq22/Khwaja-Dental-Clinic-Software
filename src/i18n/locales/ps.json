@@ -49,7 +49,9 @@
       "lastVisit": "وروستۍ لیدنه",
       "status": "حالت"
     },
-    "noRecentPatients": "هیڅ وروستي ناروغان نشته"
+    "noRecentPatients": "هیڅ وروستي ناروغان نشته",
+    "todayAppointments": "د نن نوبتونه",
+    "thisMonth": "دغه میاشت"
   },
   "settings": {
     "language": "ژبه",
