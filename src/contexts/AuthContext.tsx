@@ -9,6 +9,7 @@ interface AuthContextType {
   token: string | null;
   login: (username: string, password: string, rememberMe: boolean) => Promise<void>;
   setup: (username: string, password: string) => Promise<string>;
+  completeSetup: () => void;
   logout: () => Promise<void>;
   hasUsers: boolean;
 }
@@ -78,13 +79,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       setToken(response.token);
       setUsername(response.username);
       setUserId(response.user_id);
-      setIsAuthenticated(true);
-      setHasUsers(true);
       localStorage.setItem(SESSION_KEY, response.token);
       return response.recovery_key;
     },
     [],
   );
+
+  const completeSetup = useCallback(() => {
+    setHasUsers(true);
+    setIsAuthenticated(true);
+  }, []);
 
   const logout = useCallback(async () => {
     if (token) {
@@ -103,7 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, username, userId, token, login, setup, logout, hasUsers }}
+      value={{ isAuthenticated, isLoading, username, userId, token, login, setup, completeSetup, logout, hasUsers }}
     >
       {children}
     </AuthContext.Provider>

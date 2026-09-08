@@ -1038,6 +1038,7 @@
     "invalidRecoveryKey": "Invalid recovery key",
     "incorrectCurrentPassword": "Current password is incorrect",
     "userAlreadyExists": "User already exists",
+    "databaseLocked": "Database is locked. Please close any other database tools and try again.",
     "changePasswordDesc": "Update your account password",
     "currentPasswordPlaceholder": "Enter current password",
     "changing": "Changing..."

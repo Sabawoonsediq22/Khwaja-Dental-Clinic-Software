@@ -9,6 +9,12 @@ pub async fn init_pool(db_path: &str) -> Result<SqlitePool, sqlx::Error> {
         }
     }
 
+    // Always clean up stale SHM files before connecting.
+    // SHM is a shared-memory index for WAL mode and is safe to delete.
+    // External tools (e.g., DB Browser for SQLite) can leave stale SHM files
+    // that cause "database is locked" errors.
+    cleanup_stale_shm_file(db_path);
+
     if let Ok(pool) = try_connect(db_path).await {
         checkpoint_wal(&pool).await;
         return Ok(pool);
@@ -55,6 +61,18 @@ fn cleanup_stale_wal_files(db_path: &str) {
             } else {
                 println!("[INFO] Cleaned up stale WAL file: {}", stale_path);
             }
+        }
+    }
+}
+
+fn cleanup_stale_shm_file(db_path: &str) {
+    let shm_path = format!("{}-shm", db_path);
+    let path = std::path::Path::new(&shm_path);
+    if path.exists() {
+        if let Err(e) = std::fs::remove_file(path) {
+            eprintln!("[WARN] Failed to remove stale SHM file {}: {}", shm_path, e);
+        } else {
+            println!("[INFO] Cleaned up stale SHM file: {}", shm_path);
         }
     }
 }

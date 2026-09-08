@@ -1016,6 +1016,7 @@
     "invalidRecoveryKey": "ناسم ریکووری کی",
     "incorrectCurrentPassword": "اوسنی رمز ناسم دی",
     "userAlreadyExists": "کارن مخکې نه شته دی",
+    "databaseLocked": "د بانک معلومات قفل شوی دی. مهرباني وکړئ نوره د بانک معلومات اوزاره بند کړئ او بیا هڅه وکړئ.",
     "changePasswordDesc": "خپل حساب رمز تازه کړئ",
     "currentPasswordPlaceholder": "اوسنی رمز دننه کړئ",
     "changing": "بدل کېږي..."

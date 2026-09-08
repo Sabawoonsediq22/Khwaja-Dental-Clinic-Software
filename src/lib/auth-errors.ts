@@ -9,6 +9,7 @@ const AUTH_ERROR_MAP: Record<string, string> = {
   "invalid recovery key": "auth.invalidRecoveryKey",
   "current password is incorrect": "auth.incorrectCurrentPassword",
   "user already exists": "auth.userAlreadyExists",
+  "database is locked": "auth.databaseLocked",
 };
 
 export function translateAuthError(raw: string, t: (key: string) => string): string {
