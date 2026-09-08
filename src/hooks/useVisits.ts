@@ -39,6 +39,7 @@ export function useUpdateVisitStatus() {
       api.visits.updateStatus(id, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["visits"], refetchType: "all" });
+      qc.invalidateQueries({ queryKey: ["all-visits"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["treatment-history"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["dashboard"], refetchType: "all" });
       qc.invalidateQueries({ queryKey: ["invoices"], refetchType: "all" });

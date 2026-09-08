@@ -101,7 +101,7 @@ const Login: React.FC = () => {
               <img
                 src={Logo}
                 alt="Clinic Logo"
-                className="mb-6 h-24 w-24 object-contain rounded-xl"
+                className="h-52 w-52 object-contain rounded-xl"
               />
               <h1 className="text-2xl font-bold text-center">
                 {t("dashboard.logo")}
@@ -271,12 +271,12 @@ const Login: React.FC = () => {
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 cursor-pointer" onClick={() => setRememberMe(!rememberMe)}>
                         <Checkbox
                           checked={rememberMe}
                           onCheckedChange={setRememberMe}
                         />
-                        <label className="text-sm text-gray-600 dark:text-gray-400">
+                        <label className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer">
                           {t("auth.rememberMe")}
                         </label>
                       </div>

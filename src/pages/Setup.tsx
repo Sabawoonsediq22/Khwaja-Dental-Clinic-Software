@@ -85,7 +85,7 @@ const Setup: React.FC = () => {
               <img
                 src={Logo}
                 alt="Clinic Logo"
-                className="mb-6 h-24 w-24 object-contain rounded-xl"
+                className="h-52 w-52 object-contain rounded-xl"
               />
               <h1 className="text-2xl font-bold text-center">
                 {t("dashboard.logo")}

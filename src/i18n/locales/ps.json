@@ -11,7 +11,7 @@
     "newPatient": "نوی ناروغ ثبتول"
   },
   "dashboard": {
-    "logo": "د خواجه کلینیک",
+    "logo": "ډینټل کلینیک",
     "title": "ډشبورډ",
     "welcome": "بیا ښه راغلاست",
     "clear": "پاکول",
@@ -996,7 +996,7 @@
     "poweredBy": "د خواجه د غاښونو او ایمپلنت کلینیک",
     "forgotPassword": "رمز مو هېړ شوی؟",
     "forgotPasswordTitle": "رمز بیا تنظیم کړئ",
-    "forgotPasswordSubtitle": "خپل ریکووری کیږئ او نوی رمز تنظیم کړئ.",
+    "forgotPasswordSubtitle": "خپل ریکووری کی او نوی رمز تنظیم کړئ.",
     "recoveryKey": "ریکووری کی",
     "recoveryKeyPlaceholder": "XXXX-XXXX-XXXX-XXXX",
     "resetting": "بیا تنظیم کېږي...",
