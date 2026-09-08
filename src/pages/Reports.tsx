@@ -519,7 +519,6 @@ const Reports: React.FC = () => {
                     fontWeight: 500,
                     fontFamily: "Inter, system-ui, sans-serif",
                     markers: {
-                      radius: 2,
                       strokeWidth: 0,
                       size: 8,
                       offsetX: -2,

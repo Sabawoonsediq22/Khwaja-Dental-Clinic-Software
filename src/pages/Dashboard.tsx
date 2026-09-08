@@ -85,7 +85,7 @@ const useDarkMode = () => {
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [flowMode, setFlowMode] = useState<"daily" | "weekly">("weekly");
+  const [flowMode, setFlowMode] = useState<"daily" | "weekly" | "monthly">("weekly");
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const isDark = useDarkMode();
 
