@@ -31,8 +31,10 @@
       "proceduresPerformed": "Procedures Performed"
     },
     "patientsFlow": "Patients Flow",
+    "visits": "Visits",
     "daily": "Daily",
     "weekly": "Weekly",
+    "monthly": "Monthly",
     "procedureDistribution": "Procedure Distribution",
     "recentPatients": "Recent Patients",
     "viewAllPatients": "View All Patients",

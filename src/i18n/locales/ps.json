@@ -31,8 +31,10 @@
       "proceduresPerformed": "ترسره شوي درملنې"
     },
     "patientsFlow": "د ناروغانو جریان",
+    "visits": "لیدنې",
     "daily": "ورځنی",
     "weekly": "اونیز",
+    "monthly": "میاشتنی",
     "procedureDistribution": "د درملنو وېش",
     "recentPatients": "وروستي ناروغان",
     "viewAllPatients": "ټول ناروغان وګورئ",

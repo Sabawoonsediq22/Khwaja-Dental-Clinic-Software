@@ -9,7 +9,7 @@ export function useDashboardStats() {
   });
 }
 
-export function usePatientsFlow(mode: "daily" | "weekly" = "daily") {
+export function usePatientsFlow(mode: "daily" | "weekly" | "monthly" = "daily") {
   return useQuery({
     queryKey: ["dashboard", "patientsFlow", mode],
     queryFn: () => api.dashboard.patientsFlow(mode),

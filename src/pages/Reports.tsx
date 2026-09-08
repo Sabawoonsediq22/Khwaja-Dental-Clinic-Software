@@ -484,7 +484,7 @@ const Reports: React.FC = () => {
               <Chart
                 options={{
                   chart: {
-                    type: "bar",
+                    type: "pie",
                     height: "100%",
                     toolbar: { show: false },
                     fontFamily: "Inter, system-ui, sans-serif",
@@ -495,69 +495,57 @@ const Reports: React.FC = () => {
                       speed: 600,
                     },
                   },
-                  plotOptions: {
-                    bar: {
-                      borderRadius: 6,
-                      columnWidth: "55%",
-                      distributed: true,
-                    },
-                  },
-                  grid: {
-                    show: true,
-                    borderColor: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)",
-                    strokeDashArray: 4,
-                    position: "back",
-                    xaxis: { lines: { show: false } },
-                    yaxis: { lines: { show: true } },
-                    padding: { top: 10, right: 10, bottom: 0, left: 10 },
-                  },
                   colors: visitStatusData.map((d) => d.fill),
-                  xaxis: {
-                    categories: visitStatusData.map((d) => d.name),
-                    axisBorder: { show: false },
-                    axisTicks: { show: false },
-                    labels: {
-                      style: {
-                        fontSize: "11px",
-                        fontWeight: 500,
-                        colors: isDark ? "#6b7280" : "#9ca3af",
-                      },
+                  labels: visitStatusData.map((d) => d.name),
+                  dataLabels: {
+                    enabled: true,
+                    formatter: (val: number) => `${val.toFixed(1)}%`,
+                    style: {
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      colors: ["#fff"],
                     },
+                    dropShadow: { enabled: false },
                   },
-                  yaxis: {
-                    show: true,
-                    axisBorder: { show: false },
-                    axisTicks: { show: false },
-                    labels: {
-                      style: {
-                        fontSize: "11px",
-                        fontWeight: 500,
-                        colors: isDark ? "#6b7280" : "#9ca3af",
-                      },
-                      offsetX: -6,
-                    },
-                  },
-                  dataLabels: { enabled: false },
                   tooltip: {
                     theme: isDark ? "dark" : "light",
                     style: { fontSize: "12px" },
                     y: { formatter: (val: number) => String(val) },
                   },
-                  legend: { show: false },
+                  legend: {
+                    show: true,
+                    position: "bottom",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    fontFamily: "Inter, system-ui, sans-serif",
+                    markers: {
+                      radius: 2,
+                      strokeWidth: 0,
+                      size: 8,
+                      offsetX: -2,
+                    },
+                    itemMargin: { horizontal: 12, vertical: 0 },
+                    labels: {
+                      colors: isDark ? "#d1d5db" : "#374151",
+                      useSeriesColors: false,
+                    },
+                  },
+                  stroke: {
+                    width: 2,
+                    colors: [isDark ? "#1f2937" : "#ffffff"],
+                  },
                   responsive: [
                     {
                       breakpoint: 640,
                       options: {
                         chart: { height: 220 },
+                        legend: { fontSize: "10px" },
                       },
                     },
                   ],
                 }}
-                series={[{
-                  name: t("reports.charts.count", "Count"),
-                  data: visitStatusData.map((d) => d.value),
-                }]}
-                type="bar"
+                series={visitStatusData.map((d) => d.value)}
+                type="pie"
                 height="100%"
               />
             </div>

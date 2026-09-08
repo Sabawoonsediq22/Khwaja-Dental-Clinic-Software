@@ -61,7 +61,7 @@ interface StatCardDef {
   onClick?: () => void;
 }
 
-const FLOW_MODES = ["daily", "weekly"] as const;
+const FLOW_MODES = ["daily", "weekly", "monthly"] as const;
 
 const useDarkMode = () => {
   const [isDark, setIsDark] = useState(() =>
@@ -235,7 +235,7 @@ const Dashboard: React.FC = () => {
         yaxis: { lines: { show: true } },
         padding: { top: 10, right: 10, bottom: 0, left: 10 },
       },
-      colors: ["#3b82f6", "#10b981"],
+      colors: ["#3b82f6"],
       fill: {
         type: "gradient",
         gradient: {
@@ -306,8 +306,7 @@ const Dashboard: React.FC = () => {
         x: { show: false },
         custom: function ({ series, dataPointIndex, w }: any) {
           const label = w.globals.labels[dataPointIndex];
-          const checkIn = series[0][dataPointIndex];
-          const completed = series[1][dataPointIndex];
+          const visits = series[0][dataPointIndex];
           return `
             <div style="
               padding: 12px 16px;
@@ -327,13 +326,8 @@ const Dashboard: React.FC = () => {
               <div style="display: flex; flex-direction: column; gap: 6px;">
                 <div style="display: flex; align-items: center; gap: 8px;">
                   <span style="width: 8px; height: 8px; border-radius: 50%; background: #3b82f6; flex-shrink: 0;"></span>
-                  <span style="font-size: 12px; color: ${isDark ? "#d1d5db" : "#374151"}; font-weight: 500;">${t("dashboard.checkIns", "Check-ins")}</span>
-                  <span style="font-size: 13px; font-weight: 700; color: ${isDark ? "#f9fafb" : "#111827"}; margin-left: auto;">${checkIn}</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="width: 8px; height: 8px; border-radius: 50%; background: #10b981; flex-shrink: 0;"></span>
-                  <span style="font-size: 12px; color: ${isDark ? "#d1d5db" : "#374151"}; font-weight: 500;">${t("dashboard.completed", "Completed")}</span>
-                  <span style="font-size: 13px; font-weight: 700; color: ${isDark ? "#f9fafb" : "#111827"}; margin-left: auto;">${completed}</span>
+                  <span style="font-size: 12px; color: ${isDark ? "#d1d5db" : "#374151"}; font-weight: 500;">${t("dashboard.visits", "Visits")}</span>
+                  <span style="font-size: 13px; font-weight: 700; color: ${isDark ? "#f9fafb" : "#111827"}; margin-left: auto;">${visits}</span>
                 </div>
               </div>
             </div>
@@ -363,12 +357,8 @@ const Dashboard: React.FC = () => {
   const flowChartSeries: ApexOptions["series"] = React.useMemo(
     () => [
       {
-        name: t("dashboard.checkIns", "Check-ins"),
-        data: (flowData ?? []).map((d) => d.check_ins),
-      },
-      {
-        name: t("dashboard.completed", "Completed"),
-        data: (flowData ?? []).map((d) => d.completed),
+        name: t("dashboard.visits", "Visits"),
+        data: (flowData ?? []).map((d) => d.visits),
       },
     ],
     [flowData, t],
