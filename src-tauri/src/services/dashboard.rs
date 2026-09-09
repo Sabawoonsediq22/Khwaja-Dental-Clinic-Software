@@ -125,6 +125,41 @@ impl DashboardService {
             return Ok(result);
         }
 
+        if mode == "monthly" {
+            let mut result = Vec::new();
+            let now = Utc::now();
+            for i in (0..12).rev() {
+                let month = now - Duration::days(i as i64 * 30);
+                let year = month.format("%Y").to_string();
+                let month_num = month.format("%m").to_string();
+                let label = month.format("%b %Y").to_string();
+
+                let check_ins: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM visits WHERE strftime('%Y', visit_date) = ? AND strftime('%m', visit_date) = ?"
+                )
+                .bind(&year)
+                .bind(&month_num)
+                .fetch_one(pool)
+                .await?;
+
+                let completed: i64 = sqlx::query_scalar(
+                    "SELECT COUNT(*) FROM visits WHERE strftime('%Y', visit_date) = ? AND strftime('%m', visit_date) = ? AND status = 'Completed'"
+                )
+                .bind(&year)
+                .bind(&month_num)
+                .fetch_one(pool)
+                .await?;
+
+                result.push(PatientsFlowPoint {
+                    label,
+                    check_ins,
+                    visits: check_ins,
+                    completed,
+                });
+            }
+            return Ok(result);
+        }
+
         let mut result = Vec::new();
         for hour in [8u32, 10, 12, 14, 16, 18] {
             let hour_str = format!("{:02}:00", hour);
