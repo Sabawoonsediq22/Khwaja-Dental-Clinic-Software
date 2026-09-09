@@ -803,7 +803,7 @@ const NewPatient: React.FC = () => {
             </section>
           </div>
 
-          <section className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+          <section className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
             <div className="border-b bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-t-lg p-4">
               <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
                 <ToothIcon className="w-5 h-5 text-green-600" />
@@ -963,11 +963,7 @@ const NewPatient: React.FC = () => {
                           </Button>
                         </div>
                       </div>
-                      <div className="p-4 space-y-4">
-                        <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-                          <p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            {t("newPatient.dentalChart")}
-                          </p>
+                      <div className="p-2 space-y-4">
                           <DentalChart
                             onToothSelect={handleSelectedToothChange}
                             onMeasurementChange={handleToothMeasurements}
@@ -980,7 +976,6 @@ const NewPatient: React.FC = () => {
                                 ?.sealedTeeth ?? []
                             }
                           />
-                        </div>
                       </div>
                     </div>
                   </div>

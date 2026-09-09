@@ -571,7 +571,7 @@ const NewVisit: React.FC = () => {
             </div>
           </section>
 
-          <section className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
+          <section className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
             <div className="rounded-t-lg border-b border-gray-200 bg-gray-100 dark:bg-gray-700 p-4 dark:border-gray-700">
               <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
                 <ToothIcon className="h-5 w-5 text-green-600" />
@@ -584,18 +584,6 @@ const NewVisit: React.FC = () => {
             <div className="flex flex-col lg:flex-row">
               <div className="flex-1 p-6 lg:border-r border-gray-200 dark:border-gray-700 space-y-5">
                 <div className="flex gap-3 items-end">
-                  <FormField label={t("newPatient.procedureAdditionalNotes")} className="flex-[3]">
-                    <FormInput
-                      placeholder={t(
-                        "newPatient.additionalNotesPlaceholder",
-                        "Add procedure notes",
-                      )}
-                      value={procedureNotes}
-                      onChange={(e) => setProcedureNotes(e.target.value)}
-                      disabled={isSubmitting}
-                      className="w-full"
-                    />
-                  </FormField>
                   <FormField label={t("newVisit.procedure")} className="flex-1">
                     <Combobox
                       value={procedureValue}
@@ -694,20 +682,8 @@ const NewVisit: React.FC = () => {
                             </span>
                           ) : null}
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeProcedure(activeProcedureIndex)}
-                          disabled={isSubmitting}
-                          className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                        >
-                          {t("newVisit.remove")}
-                        </Button>
-                      </div>
-                      <div className="p-4 space-y-4">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <FormField label={t("newVisit.numberOfProcedures")}>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <FormInput
                               type="number"
                               min={1}
@@ -722,15 +698,22 @@ const NewVisit: React.FC = () => {
                                 )
                               }
                               disabled={isSubmitting}
-                              className="w-full"
+                              className="w-16 h-10 text-sm"
                             />
-                          </FormField>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeProcedure(activeProcedureIndex)}
+                            disabled={isSubmitting}
+                            className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                          >
+                            {t("newVisit.remove")}
+                          </Button>
                         </div>
-
-                        <div className="rounded-lg border border-gray-200 dark:border-gray-700">
-                          <p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                            {t("newPatient.dentalChart")}
-                          </p>
+                      </div>
+                      <div className="p-2 space-y-">
                           <DentalChart
                             onToothSelect={handleSelectedToothChange}
                             onMeasurementChange={handleToothMeasurements}
@@ -743,7 +726,6 @@ const NewVisit: React.FC = () => {
                                 ?.sealedTeeth ?? []
                             }
                           />
-                        </div>
                       </div>
                     </div>
                   </div>
