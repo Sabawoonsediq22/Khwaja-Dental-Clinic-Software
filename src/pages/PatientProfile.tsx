@@ -237,6 +237,9 @@ const PatientProfile: React.FC = () => {
       deletePatientMutation.mutate(patient.id, {
         onSuccess: () => {
           queryClient.invalidateQueries({ queryKey: ["patients"] });
+          queryClient.invalidateQueries({ queryKey: ["all-visits"] });
+          queryClient.invalidateQueries({ queryKey: ["visits"] });
+          queryClient.invalidateQueries({ queryKey: ["treatment-history"] });
           navigate("/patients");
           toast.success(
             t(

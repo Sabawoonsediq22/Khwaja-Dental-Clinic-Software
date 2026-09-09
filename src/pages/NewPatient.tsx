@@ -14,7 +14,7 @@ import {
   CrossCircleIcon,
 } from "../shared/icons/icons";
 import { Button } from "../components/ui";
-import { FormField, FormInput, FormTextarea, Select } from "../components/ui";
+import { FormField, FormInput, FormTextarea, Combobox } from "../components/ui";
 import DentalChart from "../components/dental-chart/DentalChart";
 import { ReceiptPreviewModal } from "../components/receipt/ReceiptPreviewModal";
 import { isRTL } from "../i18n";
@@ -98,6 +98,8 @@ const NewPatient: React.FC = () => {
     SelectedProcedure[]
   >([]);
   const [activeProcedureIndex, setActiveProcedureIndex] = useState<number>(0);
+  const [procedureValue, setProcedureValue] = useState("");
+  const [procedureNotes, setProcedureNotes] = useState("");
 
   // X-ray, drag-drop, and dental chart state are independent from the main patient form.
   const [xrayFile, setXrayFile] = useState<File | null>(null);
@@ -813,41 +815,40 @@ const NewPatient: React.FC = () => {
             </div>
             <div className="flex flex-col lg:flex-row">
               <div className="flex-1 p-6 lg:border-r border-gray-200 dark:border-gray-700 space-y-5">
-                <FormField label={t("newPatient.procedure")}>
-                  <Select
-                    value=""
-                    onChange={(e) => {
-                      const name = e.target.value;
-                      if (!name) return;
-                      const selected = PROCEDURES.find((p) => p.name === name);
-                      const newProc: SelectedProcedure = {
-                        procedureName: name,
-                        additionalNotes: "",
-                        procedurePrice: selected?.price ?? 0,
-                        priceAfn: selected?.price_afn ?? 0,
-                        priceUsd: selected?.price_usd ?? 0,
-                        numberOfProcedures: 1,
-                        selectedToothIds: [],
-                        sealedTeeth: [],
-                      };
-                      setSelectedProcedures((prev) => {
-                        const next = [...prev, newProc];
-                        setActiveProcedureIndex(next.length - 1);
-                        return next;
-                      });
-                    }}
-                    className="cursor-pointer w-full"
-                    disabled={isSubmitting}
-                  >
-                    <option value="">{t("newPatient.selectProcedure")}</option>
-                    {PROCEDURES.map((procedure, index) => (
-                      <option key={index} value={procedure.name}>
-                        {procedure.name} - {formatCurrency(procedure.price)}{" "}
-                        {getCurrencySymbol(procedure.name)}
-                      </option>
-                    ))}
-                  </Select>
-                </FormField>
+                <div className="flex items-end">
+                  <FormField label={t("newPatient.procedure")} className="flex-1">
+                    <Combobox
+                      value={procedureValue}
+                      onValueChange={(name) => {
+                        const selected = PROCEDURES.find((p) => p.name === name);
+                        const newProc: SelectedProcedure = {
+                          procedureName: name,
+                          additionalNotes: procedureNotes,
+                          procedurePrice: selected?.price ?? 0,
+                          priceAfn: selected?.price_afn ?? 0,
+                          priceUsd: selected?.price_usd ?? 0,
+                          numberOfProcedures: 1,
+                          selectedToothIds: [],
+                          sealedTeeth: [],
+                        };
+                        setSelectedProcedures((prev) => {
+                          const next = [...prev, newProc];
+                          setActiveProcedureIndex(next.length - 1);
+                          return next;
+                        });
+                        setProcedureValue("");
+                        setProcedureNotes("");
+                      }}
+                      options={PROCEDURES.map((p) => ({
+                        value: p.name,
+                        label: `${p.name} - ${formatCurrency(p.price)} ${getCurrencySymbol(p.name)}`,
+                      }))}
+                      placeholder={t("newPatient.selectProcedure")}
+                      className="w-full"
+                      disabled={isSubmitting}
+                    />
+                  </FormField>
+                </div>
 
                 {selectedProcedures.length === 0 ? (
                   <div className="rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700 p-8 text-center">
@@ -931,42 +932,8 @@ const NewPatient: React.FC = () => {
                             </span>
                           ) : null}
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeProcedure(activeProcedureIndex)}
-                          disabled={isSubmitting}
-                          className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
-                        >
-                          {t("newPatient.remove")}
-                        </Button>
-                      </div>
-                      <div className="p-4 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            label={t("newPatient.procedureAdditionalNotes")}
-                          >
-                            <FormInput
-                              placeholder={t(
-                                "newPatient.additionalNotesPlaceholder",
-                                "Add procedure notes",
-                              )}
-                              value={
-                                selectedProcedures[activeProcedureIndex]
-                                  ?.additionalNotes ?? ""
-                              }
-                              onChange={(e) =>
-                                updateActiveProcedure(
-                                  "additionalNotes",
-                                  e.target.value,
-                                )
-                              }
-                              disabled={isSubmitting}
-                              className="w-full"
-                            />
-                          </FormField>
-                          <FormField label={t("newPatient.numberOfProcedures")}>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1">
                             <FormInput
                               type="number"
                               min={1}
@@ -981,11 +948,22 @@ const NewPatient: React.FC = () => {
                                 )
                               }
                               disabled={isSubmitting}
-                              className="w-full"
+                              className="w-16 h-10 text-sm"
                             />
-                          </FormField>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeProcedure(activeProcedureIndex)}
+                            disabled={isSubmitting}
+                            className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                          >
+                            {t("newPatient.remove")}
+                          </Button>
                         </div>
-
+                      </div>
+                      <div className="p-4 space-y-4">
                         <div className="rounded-lg border border-gray-200 dark:border-gray-700">
                           <p className="px-4 pt-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                             {t("newPatient.dentalChart")}

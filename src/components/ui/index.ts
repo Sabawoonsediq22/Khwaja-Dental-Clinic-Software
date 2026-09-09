@@ -12,6 +12,9 @@ export type { TextareaProps } from "./Textarea";
 export { Select } from "./Select";
 export type { SelectProps } from "./Select";
 
+export { Combobox } from "./comboBox";
+export type { ComboboxOption, ComboboxProps } from "./comboBox";
+
 export { Checkbox } from "./Checkbox";
 export type { CheckboxProps } from "./Checkbox";
 

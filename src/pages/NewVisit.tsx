@@ -18,7 +18,7 @@ import {
   FormInput,
   FormTextarea,
   LoadingSpinner,
-  Select,
+  Combobox,
   toast,
 } from "../components/ui";
 import DentalChart from "../components/dental-chart/DentalChart";
@@ -87,6 +87,8 @@ const NewVisit: React.FC = () => {
     SelectedProcedure[]
   >([]);
   const [activeProcedureIndex, setActiveProcedureIndex] = useState<number>(0);
+  const [procedureValue, setProcedureValue] = useState("");
+  const [procedureNotes, setProcedureNotes] = useState("");
 
   const [discountAfn, setDiscountAfn] = useState("");
   const [discountUsd, setDiscountUsd] = useState("");
@@ -115,7 +117,7 @@ const NewVisit: React.FC = () => {
     });
   };
 
-  const addProcedure = (procedureName: string) => {
+  const addProcedure = (procedureName: string, notes: string = "") => {
     if (!procedureName) return;
     
     const selectedProcedure = PROCEDURES.find(
@@ -123,7 +125,7 @@ const NewVisit: React.FC = () => {
     );
     const newProc: SelectedProcedure = {
       procedureName: procedureName,
-      additionalNotes: "",
+      additionalNotes: notes,
       procedurePrice: selectedProcedure?.price ?? 0,
       priceAfn: selectedProcedure?.price_afn ?? 0,
       priceUsd: selectedProcedure?.price_usd ?? 0,
@@ -581,27 +583,37 @@ const NewVisit: React.FC = () => {
             </div>
             <div className="flex flex-col lg:flex-row">
               <div className="flex-1 p-6 lg:border-r border-gray-200 dark:border-gray-700 space-y-5">
-                <div className="flex flex-col md:flex-row gap-4 items-end">
-                  <FormField label={t("newVisit.procedure")} className="flex-1">
-                    <Select
-                      value=""
-                      onChange={(e) => {
-                        const selectedValue = e.target.value;
-                        if (selectedValue) {
-                          addProcedure(selectedValue);
-                        }
-                      }}
-                      className="cursor-pointer w-full"
+                <div className="flex gap-3 items-end">
+                  <FormField label={t("newPatient.procedureAdditionalNotes")} className="flex-[3]">
+                    <FormInput
+                      placeholder={t(
+                        "newPatient.additionalNotesPlaceholder",
+                        "Add procedure notes",
+                      )}
+                      value={procedureNotes}
+                      onChange={(e) => setProcedureNotes(e.target.value)}
                       disabled={isSubmitting}
-                    >
-                      <option value="">{t("newVisit.selectProcedure")}</option>
-                      {PROCEDURES.map((procedure, index) => (
-                        <option key={index} value={procedure.name}>
-                          {procedure.name} - {formatCurrency(procedure.price)}{" "}
-                          {getCurrencySymbol(procedure.name)}
-                        </option>
-                      ))}
-                    </Select>
+                      className="w-full"
+                    />
+                  </FormField>
+                  <FormField label={t("newVisit.procedure")} className="flex-1">
+                    <Combobox
+                      value={procedureValue}
+                      onValueChange={(selectedValue) => {
+                        if (selectedValue) {
+                          addProcedure(selectedValue, procedureNotes);
+                        }
+                        setProcedureValue("");
+                        setProcedureNotes("");
+                      }}
+                      options={PROCEDURES.map((p) => ({
+                        value: p.name,
+                        label: `${p.name} - ${formatCurrency(p.price)} ${getCurrencySymbol(p.name)}`,
+                      }))}
+                      placeholder={t("newVisit.selectProcedure")}
+                      className="w-full"
+                      disabled={isSubmitting}
+                    />
                   </FormField>
                 </div>
 
@@ -695,28 +707,6 @@ const NewVisit: React.FC = () => {
                       </div>
                       <div className="p-4 space-y-4">
                         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                          <FormField
-                            label={t("newPatient.procedureAdditionalNotes")}
-                          >
-                            <FormInput
-                              placeholder={t(
-                                "newPatient.additionalNotesPlaceholder",
-                                "Add procedure notes",
-                              )}
-                              value={
-                                selectedProcedures[activeProcedureIndex]
-                                  ?.additionalNotes ?? ""
-                              }
-                              onChange={(e) =>
-                                updateActiveProcedure(
-                                  "additionalNotes",
-                                  e.target.value,
-                                )
-                              }
-                              disabled={isSubmitting}
-                              className="w-full"
-                            />
-                          </FormField>
                           <FormField label={t("newVisit.numberOfProcedures")}>
                             <FormInput
                               type="number"
