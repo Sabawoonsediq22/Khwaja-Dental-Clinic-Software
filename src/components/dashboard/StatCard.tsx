@@ -8,7 +8,6 @@ export type CardAccent = "green" | "blue" | "orange" | "purple";
 interface StatCardProps {
   title: string;
   value: string;
-  icon: React.ReactNode;
   accent: CardAccent;
   badge?: React.ReactNode;
   trend?: { value: string; positive: boolean };
@@ -21,36 +20,28 @@ interface StatCardProps {
   onClick?: () => void;
 }
 
-const accentConfig: Record<CardAccent, { border: string; bg: string; icon: string; iconBg: string; glow: string; sparkline: string }> = {
+const accentConfig: Record<CardAccent, { border: string; bg: string; glow: string; sparkline: string }> = {
   green: {
     border: "border-t-emerald-500",
     bg: "from-emerald-500/[0.03] to-transparent dark:from-emerald-500/[0.06]",
-    icon: "text-emerald-600 dark:text-emerald-400",
-    iconBg: "bg-gradient-to-br from-emerald-500/15 to-emerald-500/5 dark:from-emerald-400/20 dark:to-emerald-400/5",
     glow: "group-hover:shadow-emerald-500/8",
     sparkline: "#10b981",
   },
   blue: {
     border: "border-t-blue-500",
     bg: "from-blue-500/[0.03] to-transparent dark:from-blue-500/[0.06]",
-    icon: "text-blue-600 dark:text-blue-400",
-    iconBg: "bg-gradient-to-br from-blue-500/15 to-blue-500/5 dark:from-blue-400/20 dark:to-blue-400/5",
     glow: "group-hover:shadow-blue-500/8",
     sparkline: "#3b82f6",
   },
   orange: {
     border: "border-t-orange-500",
     bg: "from-orange-500/[0.03] to-transparent dark:from-orange-500/[0.06]",
-    icon: "text-orange-600 dark:text-orange-400",
-    iconBg: "bg-gradient-to-br from-orange-500/15 to-orange-500/5 dark:from-orange-400/20 dark:to-orange-400/5",
     glow: "group-hover:shadow-orange-500/8",
     sparkline: "#f97316",
   },
   purple: {
     border: "border-t-purple-500",
     bg: "from-purple-500/[0.03] to-transparent dark:from-purple-500/[0.06]",
-    icon: "text-purple-600 dark:text-purple-400",
-    iconBg: "bg-gradient-to-br from-purple-500/15 to-purple-500/5 dark:from-purple-400/20 dark:to-purple-400/5",
     glow: "group-hover:shadow-purple-500/8",
     sparkline: "#a855f7",
   },
@@ -59,7 +50,6 @@ const accentConfig: Record<CardAccent, { border: string; bg: string; icon: strin
 const StatCard: React.FC<StatCardProps> = ({
   title,
   value,
-  icon,
   accent,
   badge,
   trend,
@@ -151,17 +141,6 @@ const StatCard: React.FC<StatCardProps> = ({
             </div>
           </div>
 
-          <div
-            className={cn(
-              "flex-shrink-0 rounded-xl p-2.5 sm:p-3",
-              "transition-all duration-300",
-              "group-hover:scale-105",
-              config.iconBg,
-              config.icon,
-            )}
-          >
-            {icon}
-          </div>
         </div>
 
         {sparklineData && sparklineData.length > 0 && !loading && (

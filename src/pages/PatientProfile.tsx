@@ -501,7 +501,6 @@ const PatientProfile: React.FC = () => {
           secondaryValue={`$${(statistics?.total_spent_usd || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           subtitle={totalSpentStatus}
           variant="success"
-          icon="check"
         />
         <StatisticsCard
           label={t("patientProfile.lastVisitLabel")}
@@ -511,7 +510,6 @@ const PatientProfile: React.FC = () => {
           }
           subtitle={lastVisitProcedure || "-"}
           variant="info"
-          icon="clock"
         />
         <StatisticsCard
           label={t("patientProfile.outstandingBalanceLabel")}
@@ -523,7 +521,6 @@ const PatientProfile: React.FC = () => {
               ? "warning"
               : "success"
           }
-          icon="check"
         />
       </div>
 

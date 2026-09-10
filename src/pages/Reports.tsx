@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner, Select, DatePicker } from "../components/ui";
 import { useReportSummary, useMonthlyRevenue } from "../hooks/useReports";
 import Chart from "react-apexcharts";
-import { CurrencyIcon, PatientIcon, ToothIcon, CalendarIcon, DownloadIcon, FileIcon } from "../shared/icons/icons";
+import { PatientIcon, ToothIcon, DownloadIcon, FileIcon } from "../shared/icons/icons";
 import type { MonthlyRevenuePoint, DailyTrendPoint, ReportFilter } from "../types/ApiTypes";
 import { exportPatientsReport, exportFinancialReport, exportTreatmentReport } from "../lib/export";
 import type { ReportFormat } from "../lib/export";
@@ -38,7 +38,6 @@ interface StatCardProps {
   title: string;
   value: string;
   valueUsd?: string;
-  icon: React.ReactNode;
   trendData?: DailyTrendPoint[];
   trendColor?: string;
   change?: {
@@ -47,7 +46,7 @@ interface StatCardProps {
   };
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trendData, trendColor = "#0d9488", change }) => (
+const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, trendData, trendColor = "#0d9488", change }) => (
   <div className="rounded-xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow dark:border-gray-700 dark:bg-gray-800 flex flex-col">
     <div className="flex items-start justify-between">
       <div className="min-w-0 flex-1">
@@ -77,9 +76,6 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, icon, trend
             </span>
           </div>
         )}
-      </div>
-      <div className="rounded-lg bg-blue-50 p-2 sm:p-3 text-primary dark:bg-blue-900/30 shrink-0 ml-3">
-        {icon}
       </div>
     </div>
     {trendData && (
@@ -153,7 +149,6 @@ const Reports: React.FC = () => {
       {
         title: t("reports.stats.activePatients", "Active Patients"),
         value: String(summary.active_patients),
-        icon: <PatientIcon size="md" />,
         trendData: summary.active_patients_trend,
         trendColor: "#3b82f6",
         change: pct(currentActive, summary.prev_active_patients),
@@ -161,7 +156,6 @@ const Reports: React.FC = () => {
       {
         title: t("reports.stats.totalVisits", "Total Visits"),
         value: String(summary.total_visits_this_month),
-        icon: <CalendarIcon size="md" />,
         trendData: summary.visits_trend,
         trendColor: "#0d9488",
         change: pct(currentVisits, summary.prev_total_visits),
@@ -170,7 +164,6 @@ const Reports: React.FC = () => {
         title: t("reports.stats.revenue", "Revenue"),
         value: formatAFN(summary.revenue_this_month_afn),
         valueUsd: formatUSD(summary.revenue_this_month_usd),
-        icon: <CurrencyIcon size="md" />,
         trendData: summary.revenue_trend,
         trendColor: "#22c55e",
         change: pct(currentRevenue, summary.prev_revenue),
@@ -179,7 +172,6 @@ const Reports: React.FC = () => {
         title: t("reports.stats.outstanding", "Outstanding"),
         value: formatAFN(summary.outstanding_balance_afn),
         valueUsd: formatUSD(summary.outstanding_balance_usd),
-        icon: <CurrencyIcon size="md" />,
         trendData: summary.outstanding_trend,
         trendColor: "#f59e0b",
         change: pct(currentOutstanding, summary.prev_outstanding),

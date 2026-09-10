@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "../../lib/utils";
-import { CheckCircleIcon, ClockIcon, CurrencyIcon } from "../../shared/icons/icons";
 
 export type StatisticsCardVariant = "success" | "info" | "warning" | "destructive";
 
@@ -10,30 +9,25 @@ export interface StatisticsCardProps {
   secondaryValue?: string;
   subtitle?: string | boolean;
   variant?: StatisticsCardVariant;
-  icon?: "check" | "clock" | "currency" | "custom";
   className?: string;
 }
 
-const variantConfig: Record<StatisticsCardVariant, { bg: string; text: string; iconBg: string }> = {
+const variantConfig: Record<StatisticsCardVariant, { bg: string; text: string }> = {
   success: {
     bg: "bg-green-50 dark:bg-green-950/20",
     text: "text-green-600 dark:text-green-400",
-    iconBg: "bg-green-100 dark:bg-green-900/30",
   },
   info: {
     bg: "bg-blue-50 dark:bg-blue-950/20",
     text: "text-blue-600 dark:text-blue-400",
-    iconBg: "bg-blue-100 dark:bg-blue-900/30",
   },
   warning: {
     bg: "bg-yellow-50 dark:bg-yellow-950/20",
     text: "text-yellow-600 dark:text-yellow-400",
-    iconBg: "bg-yellow-100 dark:bg-yellow-900/30",
   },
   destructive: {
     bg: "bg-red-50 dark:bg-red-950/20",
     text: "text-red-600 dark:text-red-400",
-    iconBg: "bg-red-100 dark:bg-red-900/30",
   },
 };
 
@@ -43,35 +37,9 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
   secondaryValue,
   subtitle,
   variant = "success",
-  icon,
   className,
 }) => {
   const config = variantConfig[variant];
-
-  const renderIcon = () => {
-    if (icon === "check") {
-      return (
-        <div className={cn("p-2 rounded-lg", config.iconBg)}>
-          <CheckCircleIcon className={cn("w-5 h-5", config.text)} />
-        </div>
-      );
-    }
-    if (icon === "clock") {
-      return (
-        <div className={cn("p-2 rounded-lg", config.iconBg)}>
-          <ClockIcon className={cn("w-5 h-5", config.text)} />
-        </div>
-      );
-    }
-    if (icon === "currency") {
-      return (
-        <div className={cn("p-2 rounded-lg", config.iconBg)}>
-          <CurrencyIcon className={cn("w-5 h-5", config.text)} />
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div
@@ -97,7 +65,6 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
             <p className={cn("text-xs mt-2", config.text)}>{subtitle}</p>
           )}
         </div>
-        {icon && renderIcon()}
       </div>
     </div>
   );

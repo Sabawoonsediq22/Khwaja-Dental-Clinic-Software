@@ -7,7 +7,7 @@ import { useUpdateVisitStatus } from "../hooks/useVisits";
 import { toast } from "../lib/toast-utils";
 import StatCard, { type CardAccent } from "../components/dashboard/StatCard";
 import RecentPatientsTable from "../components/dashboard/RecentPatientsTable";
-import { ActivityIcon, ClockIcon, CurrencyIcon, PatientIcon, PlusIcon, ToothIcon } from "../shared/icons/icons";
+import { ActivityIcon, PlusIcon } from "../shared/icons/icons";
 import { Badge, Button } from "../components/ui";
 import ChartCard from "../components/dashboard/ChartCard";
 import Chart from "react-apexcharts";
@@ -48,7 +48,6 @@ const computeTrend = (
 
 interface StatCardDef {
   title: string;
-  icon: React.ReactNode;
   accent: CardAccent;
   loading?: boolean;
   value?: string;
@@ -118,19 +117,19 @@ const Dashboard: React.FC = () => {
   const statCards: StatCardDef[] = React.useMemo(() => {
     if (statsLoading) {
       return [
-        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), icon: <CurrencyIcon size="lg" />, accent: "green", loading: true },
-        { title: t("dashboard.stats.patientsToday", "Patients Today"), icon: <PatientIcon size="lg" />, accent: "blue", loading: true },
-        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), icon: <ClockIcon size="lg" />, accent: "orange", loading: true },
-        { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), icon: <ToothIcon size="lg" />, accent: "purple", loading: true },
+        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), accent: "green", loading: true },
+        { title: t("dashboard.stats.patientsToday", "Patients Today"), accent: "blue", loading: true },
+        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), accent: "orange", loading: true },
+        { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), accent: "purple", loading: true },
       ];
     }
 
     if (statsError || !stats) {
       return [
-        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0 AFN", secondaryValue: "$ 0.00", icon: <CurrencyIcon size="lg" />, accent: "green" },
-        { title: t("dashboard.stats.patientsToday", "Patients Today"), value: "0", icon: <PatientIcon size="lg" />, accent: "blue" },
-        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN", secondaryValue: "$ 0.00", secondary: `0 ${t("dashboard.invoices", "invoices")}`, icon: <ClockIcon size="lg" />, accent: "orange", onClick: () => navigate("/billing?filter=outstanding") },
-        { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), value: "00", icon: <ToothIcon size="lg" />, accent: "purple" },
+        { title: t("dashboard.stats.dailyRevenue", "Daily Revenue"), value: "0 AFN", secondaryValue: "$ 0.00", accent: "green" },
+        { title: t("dashboard.stats.patientsToday", "Patients Today"), value: "0", accent: "blue" },
+        { title: t("dashboard.stats.outstandingBalance", "Outstanding Balance"), value: "0 AFN", secondaryValue: "$ 0.00", secondary: `0 ${t("dashboard.invoices", "invoices")}`, accent: "orange", onClick: () => navigate("/billing?filter=outstanding") },
+        { title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"), value: "00", accent: "purple" },
       ];
     }
 
@@ -159,7 +158,6 @@ const Dashboard: React.FC = () => {
         title: t("dashboard.stats.dailyRevenue", "Daily Revenue"),
         value: formatAFN(stats.daily_revenue_afn),
         secondaryValue: formatUSD(stats.daily_revenue_usd),
-        icon: <CurrencyIcon size="lg" />,
         accent: "green",
         trend: computeTrend(stats.daily_revenue, stats.yesterday_revenue),
         sparklineData: generateSparkline(stats.daily_revenue, stats.yesterday_revenue),
@@ -167,7 +165,6 @@ const Dashboard: React.FC = () => {
       {
         title: t("dashboard.stats.patientsToday", "Patients Today"),
         value: String(stats.patients_today),
-        icon: <PatientIcon size="lg" />,
         accent: "blue",
         trend: computeTrend(stats.patients_today, stats.yesterday_patients),
         context: t("dashboard.todayAppointments", "today's appointments"),
@@ -178,7 +175,6 @@ const Dashboard: React.FC = () => {
         value: formatAFN(stats.outstanding_balance_afn),
         secondaryValue: formatUSD(stats.outstanding_balance_usd),
         secondary: t("dashboard.invoiceCount", { count: stats.outstanding_invoices_count }),
-        icon: <ClockIcon size="lg" />,
         accent: "orange",
         badge: outstandingBadge,
         onClick: () => navigate("/billing?filter=outstanding"),
@@ -186,7 +182,6 @@ const Dashboard: React.FC = () => {
       {
         title: t("dashboard.stats.proceduresPerformed", "Procedures Performed"),
         value: String(stats.procedures_performed).padStart(2, "0"),
-        icon: <ToothIcon size="lg" />,
         accent: "purple",
         trend: computeTrend(stats.procedures_performed, stats.yesterday_procedures),
         context: t("dashboard.thisMonth", "this month"),
@@ -401,7 +396,6 @@ const Dashboard: React.FC = () => {
             key={stat.title}
             title={stat.title}
             value={stat.value ?? ""}
-            icon={stat.icon}
             accent={stat.accent}
             badge={stat.badge}
             trend={stat.trend}
