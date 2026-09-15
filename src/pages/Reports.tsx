@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner, Select, DatePicker } from "../components/ui";
+import { Card, CardContent, CardHeader, CardTitle, LoadingSpinner, DatePicker, Button } from "../components/ui";
 import { useReportSummary, useMonthlyRevenue } from "../hooks/useReports";
 import Chart from "react-apexcharts";
 import { PatientIcon, ToothIcon, DownloadIcon, FileIcon } from "../shared/icons/icons";
@@ -262,55 +262,54 @@ const Reports: React.FC = () => {
         </h1>
       </div>
 
-      <Card>
-        <CardContent className="py-4">
-          <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 my-6">
+        <div className="flex items-center gap-1 bg-gray-200 dark:bg-gray-800 rounded-lg p-0.5 px-1 py-1 ms-auto">
+          {[
+            { value: "daily", label: t("reports.filter.today", "Today") },
+            { value: "weekly", label: t("reports.filter.thisWeek", "This Week") },
+            { value: "monthly", label: t("reports.filter.thisMonth", "This Month") },
+            { value: "custom", label: t("reports.filter.custom", "Custom Range") },
+          ].map((tab) => (
+            <Button
+              key={tab.value}
+              variant={filterType === tab.value ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setFilterType(tab.value)}
+              className="cursor-pointer"
+            >
+              {tab.label}
+            </Button>
+          ))}
+        </div>
+        {filterType === "custom" && (
+          <div className="flex items-end gap-3 w-full sm:w-auto">
             <div className="flex-1 min-w-0">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                {t("reports.filter.period", "Period")}
+                {t("reports.filter.startDate", "Start Date")}
               </label>
-              <Select
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="w-full sm:w-48"
-              >
-                <option value="daily">{t("reports.filter.today", "Today")}</option>
-                <option value="weekly">{t("reports.filter.thisWeek", "This week")}</option>
-                <option value="monthly">{t("reports.filter.thisMonth", "This month")}</option>
-                <option value="custom">{t("reports.filter.custom", "Custom Range")}</option>
-              </Select>
+              <DatePicker
+                value={customStartDate}
+                onChange={setCustomStartDate}
+                placeholder={t("reports.filter.selectStart", "Select start")}
+                maxDate={customEndDate}
+                className="w-full"
+              />
             </div>
-            {filterType === "custom" && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                    {t("reports.filter.startDate", "Start Date")}
-                  </label>
-                  <DatePicker
-                    value={customStartDate}
-                    onChange={setCustomStartDate}
-                    placeholder={t("reports.filter.selectStart", "Select start")}
-                    maxDate={customEndDate}
-                    className="w-full"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
-                    {t("reports.filter.endDate", "End Date")}
-                  </label>
-                  <DatePicker
-                    value={customEndDate}
-                    onChange={setCustomEndDate}
-                    placeholder={t("reports.filter.selectEnd", "Select end")}
-                    minDate={customStartDate}
-                    className="w-full"
-                  />
-                </div>
-              </>
-            )}
+            <div className="flex-1 min-w-0">
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+                {t("reports.filter.endDate", "End Date")}
+              </label>
+              <DatePicker
+                value={customEndDate}
+                onChange={setCustomEndDate}
+                placeholder={t("reports.filter.selectEnd", "Select end")}
+                minDate={customStartDate}
+                className="w-full"
+              />
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
         {statCards.map((card, idx) => (
