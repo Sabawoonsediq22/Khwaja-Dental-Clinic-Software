@@ -139,8 +139,8 @@ jobs:
           echo "Release assets:"
           echo "$ASSETS"
 
-          # Build latest.json using node
-          node << 'SCRIPT'
+          # Write node script to file to avoid heredoc issues
+          cat > create-latest-json.js << 'JSEOF'
           const { execSync } = require('child_process');
           const fs = require('fs');
           const TAG = process.env.TAG;
@@ -150,9 +150,15 @@ jobs:
           const assets = execSync(`gh release view ${TAG} --json assets --jq ".assets[].name"`, { encoding: 'utf8' })
             .trim().split('\n').filter(Boolean);
 
-          function findAsset(regex) {
-            const re = new RegExp(regex);
-            return assets.find(a => re.test(a)) || null;
+          console.log('Assets found:', assets.length);
+
+          function findAsset(patterns) {
+            for (const pattern of patterns) {
+              const re = new RegExp(pattern);
+              const found = assets.find(a => re.test(a));
+              if (found) return found;
+            }
+            return null;
           }
 
           function readSignature(filename) {
@@ -160,16 +166,23 @@ jobs:
             try {
               return execSync(`gh release download ${TAG} -p "${filename}" -O -`, { encoding: 'utf8' }).trim().replace(/\r?\n/g, '');
             } catch (e) {
-              console.warn(`Warning: Could not read signature for ${filename}: ${e.message}`);
+              console.warn(`Warning: Could not read signature for ${filename}`);
               return '';
             }
           }
 
           const platforms = {};
 
-          // macOS aarch64
-          const macUpdater = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz$');
-          const macSig = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz\\.sig$');
+          const macUpdater = findAsset([
+            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz$',
+            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.app\\.tar\\.gz$',
+            '.*\\.app\\.tar\\.gz$'
+          ]);
+          const macSig = findAsset([
+            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz\\.sig$',
+            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.app\\.tar\\.gz\\.sig$',
+            '.*\\.app\\.tar\\.gz\\.sig$'
+          ]);
           if (macUpdater) {
             platforms['darwin-aarch64'] = {
               signature: readSignature(macSig),
@@ -180,9 +193,15 @@ jobs:
             console.log('Warning: macOS updater bundle not found');
           }
 
-          // Linux x86_64
-          const linuxUpdater = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz$');
-          const linuxSig = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz\\.sig$');
+          const linuxUpdater = findAsset([
+            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz$',
+            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.AppImage\\.tar\\.gz$',
+            '.*\\.AppImage\\.tar\\.gz$'
+          ]);
+          const linuxSig = findAsset([
+            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz\\.sig$',
+            '.*\\.AppImage\\.tar\\.gz\\.sig$'
+          ]);
           if (linuxUpdater) {
             platforms['linux-x86_64'] = {
               signature: readSignature(linuxSig),
@@ -193,9 +212,15 @@ jobs:
             console.log('Warning: Linux updater bundle not found');
           }
 
-          // Windows x86_64
-          const winUpdater = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip$');
-          const winSig = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip\\.sig$');
+          const winUpdater = findAsset([
+            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip$',
+            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.nsis\\.zip$',
+            '.*\\.nsis\\.zip$'
+          ]);
+          const winSig = findAsset([
+            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip\\.sig$',
+            '.*\\.nsis\\.zip\\.sig$'
+          ]);
           if (winUpdater) {
             platforms['windows-x86_64'] = {
               signature: readSignature(winSig),
@@ -214,8 +239,10 @@ jobs:
           };
 
           fs.writeFileSync('latest.json', JSON.stringify(latest, null, 2));
-          console.log('latest.json created successfully');
-          SCRIPT
+          console.log('latest.json created successfully with', Object.keys(platforms).length, 'platforms');
+          JSEOF
+
+          node create-latest-json.js
 
           echo "--- latest.json content ---"
           cat latest.json
