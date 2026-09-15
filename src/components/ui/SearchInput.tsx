@@ -24,14 +24,14 @@ const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
 
     return (
       <div className={cn("relative w-full", containerClassName)}>
-        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+        <SearchIcon className="absolute start-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
         <input
           ref={ref}
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className={cn(
-            "h-9 w-full rounded-md border border-input bg-muted pl-9 pr-10 text-sm text-foreground",
+            "h-9 w-full rounded-md border border-input bg-muted ps-9 pe-10 text-sm text-foreground",
             "placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
             "disabled:cursor-not-allowed disabled:opacity-50",
             className,

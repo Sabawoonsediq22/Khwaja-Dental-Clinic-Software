@@ -190,7 +190,7 @@ const PatientTable: React.FC<PatientTableProps> = ({
                       onClick: () => handleNewVisitClick(patient),
                     },
                     {
-                      label: t("patients.actions.billing", "Billing"),
+                      label: t("billing.title", "Billing"),
                       onClick: () => navigate(`/billing?patientId=${patient.id}`),
                     },
                     {

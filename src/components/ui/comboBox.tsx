@@ -123,7 +123,7 @@ function Combobox({
         disabled={disabled}
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex w-full items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-muted-foreground dark:bg-input/30 dark:hover:bg-input/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+          "flex w-full items-center justify-between gap-1.5 rounded-lg border border-gray-400 bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 data-placeholder:text-muted-foreground dark:bg-input/30 dark:hover:bg-input/50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 cursor-pointer",
           triggerClassName
         )}
       >
@@ -173,9 +173,9 @@ function Combobox({
                 onClick={() => selectOption(opt)}
                 onMouseEnter={() => setHighlightedIndex(index)}
                 className={cn(
-                  "relative flex w-full cursor-default items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none",
-                  value === opt.value && "bg-accent text-accent-foreground",
-                  highlightedIndex === index && "bg-accent text-accent-foreground",
+                  "relative flex w-full items-center gap-1.5 rounded-md py-1 pr-8 pl-1.5 text-sm outline-hidden select-none cursor-pointer",
+                  value === opt.value && "bg-accen text-accent-foreground bg-blue-500",
+                  highlightedIndex === index && "text-white bg-blue-600",
                   opt.disabled && "pointer-events-none opacity-50",
                   "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
                 )}
