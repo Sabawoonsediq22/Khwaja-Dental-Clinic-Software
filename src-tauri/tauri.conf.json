@@ -30,7 +30,7 @@
       "endpoints": [
         "https://github.com/Sabawoonsediq22/Khwaja-Dental-Clinic-Software/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDMzODM2REY1Qzg4Mzg5MjgKUldRb2lZUEk5VzJETTlCQUtYUU1LQ1NxWG9GcWVMZGxiVUUrLzNLelplbTQ4SS9YYTZrdTBaZXoK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI4REYyMTkyOTlDQUUzOEMKUldTTTQ4cVpraUhmS1B6VVdITktxaHdNaUp4dndGMkVEZmFzUHlRSlI1eERmTEVURHRET0o2TEIK",
       "windows": {
         "nsis": {
           "installMode": "both"

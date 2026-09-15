@@ -18,8 +18,8 @@ jobs:
           - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
             updater_platform: "darwin-aarch64"
-            updater_file_pattern: "*.dmg"
-            updater_sig_pattern: "*.dmg.sig"
+            updater_file_pattern: "*.app.tar.gz"
+            updater_sig_pattern: "*.app.tar.gz.sig"
           - platform: "ubuntu-22.04"
             args: ""
             updater_platform: "linux-x86_64"
@@ -76,70 +76,151 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
 
-      - name: Ensure latest.json includes all platforms
+      - name: Upload updater artifacts to release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+
+          # Determine the correct bundle directory based on build target
+          if echo "${{ matrix.args }}" | grep -q "\-\-target"; then
+            TARGET_TRIPLE=$(echo "${{ matrix.args }}" | sed 's/.*--target //')
+            UPLOADER_DIR="src-tauri/target/$TARGET_TRIPLE/release/bundle"
+          else
+            UPLOADER_DIR="src-tauri/target/release/bundle"
+          fi
+
+          echo "Bundle directory: $UPLOADER_DIR"
+
+          if [ ! -d "$UPLOADER_DIR" ]; then
+            echo "Warning: Bundle directory not found, skipping updater upload"
+            exit 0
+          fi
+
+          # Upload updater file
+          UPDATER_FILE=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_file_pattern }}" 2>/dev/null | head -1)
+          if [ -n "$UPDATER_FILE" ]; then
+            echo "Uploading updater file: $UPDATER_FILE"
+            gh release upload "$TAG" "$UPDATER_FILE" --clobber
+          else
+            echo "Warning: No updater file matching ${{ matrix.updater_file_pattern }} found"
+          fi
+
+          # Upload signature file
+          UPDATER_SIG=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_sig_pattern }}" 2>/dev/null | head -1)
+          if [ -n "$UPDATER_SIG" ]; then
+            echo "Uploading signature file: $UPDATER_SIG"
+            gh release upload "$TAG" "$UPDATER_SIG" --clobber
+          else
+            echo "Warning: No signature file matching ${{ matrix.updater_sig_pattern }} found"
+          fi
+
+  finalize-latest-json:
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create latest.json for all platforms
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
           VERSION=$(node -e "console.log(require('./src-tauri/tauri.conf.json').version)")
-          PLATFORM_KEY="${{ matrix.updater_platform }}"
 
-          echo "Ensuring latest.json includes $PLATFORM_KEY (version $VERSION)"
+          echo "Creating latest.json for v$VERSION (tag: $TAG)"
 
-          # Find the updater file and signature
-          UPLOADER_DIR="src-tauri/target/release/bundle"
-          UPDATER_FILE=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_file_pattern }}" | head -1)
-          UPDATER_SIG=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_sig_pattern }}" | head -1)
+          # Fetch all release asset names
+          ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+          echo "Release assets:"
+          echo "$ASSETS"
 
-          echo "UPDATER_FILE: $UPDATER_FILE"
-          echo "UPDATER_SIG: $UPDATER_SIG"
+          # Build latest.json using node
+          node << 'SCRIPT'
+          const { execSync } = require('child_process');
+          const fs = require('fs');
+          const TAG = process.env.TAG;
+          const VERSION = process.env.VERSION;
+          const REPO_URL = `https://github.com/Sabawoonsediq22/Khwaja-Dental-Clinic-Software/releases/download/${TAG}`;
 
-          if [ -z "$UPDATER_FILE" ] || [ -z "$UPDATER_SIG" ]; then
-            echo "Warning: Updater files not found, skipping latest.json update"
-            exit 0
-          fi
+          const assets = execSync(`gh release view ${TAG} --json assets --jq ".assets[].name"`, { encoding: 'utf8' })
+            .trim().split('\n').filter(Boolean);
 
-          SIGNATURE=$(cat "$UPDATER_SIG")
-          FILENAME=$(basename "$UPDATER_FILE")
-          DOWNLOAD_URL="https://github.com/Sabawoonsediq22/Khwaja-Dental-Clinic-Software/releases/download/$TAG/$FILENAME"
+          function findAsset(regex) {
+            const re = new RegExp(regex);
+            return assets.find(a => re.test(a)) || null;
+          }
 
-          # Retry loop to handle race conditions between parallel jobs
-          for ATTEMPT in 1 2 3 4 5; do
-            echo "Attempt $ATTEMPT to update latest.json..."
-
-            # Download current latest.json from the release
-            gh release download "$TAG" -p "latest.json" -O current-latest.json 2>/dev/null || echo '{"platforms":{}}' > current-latest.json
-
-            # Merge this platform into latest.json
-            node -e "
-            const fs = require('fs');
-            let latest;
+          function readSignature(filename) {
+            if (!filename) return '';
             try {
-              latest = JSON.parse(fs.readFileSync('current-latest.json', 'utf8'));
-            } catch(e) {
-              latest = { platforms: {} };
+              return execSync(`gh release download ${TAG} -p "${filename}" -O -`, { encoding: 'utf8' }).trim().replace(/\r?\n/g, '');
+            } catch (e) {
+              console.warn(`Warning: Could not read signature for ${filename}: ${e.message}`);
+              return '';
             }
-            if (!latest.platforms) latest.platforms = {};
+          }
 
-            latest.version = '$VERSION';
-            latest.notes = 'See the assets below for the installer.';
-            latest.pub_date = new Date().toISOString();
-            latest.platforms['$PLATFORM_KEY'] = {
-              signature: `$(echo "$SIGNATURE" | tr -d '\r\n')`,
-              url: '$DOWNLOAD_URL'
+          const platforms = {};
+
+          // macOS aarch64
+          const macUpdater = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz$');
+          const macSig = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz\\.sig$');
+          if (macUpdater) {
+            platforms['darwin-aarch64'] = {
+              signature: readSignature(macSig),
+              url: `${REPO_URL}/${macUpdater}`
             };
+            console.log(`Added darwin-aarch64: ${macUpdater}`);
+          } else {
+            console.log('Warning: macOS updater bundle not found');
+          }
 
-            fs.writeFileSync('latest.json', JSON.stringify(latest, null, 2));
-            "
+          // Linux x86_64
+          const linuxUpdater = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz$');
+          const linuxSig = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz\\.sig$');
+          if (linuxUpdater) {
+            platforms['linux-x86_64'] = {
+              signature: readSignature(linuxSig),
+              url: `${REPO_URL}/${linuxUpdater}`
+            };
+            console.log(`Added linux-x86_64: ${linuxUpdater}`);
+          } else {
+            console.log('Warning: Linux updater bundle not found');
+          }
 
-            # Delete old latest.json and upload updated one
-            gh release delete-asset "$TAG" "latest.json" -y 2>/dev/null || true
-            gh release upload "$TAG" latest.json --clobber && break
+          // Windows x86_64
+          const winUpdater = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip$');
+          const winSig = findAsset('^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip\\.sig$');
+          if (winUpdater) {
+            platforms['windows-x86_64'] = {
+              signature: readSignature(winSig),
+              url: `${REPO_URL}/${winUpdater}`
+            };
+            console.log(`Added windows-x86_64: ${winUpdater}`);
+          } else {
+            console.log('Warning: Windows updater bundle not found');
+          }
 
-            echo "Attempt $ATTEMPT failed, retrying in 5s..."
-            sleep 5
-          done
+          const latest = {
+            version: VERSION,
+            notes: 'See the assets below for the installer.',
+            pub_date: new Date().toISOString(),
+            platforms
+          };
 
-          echo "Final latest.json:"
+          fs.writeFileSync('latest.json', JSON.stringify(latest, null, 2));
+          console.log('latest.json created successfully');
+          SCRIPT
+
+          echo "--- latest.json content ---"
           cat latest.json
+          echo "---------------------------"
+
+          # Upload latest.json to the release
+          gh release upload "$TAG" latest.json --clobber
+          echo "latest.json uploaded to release $TAG"
