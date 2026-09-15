@@ -17,10 +17,19 @@ jobs:
         include:
           - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
+            updater_platform: "darwin-aarch64"
+            updater_file_pattern: "*.dmg"
+            updater_sig_pattern: "*.dmg.sig"
           - platform: "ubuntu-22.04"
             args: ""
+            updater_platform: "linux-x86_64"
+            updater_file_pattern: "*.AppImage.tar.gz"
+            updater_sig_pattern: "*.AppImage.tar.gz.sig"
           - platform: "windows-latest"
             args: ""
+            updater_platform: "windows-x86_64"
+            updater_file_pattern: "*.nsis.zip"
+            updater_sig_pattern: "*.nsis.zip.sig"
 
     runs-on: ${{ matrix.platform }}
 
@@ -54,6 +63,7 @@ jobs:
 
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v1
+        id: tauri
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
@@ -65,3 +75,71 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: Ensure latest.json includes all platforms
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF#refs/tags/}"
+          VERSION=$(node -e "console.log(require('./src-tauri/tauri.conf.json').version)")
+          PLATFORM_KEY="${{ matrix.updater_platform }}"
+
+          echo "Ensuring latest.json includes $PLATFORM_KEY (version $VERSION)"
+
+          # Find the updater file and signature
+          UPLOADER_DIR="src-tauri/target/release/bundle"
+          UPDATER_FILE=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_file_pattern }}" | head -1)
+          UPDATER_SIG=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_sig_pattern }}" | head -1)
+
+          echo "UPDATER_FILE: $UPDATER_FILE"
+          echo "UPDATER_SIG: $UPDATER_SIG"
+
+          if [ -z "$UPDATER_FILE" ] || [ -z "$UPDATER_SIG" ]; then
+            echo "Warning: Updater files not found, skipping latest.json update"
+            exit 0
+          fi
+
+          SIGNATURE=$(cat "$UPDATER_SIG")
+          FILENAME=$(basename "$UPDATER_FILE")
+          DOWNLOAD_URL="https://github.com/Sabawoonsediq22/Khwaja-Dental-Clinic-Software/releases/download/$TAG/$FILENAME"
+
+          # Retry loop to handle race conditions between parallel jobs
+          for ATTEMPT in 1 2 3 4 5; do
+            echo "Attempt $ATTEMPT to update latest.json..."
+
+            # Download current latest.json from the release
+            gh release download "$TAG" -p "latest.json" -O current-latest.json 2>/dev/null || echo '{"platforms":{}}' > current-latest.json
+
+            # Merge this platform into latest.json
+            node -e "
+            const fs = require('fs');
+            let latest;
+            try {
+              latest = JSON.parse(fs.readFileSync('current-latest.json', 'utf8'));
+            } catch(e) {
+              latest = { platforms: {} };
+            }
+            if (!latest.platforms) latest.platforms = {};
+
+            latest.version = '$VERSION';
+            latest.notes = 'See the assets below for the installer.';
+            latest.pub_date = new Date().toISOString();
+            latest.platforms['$PLATFORM_KEY'] = {
+              signature: `$(echo "$SIGNATURE" | tr -d '\r\n')`,
+              url: '$DOWNLOAD_URL'
+            };
+
+            fs.writeFileSync('latest.json', JSON.stringify(latest, null, 2));
+            "
+
+            # Delete old latest.json and upload updated one
+            gh release delete-asset "$TAG" "latest.json" -y 2>/dev/null || true
+            gh release upload "$TAG" latest.json --clobber && break
+
+            echo "Attempt $ATTEMPT failed, retrying in 5s..."
+            sleep 5
+          done
+
+          echo "Final latest.json:"
+          cat latest.json

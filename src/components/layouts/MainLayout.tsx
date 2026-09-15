@@ -272,7 +272,19 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 )}
               </Button>
             )}
-
+            {/* Settings button */}
+            <NavLink
+              to="/settings"
+              className={cn(
+                "flex items-center justify-center p-1.75 text-sm font-medium transition-colors hover:bg-primary/80 hover:text-white border rounded-lg dark:border-gray-500",
+                location.pathname === "/settings"
+                  ? "bg-primary text-white"
+                  : "text-gray-700 dark:text-gray-300",
+              )}
+              aria-label="Settings"
+            >
+              <SettingsIcon />
+            </NavLink>
             {/* Logout button */}
             <Button
               onClick={handleLogout}
@@ -295,20 +307,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 />
               </svg>
             </Button>
-
-            {/* Settings button */}
-            <NavLink
-              to="/settings"
-              className={cn(
-                "flex items-center justify-center p-1.75 text-sm font-medium transition-colors hover:bg-primary/80 hover:text-white border rounded-lg dark:border-gray-500",
-                location.pathname === "/settings"
-                  ? "bg-primary text-white"
-                  : "text-gray-700 dark:text-gray-300",
-              )}
-              aria-label="Settings"
-            >
-              <SettingsIcon />
-            </NavLink>
           </div>
         </header>
         {/* Page content */}
