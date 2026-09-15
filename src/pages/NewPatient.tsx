@@ -477,6 +477,10 @@ const NewPatient: React.FC = () => {
         queryKey: ["reports"],
         refetchType: "all",
       });
+      queryClient.invalidateQueries({
+        queryKey: ["all-visits"],
+        refetchType: "all",
+      });
       setCreatedPatientId(created.id);
       setReceiptInvoiceId(created.invoice_id);
     } catch (error) {

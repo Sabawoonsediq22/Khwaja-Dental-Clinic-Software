@@ -109,11 +109,15 @@ impl InvoiceService {
         let status_from_clause = if needs_join {
             "FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id"
         } else {
-            "FROM invoices"
+            "FROM invoices i"
         };
 
         // Query status counts
-        let unpaid_count_sql = format!("SELECT COUNT(*) {}{} AND i.status = 'Unpaid'", status_from_clause, status_where_clause);
+        let unpaid_count_sql = if status_where_clause.is_empty() {
+            format!("SELECT COUNT(*) {} WHERE i.status = 'Unpaid'", status_from_clause)
+        } else {
+            format!("SELECT COUNT(*) {}{} AND i.status = 'Unpaid'", status_from_clause, status_where_clause)
+        };
         let unpaid_count: i64 = if status_bind_values.is_empty() {
             sqlx::query_scalar(&unpaid_count_sql).fetch_one(pool).await?
         } else {
@@ -124,7 +128,11 @@ impl InvoiceService {
             q.fetch_one(pool).await?
         };
 
-        let partial_count_sql = format!("SELECT COUNT(*) {}{} AND i.status = 'Partial'", status_from_clause, status_where_clause);
+        let partial_count_sql = if status_where_clause.is_empty() {
+            format!("SELECT COUNT(*) {} WHERE i.status = 'Partial'", status_from_clause)
+        } else {
+            format!("SELECT COUNT(*) {}{} AND i.status = 'Partial'", status_from_clause, status_where_clause)
+        };
         let partial_count: i64 = if status_bind_values.is_empty() {
             sqlx::query_scalar(&partial_count_sql).fetch_one(pool).await?
         } else {
@@ -135,7 +143,11 @@ impl InvoiceService {
             q.fetch_one(pool).await?
         };
 
-        let paid_count_sql = format!("SELECT COUNT(*) {}{} AND i.status = 'Paid'", status_from_clause, status_where_clause);
+        let paid_count_sql = if status_where_clause.is_empty() {
+            format!("SELECT COUNT(*) {} WHERE i.status = 'Paid'", status_from_clause)
+        } else {
+            format!("SELECT COUNT(*) {}{} AND i.status = 'Paid'", status_from_clause, status_where_clause)
+        };
         let paid_count: i64 = if status_bind_values.is_empty() {
             sqlx::query_scalar(&paid_count_sql).fetch_one(pool).await?
         } else {
@@ -146,10 +158,17 @@ impl InvoiceService {
             q.fetch_one(pool).await?
         };
 
-        let total_outstanding_sql = format!(
-            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
-            status_from_clause, status_where_clause
-        );
+        let total_outstanding_sql = if status_where_clause.is_empty() {
+            format!(
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
+                status_from_clause
+            )
+        } else {
+            format!(
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+                status_from_clause, status_where_clause
+            )
+        };
         let total_outstanding: f64 = if status_bind_values.is_empty() {
             sqlx::query_scalar(&total_outstanding_sql).fetch_one(pool).await?
         } else {
@@ -161,10 +180,17 @@ impl InvoiceService {
         };
 
         // Per-currency total outstanding
-        let total_outstanding_afn_sql = format!(
-            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
-            status_from_clause, status_where_clause
-        );
+        let total_outstanding_afn_sql = if status_where_clause.is_empty() {
+            format!(
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
+                status_from_clause
+            )
+        } else {
+            format!(
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+                status_from_clause, status_where_clause
+            )
+        };
         let _total_outstanding_afn: f64 = if status_bind_values.is_empty() {
             sqlx::query_scalar(&total_outstanding_afn_sql).fetch_one(pool).await?
         } else {
@@ -175,10 +201,17 @@ impl InvoiceService {
             q.fetch_one(pool).await?
         };
 
-        let total_outstanding_usd_sql = format!(
-            "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
-            status_from_clause, status_where_clause
-        );
+        let total_outstanding_usd_sql = if status_where_clause.is_empty() {
+            format!(
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
+                status_from_clause
+            )
+        } else {
+            format!(
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+                status_from_clause, status_where_clause
+            )
+        };
         let _total_outstanding_usd: f64 = if status_bind_values.is_empty() {
             sqlx::query_scalar(&total_outstanding_usd_sql).fetch_one(pool).await?
         } else {
