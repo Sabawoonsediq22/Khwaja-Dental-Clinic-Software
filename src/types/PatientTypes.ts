@@ -14,9 +14,9 @@ export interface PatientStats {
   newThisMonth: number;
 }
 
-export type GenderFilterValue = "All" | "Male" | "Female" | "Other";
+export type GenderFilterValue = "All" | "Male" | "Female";
 
-export const GENDER_FILTER_OPTIONS: GenderFilterValue[] = ["All", "Male", "Female", "Other"];
+export const GENDER_FILTER_OPTIONS: GenderFilterValue[] = ["All", "Male", "Female"];
 
 export interface PatientsHeaderProps {
   patients: Patient[];

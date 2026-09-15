@@ -10,7 +10,6 @@ import {
 import { Badge } from "../ui/Badge";
 import { Button } from "../ui/button";
 import {
-  ListIcon,
   ChevronRightIcon,
   ChevronLeftIcon,
   CalendarIcon,
@@ -80,9 +79,6 @@ const RecentPatientsTable: React.FC<RecentPatientsTableProps> = ({
       <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
         <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <ListIcon size="md" />
-            </div>
             <CardTitle className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
               {t("dashboard.recentPatients", "Recent Patients")}
             </CardTitle>
@@ -105,9 +101,6 @@ const RecentPatientsTable: React.FC<RecentPatientsTableProps> = ({
       <Card className="border-0 shadow-sm hover:shadow-md transition-shadow duration-300">
         <CardHeader className="flex flex-row items-center justify-between pb-3 sm:pb-4 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="p-1.5 rounded-lg bg-primary/10 text-primary">
-              <ListIcon size="md" />
-            </div>
             <CardTitle className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
               {t("dashboard.recentPatients", "Recent Patients")}
             </CardTitle>

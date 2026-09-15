@@ -37,6 +37,13 @@ impl InvoiceService {
             }
         }
 
+        if let Some(ref pid) = params.patient_id {
+            if !pid.trim().is_empty() {
+                conditions.push("v.patient_id = ?".to_string());
+                bind_values.push(pid.trim().to_string());
+            }
+        }
+
         if let Some(ref s) = params.status {
             if s != "All" {
                 conditions.push("i.status = ?".to_string());
@@ -63,8 +70,9 @@ impl InvoiceService {
         }
         let total = total_query.fetch_one(pool).await?;
 
-        // Prepare status count query values (respecting query filter but ignoring status filter)
+        // Prepare status count query values (respecting query and patient_id filters but ignoring status filter)
         let mut status_bind_values: Vec<String> = Vec::new();
+        let mut status_extra_conditions: Vec<String> = Vec::new();
         if let Some(ref q) = params.query {
             if !q.trim().is_empty() {
                 let like = format!("%{}%", q.trim());
@@ -74,66 +82,78 @@ impl InvoiceService {
                 status_bind_values.push(q.trim().to_string());
             }
         }
+        if let Some(ref pid) = params.patient_id {
+            if !pid.trim().is_empty() {
+                status_extra_conditions.push("v.patient_id = ?".to_string());
+                status_bind_values.push(pid.trim().to_string());
+            }
+        }
+
+        // Build a status-where clause (respects query + patient_id, ignores status)
+        let has_query_filter = params.query.as_ref().map_or(false, |q| !q.trim().is_empty());
+        let has_patient_filter = params.patient_id.as_ref().map_or(false, |p| !p.trim().is_empty());
+        let needs_join = has_query_filter || has_patient_filter;
+
+        let mut status_where_parts: Vec<String> = Vec::new();
+        if has_query_filter {
+            status_where_parts.push("(i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?)".to_string());
+        }
+        for extra in &status_extra_conditions {
+            status_where_parts.push(extra.clone());
+        }
+        let status_where_clause = if status_where_parts.is_empty() {
+            String::new()
+        } else {
+            format!(" WHERE {}", status_where_parts.join(" AND "))
+        };
+        let status_from_clause = if needs_join {
+            "FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id"
+        } else {
+            "FROM invoices"
+        };
 
         // Query status counts
-        let unpaid_count_sql = if status_bind_values.is_empty() {
-            "SELECT COUNT(*) FROM invoices WHERE status = 'Unpaid'"
-        } else {
-            "SELECT COUNT(*) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status = 'Unpaid'"
-        };
-        
+        let unpaid_count_sql = format!("SELECT COUNT(*) {}{} AND i.status = 'Unpaid'", status_from_clause, status_where_clause);
         let unpaid_count: i64 = if status_bind_values.is_empty() {
-            sqlx::query_scalar(unpaid_count_sql).fetch_one(pool).await?
+            sqlx::query_scalar(&unpaid_count_sql).fetch_one(pool).await?
         } else {
-            let mut q = sqlx::query_scalar(unpaid_count_sql);
+            let mut q = sqlx::query_scalar(&unpaid_count_sql);
             for val in &status_bind_values {
                 q = q.bind(val);
             }
             q.fetch_one(pool).await?
         };
 
-        let partial_count_sql = if status_bind_values.is_empty() {
-            "SELECT COUNT(*) FROM invoices WHERE status = 'Partial'"
-        } else {
-            "SELECT COUNT(*) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status = 'Partial'"
-        };
-        
+        let partial_count_sql = format!("SELECT COUNT(*) {}{} AND i.status = 'Partial'", status_from_clause, status_where_clause);
         let partial_count: i64 = if status_bind_values.is_empty() {
-            sqlx::query_scalar(partial_count_sql).fetch_one(pool).await?
+            sqlx::query_scalar(&partial_count_sql).fetch_one(pool).await?
         } else {
-            let mut q = sqlx::query_scalar(partial_count_sql);
+            let mut q = sqlx::query_scalar(&partial_count_sql);
             for val in &status_bind_values {
                 q = q.bind(val);
             }
             q.fetch_one(pool).await?
         };
 
-        let paid_count_sql = if status_bind_values.is_empty() {
-            "SELECT COUNT(*) FROM invoices WHERE status = 'Paid'"
-        } else {
-            "SELECT COUNT(*) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status = 'Paid'"
-        };
-        
+        let paid_count_sql = format!("SELECT COUNT(*) {}{} AND i.status = 'Paid'", status_from_clause, status_where_clause);
         let paid_count: i64 = if status_bind_values.is_empty() {
-            sqlx::query_scalar(paid_count_sql).fetch_one(pool).await?
+            sqlx::query_scalar(&paid_count_sql).fetch_one(pool).await?
         } else {
-            let mut q = sqlx::query_scalar(paid_count_sql);
+            let mut q = sqlx::query_scalar(&paid_count_sql);
             for val in &status_bind_values {
                 q = q.bind(val);
             }
             q.fetch_one(pool).await?
         };
 
-        let total_outstanding_sql = if status_bind_values.is_empty() {
-            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
-        } else {
-            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
-        };
-        
+        let total_outstanding_sql = format!(
+            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+            status_from_clause, status_where_clause
+        );
         let total_outstanding: f64 = if status_bind_values.is_empty() {
-            sqlx::query_scalar(total_outstanding_sql).fetch_one(pool).await?
+            sqlx::query_scalar(&total_outstanding_sql).fetch_one(pool).await?
         } else {
-            let mut q = sqlx::query_scalar(total_outstanding_sql);
+            let mut q = sqlx::query_scalar(&total_outstanding_sql);
             for val in &status_bind_values {
                 q = q.bind(val);
             }
@@ -141,32 +161,28 @@ impl InvoiceService {
         };
 
         // Per-currency total outstanding
-        let total_outstanding_afn_sql = if status_bind_values.is_empty() {
-            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
-        } else {
-            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
-        };
-        
+        let total_outstanding_afn_sql = format!(
+            "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+            status_from_clause, status_where_clause
+        );
         let _total_outstanding_afn: f64 = if status_bind_values.is_empty() {
-            sqlx::query_scalar(total_outstanding_afn_sql).fetch_one(pool).await?
+            sqlx::query_scalar(&total_outstanding_afn_sql).fetch_one(pool).await?
         } else {
-            let mut q = sqlx::query_scalar(total_outstanding_afn_sql);
+            let mut q = sqlx::query_scalar(&total_outstanding_afn_sql);
             for val in &status_bind_values {
                 q = q.bind(val);
             }
             q.fetch_one(pool).await?
         };
 
-        let total_outstanding_usd_sql = if status_bind_values.is_empty() {
-            "SELECT COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial')"
-        } else {
-            "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) FROM invoices i JOIN visits v ON v.id = i.visit_id JOIN patients p ON p.id = v.patient_id WHERE (i.invoice_number LIKE ? OR p.full_name LIKE ? OR p.phone LIKE ? OR i.id = ?) AND i.status IN ('Unpaid', 'Partial')"
-        };
-        
+        let total_outstanding_usd_sql = format!(
+            "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+            status_from_clause, status_where_clause
+        );
         let _total_outstanding_usd: f64 = if status_bind_values.is_empty() {
-            sqlx::query_scalar(total_outstanding_usd_sql).fetch_one(pool).await?
+            sqlx::query_scalar(&total_outstanding_usd_sql).fetch_one(pool).await?
         } else {
-            let mut q = sqlx::query_scalar(total_outstanding_usd_sql);
+            let mut q = sqlx::query_scalar(&total_outstanding_usd_sql);
             for val in &status_bind_values {
                 q = q.bind(val);
             }

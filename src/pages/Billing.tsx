@@ -8,7 +8,7 @@ import { ReceiptPreviewModal } from "../components/receipt";
 import { useInvoices, useAddPayment } from "../hooks/useInvoices";
 import { useDebounce } from "../hooks/useDebounce";
 import { useQueryClient } from "@tanstack/react-query";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import type { InvoiceListItem } from "../types/ApiTypes";
 import { toast } from "sonner";
 
@@ -18,8 +18,8 @@ const SEARCH_DEBOUNCE_MS = 300;
 const Billing: React.FC = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const { id } = useParams<{ id?: string }>();
   const [searchParams] = useSearchParams();
+  const patientIdFilter = searchParams.get("patientId") || undefined;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
@@ -39,12 +39,6 @@ const Billing: React.FC = () => {
 
   const filterOutstanding = searchParams.get("filter") === "outstanding";
 
-  useEffect(() => {
-    if (id) {
-      setSearchQuery(id);
-    }
-  }, [id]);
-
   const debouncedSearchQuery = useDebounce(searchQuery, SEARCH_DEBOUNCE_MS);
 
   useEffect(() => {
@@ -58,6 +52,7 @@ const Billing: React.FC = () => {
       : selectedStatus !== "All"
         ? selectedStatus
         : undefined,
+    patientId: patientIdFilter,
     page: currentPage,
     perPage: filterOutstanding ? 100 : itemsPerPage,
   });

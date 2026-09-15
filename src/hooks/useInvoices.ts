@@ -4,6 +4,7 @@ import { api } from "../lib/api";
 export function useInvoices(params: {
   query?: string;
   status?: string;
+  patientId?: string;
   page?: number;
   perPage?: number;
 }) {

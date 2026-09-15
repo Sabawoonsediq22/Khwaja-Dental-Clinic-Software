@@ -80,7 +80,7 @@ const StatCard: React.FC<StatCardProps> = ({
         className,
       )}
     >
-      <div className={cn("absolute inset-0 rounded-2xl bg-gradient-to-b opacity-0 group-hover:opacity-100 transition-opacity duration-300", config.bg)} />
+      <div className={cn("absolute inset-0 rounded-2xl bg-linear-to-b opacity-0 group-hover:opacity-100 transition-opacity duration-300", config.bg)} />
 
       <div className="relative p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3">
@@ -95,19 +95,18 @@ const StatCard: React.FC<StatCardProps> = ({
                   <div className="h-8 w-24 rounded-lg bg-gray-100 dark:bg-gray-700 animate-pulse" />
                 </div>
               ) : (
-                <p className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white leading-none font-mono tabular-nums">
-                  {value}
-                </p>
+                <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-1">
+                  <p className="text-lg sm:text-xl font-bold tracking-tight text-gray-900 dark:text-white leading-none tabular-nums">
+                    {value}
+                  </p>
+                  {secondaryValue && (
+                    <span className="text-sm sm:text-lg text-gray-700 dark:text-gray-400 tabular-nums leading-none mt-1 sm:mt-0 font-bold">
+                      {secondaryValue}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-
-            {secondaryValue && !loading && (
-              <div className="mt-2">
-                <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-700 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 tabular-nums">
-                  {secondaryValue}
-                </span>
-              </div>
-            )}
 
             {secondary && !loading && (
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mt-1.5">

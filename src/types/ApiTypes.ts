@@ -95,6 +95,7 @@ export interface InvoiceListItem {
 export interface InvoiceListParams {
   query?: string;
   status?: string;
+  patientId?: string;
   page?: number;
   perPage?: number;
 }

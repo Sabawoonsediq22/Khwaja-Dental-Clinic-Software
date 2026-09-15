@@ -53,7 +53,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, valueUsd, trendData, 
         <p className="text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">
           {title}
         </p>
-        <p className="mt-1.5 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white font-mono tabular-nums">
+        <p className="mt-1.5 text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
           {value}
         </p>
         {valueUsd && (

@@ -11,7 +11,7 @@ const Patients: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedGender, setSelectedGender] = useState<"All" | "Male" | "Female" | "Other">("All");
+  const [selectedGender, setSelectedGender] = useState<"All" | "Male" | "Female">("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -27,7 +27,7 @@ const Patients: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleGenderChange = (gender: "All" | "Male" | "Female" | "Other") => {
+  const handleGenderChange = (gender: "All" | "Male" | "Female") => {
     setSelectedGender(gender);
     setCurrentPage(1);
   };

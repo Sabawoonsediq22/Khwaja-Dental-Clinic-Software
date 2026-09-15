@@ -634,6 +634,7 @@ pub struct InvoicePageResult {
 pub struct InvoiceListParams {
     pub query: Option<String>,
     pub status: Option<String>,
+    pub patient_id: Option<String>,
     pub page: Option<u32>,
     pub per_page: Option<u32>,
 }

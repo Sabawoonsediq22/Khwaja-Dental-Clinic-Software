@@ -180,28 +180,28 @@ const PatientTable: React.FC<PatientTableProps> = ({
                 </td>
                 <td className="py-3 px-4" onClick={(e) => e.stopPropagation()}>
                   <Popover
-                    actions={[
-                      {
-                        label: t("patients.actions.view", "View"),
-                        onClick: () => navigate(`/patients/${patient.id}`),
-                      },
-                      {
-                        label: t("patients.actions.edit", "Edit"),
-                        onClick: () => handleEditClick(patient),
-                      },
-                      {
-                        label: t("patients.actions.newVisit", "New Visit"),
-                        onClick: () => handleNewVisitClick(patient),
-                      },
-                      {
-                        label: t("patients.actions.delete", "Delete"),
-                        onClick: () => handleDeleteClick(patient),
-                        className: "text-red-600",
-                      },
-                    ]}
-                  />
-                </td>
-              </tr>
+                  actions={[
+                    {
+                      label: t("patients.actions.edit", "Edit"),
+                      onClick: () => handleEditClick(patient),
+                    },
+                    {
+                      label: t("patients.actions.newVisit", "New Visit"),
+                      onClick: () => handleNewVisitClick(patient),
+                    },
+                    {
+                      label: t("patients.actions.billing", "Billing"),
+                      onClick: () => navigate(`/billing?patientId=${patient.id}`),
+                    },
+                    {
+                      label: t("patients.actions.delete", "Delete"),
+                      onClick: () => handleDeleteClick(patient),
+                      className: "text-red-600",
+                    },
+                  ]}
+                />
+              </td>
+            </tr>
             ))}
           </tbody>
         </table>
@@ -231,21 +231,21 @@ const PatientTable: React.FC<PatientTableProps> = ({
                 <Popover
                   actions={[
                     {
-                      label: t("patients.actions.view", "View"),
-                      onClick: () => navigate(`/patients/${patient.id}`),
-                    },
-                    {
                       label: t("patients.actions.edit", "Edit"),
                       onClick: () => handleEditClick(patient),
+                    },
+                    {
+                      label: t("patients.actions.newVisit", "New Visit"),
+                      onClick: () => handleNewVisitClick(patient),
+                    },
+                    {
+                      label: t("patients.actions.billing", "Billing"),
+                      onClick: () => navigate(`/billing?patientId=${patient.id}`),
                     },
                     {
                       label: t("patients.actions.delete", "Delete"),
                       onClick: () => handleDeleteClick(patient),
                       className: "text-red-600",
-                    },
-                    {
-                      label: t("patients.actions.newVisit", "New Visit"),
-                      onClick: () => handleNewVisitClick(patient),
                     },
                   ]}
                 />

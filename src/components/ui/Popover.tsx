@@ -122,7 +122,7 @@ export const Popover: React.FC<ActionPopoverProps> = ({
                   action.onClick();
                   setOpen(false);
                 }}
-                className={`flex w-full items-center rounded-md px-3 py-2 text-sm hover:bg-gray-100 dark:hover:bg-zinc-800 ${action.className ?? ""}`}
+                className={`flex w-full items-center rounded-md px-3 py-2 text-sm hover:bg-gray-200 dark:hover:bg-zinc-800 cursor-pointer ${action.className ?? ""}`}
               >
                 {action.label}
               </button>
