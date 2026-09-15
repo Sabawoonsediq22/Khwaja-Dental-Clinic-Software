@@ -140,7 +140,7 @@ jobs:
           echo "$ASSETS"
 
           # Write node script to file to avoid heredoc issues
-          cat > create-latest-json.js << 'JSEOF'
+          cat > create-latest-json.cjs << 'JSEOF'
           const { execSync } = require('child_process');
           const fs = require('fs');
           const TAG = process.env.TAG;
@@ -242,7 +242,7 @@ jobs:
           console.log('latest.json created successfully with', Object.keys(platforms).length, 'platforms');
           JSEOF
 
-          node create-latest-json.js
+          node create-latest-json.cjs
 
           echo "--- latest.json content ---"
           cat latest.json
