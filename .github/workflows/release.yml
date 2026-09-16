@@ -16,17 +16,17 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest"
-            args: "--target aarch64-apple-darwin"
+            args: "--target aarch64-apple-darwin --bundles updater"
             updater_platform: "darwin-aarch64"
             updater_file_pattern: "*.app.tar.gz"
             updater_sig_pattern: "*.app.tar.gz.sig"
           - platform: "ubuntu-22.04"
-            args: ""
+            args: "--bundles updater"
             updater_platform: "linux-x86_64"
             updater_file_pattern: "*.AppImage.tar.gz"
             updater_sig_pattern: "*.AppImage.tar.gz.sig"
           - platform: "windows-latest"
-            args: ""
+            args: "--bundles updater"
             updater_platform: "windows-x86_64"
             updater_file_pattern: "*.nsis.zip"
             updater_sig_pattern: "*.nsis.zip.sig"
@@ -75,6 +75,23 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+
+      - name: List bundle directory contents
+        if: always()
+        shell: bash
+        run: |
+          if echo "${{ matrix.args }}" | grep -q "\-\-target"; then
+            TARGET_TRIPLE=$(echo "${{ matrix.args }}" | sed 's/.*--target //' | awk '{print $1}')
+            BUNDLE_DIR="src-tauri/target/$TARGET_TRIPLE/release/bundle"
+          else
+            BUNDLE_DIR="src-tauri/target/release/bundle"
+          fi
+          echo "=== Bundle directory: $BUNDLE_DIR ==="
+          if [ -d "$BUNDLE_DIR" ]; then
+            find "$BUNDLE_DIR" -type f | sort
+          else
+            echo "Bundle directory not found!"
+          fi
 
       - name: Upload updater artifacts to release
         env:
