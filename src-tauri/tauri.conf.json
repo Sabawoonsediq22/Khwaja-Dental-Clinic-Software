@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Dentix",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "identifier": "com.dentix.app",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -30,7 +30,7 @@
       "endpoints": [
         "https://github.com/Sabawoonsediq22/Khwaja-Dental-Clinic-Software/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI4REYyMTkyOTlDQUUzOEMKUldTTTQ4cVpraUhmS1B6VVdITktxaHdNaUp4dndGMkVEZmFzUHlRSlI1eERmTEVURHRET0o2TEIK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDU0NDE0NkJDQUE2QzM3QzgKUldUSU4yeXF2RVpCVk9uVXBMNmttc2YyT2R2OXdtT2Q2cGZpaGg4N2dlYmVsOUdEcnpqMGFrT1YK",
       "windows": {
         "nsis": {
           "installMode": "both"
