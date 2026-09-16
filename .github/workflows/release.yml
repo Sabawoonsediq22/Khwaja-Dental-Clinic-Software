@@ -17,13 +17,10 @@ jobs:
         include:
           - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
-            updater_platform: "darwin-aarch64"
           - platform: "ubuntu-22.04"
             args: ""
-            updater_platform: "linux-x86_64"
           - platform: "windows-latest"
             args: ""
-            updater_platform: "windows-x86_64"
 
     runs-on: ${{ matrix.platform }}
 
@@ -55,17 +52,6 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Verify signing key is set
-        shell: bash
-        run: |
-          if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
-            echo "✓ TAURI_SIGNING_PRIVATE_KEY is set (length: ${#TAURI_SIGNING_PRIVATE_KEY})"
-          else
-            echo "✗ TAURI_SIGNING_PRIVATE_KEY is NOT set - updater bundles will not be signed"
-          fi
-        env:
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v1
         id: tauri
@@ -79,38 +65,13 @@ jobs:
           releaseBody: "See the assets below for the installer."
           releaseDraft: false
           prerelease: false
-          uploadUpdaterJson: false
           args: ${{ matrix.args }}
-
-      - name: List all bundle files
-        if: always()
-        shell: bash
-        run: |
-          echo "=== Searching for updater bundles ==="
-          if echo "${{ matrix.args }}" | grep -q "\-\-target"; then
-            TARGET_TRIPLE=$(echo "${{ matrix.args }}" | sed 's/.*--target //' | awk '{print $1}')
-            BUNDLE_DIR="src-tauri/target/$TARGET_TRIPLE/release/bundle"
-          else
-            BUNDLE_DIR="src-tauri/target/release/bundle"
-          fi
-          echo "Bundle directory: $BUNDLE_DIR"
-          if [ -d "$BUNDLE_DIR" ]; then
-            echo "--- All files in bundle dir ---"
-            find "$BUNDLE_DIR" -type f -name "*.zip" -o -name "*.tar.gz" -o -name "*.sig" | sort
-            echo "--- All files (full listing) ---"
-            find "$BUNDLE_DIR" -type f | sort
-          else
-            echo "Bundle directory not found!"
-          fi
 
   finalize-latest-json:
     needs: release
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Create latest.json for all platforms
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -121,7 +82,6 @@ jobs:
 
           echo "Creating latest.json for v$VERSION (tag: $TAG)"
 
-          # Fetch all release asset names
           ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
           echo "Release assets:"
           echo "$ASSETS"
@@ -137,6 +97,7 @@ jobs:
             .trim().split('\n').filter(Boolean);
 
           console.log('Assets found:', assets.length);
+          assets.forEach(a => console.log('  -', a));
 
           function findAsset(patterns) {
             for (const pattern of patterns) {
@@ -159,14 +120,11 @@ jobs:
 
           const platforms = {};
 
+          // macOS: try .app.tar.gz first, fallback to .dmg
           const macUpdater = findAsset([
-            '^Dentix_.*\\.app\\.tar\\.gz$',
-            '^Dentix\\.app\\.tar\\.gz$',
             '.*\\.app\\.tar\\.gz$'
           ]);
           const macSig = findAsset([
-            '^Dentix_.*\\.app\\.tar\\.gz\\.sig$',
-            '^Dentix\\.app\\.tar\\.gz\\.sig$',
             '.*\\.app\\.tar\\.gz\\.sig$'
           ]);
           if (macUpdater) {
@@ -179,15 +137,13 @@ jobs:
             console.log('Warning: macOS updater bundle not found');
           }
 
-          const linuxUpdater = findAsset([
-            '^Dentix_.*\\.AppImage\\.tar\\.gz$',
-            '^Dentix\\.AppImage\\.tar\\.gz$',
-            '.*\\.AppImage\\.tar\\.gz$'
-          ]);
-          const linuxSig = findAsset([
-            '^Dentix_.*\\.AppImage\\.tar\\.gz\\.sig$',
-            '.*\\.AppImage\\.tar\\.gz\\.sig$'
-          ]);
+          // Linux: try .AppImage.tar.gz first, fallback to .AppImage
+          let linuxUpdater = findAsset(['.*\\.AppImage\\.tar\\.gz$']);
+          let linuxSig = findAsset(['.*\\.AppImage\\.tar\\.gz\\.sig$']);
+          if (!linuxUpdater) {
+            linuxUpdater = findAsset(['.*_amd64\\.AppImage$']);
+            linuxSig = findAsset(['.*_amd64\\.AppImage\\.sig$']);
+          }
           if (linuxUpdater) {
             platforms['linux-x86_64'] = {
               signature: readSignature(linuxSig),
@@ -195,18 +151,16 @@ jobs:
             };
             console.log(`Added linux-x86_64: ${linuxUpdater}`);
           } else {
-            console.log('Warning: Linux updater bundle (.AppImage.tar.gz) not found');
+            console.log('Warning: Linux updater bundle not found');
           }
 
-          const winUpdater = findAsset([
-            '^Dentix_.*\\.nsis\\.zip$',
-            '^Dentix\\.nsis\\.zip$',
-            '.*\\.nsis\\.zip$'
-          ]);
-          const winSig = findAsset([
-            '^Dentix_.*\\.nsis\\.zip\\.sig$',
-            '.*\\.nsis\\.zip\\.sig$'
-          ]);
+          // Windows: try .nsis.zip first, fallback to .exe
+          let winUpdater = findAsset(['.*\\.nsis\\.zip$']);
+          let winSig = findAsset(['.*\\.nsis\\.zip\\.sig$']);
+          if (!winUpdater) {
+            winUpdater = findAsset(['.*_x64-setup\\.exe$']);
+            winSig = findAsset(['.*_x64-setup\\.exe\\.sig$']);
+          }
           if (winUpdater) {
             platforms['windows-x86_64'] = {
               signature: readSignature(winSig),
@@ -214,7 +168,7 @@ jobs:
             };
             console.log(`Added windows-x86_64: ${winUpdater}`);
           } else {
-            console.log('Warning: Windows updater bundle (.nsis.zip) not found');
+            console.log('Warning: Windows updater bundle not found');
           }
 
           const latest = {
@@ -234,6 +188,5 @@ jobs:
           cat latest.json
           echo "---------------------------"
 
-          # Upload latest.json to the release
           gh release upload "$TAG" latest.json --clobber
           echo "latest.json uploaded to release $TAG"
