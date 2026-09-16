@@ -18,18 +18,12 @@ jobs:
           - platform: "macos-latest"
             args: "--target aarch64-apple-darwin"
             updater_platform: "darwin-aarch64"
-            updater_file_pattern: "*.app.tar.gz"
-            updater_sig_pattern: "*.app.tar.gz.sig"
           - platform: "ubuntu-22.04"
             args: ""
             updater_platform: "linux-x86_64"
-            updater_file_pattern: "*.AppImage.tar.gz"
-            updater_sig_pattern: "*.AppImage.tar.gz.sig"
           - platform: "windows-latest"
             args: ""
             updater_platform: "windows-x86_64"
-            updater_file_pattern: "*.nsis.zip"
-            updater_sig_pattern: "*.nsis.zip.sig"
 
     runs-on: ${{ matrix.platform }}
 
@@ -61,6 +55,17 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
+      - name: Verify signing key is set
+        shell: bash
+        run: |
+          if [ -n "$TAURI_SIGNING_PRIVATE_KEY" ]; then
+            echo "✓ TAURI_SIGNING_PRIVATE_KEY is set (length: ${#TAURI_SIGNING_PRIVATE_KEY})"
+          else
+            echo "✗ TAURI_SIGNING_PRIVATE_KEY is NOT set - updater bundles will not be signed"
+          fi
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v1
         id: tauri
@@ -74,63 +79,28 @@ jobs:
           releaseBody: "See the assets below for the installer."
           releaseDraft: false
           prerelease: false
+          uploadUpdaterJson: false
           args: ${{ matrix.args }}
 
-      - name: List bundle directory contents
+      - name: List all bundle files
         if: always()
         shell: bash
         run: |
+          echo "=== Searching for updater bundles ==="
           if echo "${{ matrix.args }}" | grep -q "\-\-target"; then
             TARGET_TRIPLE=$(echo "${{ matrix.args }}" | sed 's/.*--target //' | awk '{print $1}')
             BUNDLE_DIR="src-tauri/target/$TARGET_TRIPLE/release/bundle"
           else
             BUNDLE_DIR="src-tauri/target/release/bundle"
           fi
-          echo "=== Bundle directory: $BUNDLE_DIR ==="
+          echo "Bundle directory: $BUNDLE_DIR"
           if [ -d "$BUNDLE_DIR" ]; then
+            echo "--- All files in bundle dir ---"
+            find "$BUNDLE_DIR" -type f -name "*.zip" -o -name "*.tar.gz" -o -name "*.sig" | sort
+            echo "--- All files (full listing) ---"
             find "$BUNDLE_DIR" -type f | sort
           else
             echo "Bundle directory not found!"
-          fi
-
-      - name: Upload updater artifacts to release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-
-          # Determine the correct bundle directory based on build target
-          if echo "${{ matrix.args }}" | grep -q "\-\-target"; then
-            TARGET_TRIPLE=$(echo "${{ matrix.args }}" | sed 's/.*--target //')
-            UPLOADER_DIR="src-tauri/target/$TARGET_TRIPLE/release/bundle"
-          else
-            UPLOADER_DIR="src-tauri/target/release/bundle"
-          fi
-
-          echo "Bundle directory: $UPLOADER_DIR"
-
-          if [ ! -d "$UPLOADER_DIR" ]; then
-            echo "Warning: Bundle directory not found, skipping updater upload"
-            exit 0
-          fi
-
-          # Upload updater file
-          UPDATER_FILE=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_file_pattern }}" 2>/dev/null | head -1)
-          if [ -n "$UPDATER_FILE" ]; then
-            echo "Uploading updater file: $UPDATER_FILE"
-            gh release upload "$TAG" "$UPDATER_FILE" --clobber
-          else
-            echo "Warning: No updater file matching ${{ matrix.updater_file_pattern }} found"
-          fi
-
-          # Upload signature file
-          UPDATER_SIG=$(find "$UPLOADER_DIR" -name "${{ matrix.updater_sig_pattern }}" 2>/dev/null | head -1)
-          if [ -n "$UPDATER_SIG" ]; then
-            echo "Uploading signature file: $UPDATER_SIG"
-            gh release upload "$TAG" "$UPDATER_SIG" --clobber
-          else
-            echo "Warning: No signature file matching ${{ matrix.updater_sig_pattern }} found"
           fi
 
   finalize-latest-json:
@@ -156,7 +126,6 @@ jobs:
           echo "Release assets:"
           echo "$ASSETS"
 
-          # Write node script to file to avoid heredoc issues
           cat > create-latest-json.cjs << 'JSEOF'
           const { execSync } = require('child_process');
           const fs = require('fs');
@@ -226,7 +195,7 @@ jobs:
             };
             console.log(`Added linux-x86_64: ${linuxUpdater}`);
           } else {
-            console.log('Warning: Linux updater bundle not found');
+            console.log('Warning: Linux updater bundle (.AppImage.tar.gz) not found');
           }
 
           const winUpdater = findAsset([
@@ -245,7 +214,7 @@ jobs:
             };
             console.log(`Added windows-x86_64: ${winUpdater}`);
           } else {
-            console.log('Warning: Windows updater bundle not found');
+            console.log('Warning: Windows updater bundle (.nsis.zip) not found');
           }
 
           const latest = {
