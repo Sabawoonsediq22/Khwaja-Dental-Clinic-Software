@@ -70,7 +70,7 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "Khwaja Dental Clinic ${{ github.ref_name }}"
+          releaseName: "Dentix ${{ github.ref_name }}"
           releaseBody: "See the assets below for the installer."
           releaseDraft: false
           prerelease: false
@@ -174,13 +174,13 @@ jobs:
           const platforms = {};
 
           const macUpdater = findAsset([
-            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz$',
-            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.app\\.tar\\.gz$',
+            '^Dentix_.*\\.app\\.tar\\.gz$',
+            '^Dentix\\.app\\.tar\\.gz$',
             '.*\\.app\\.tar\\.gz$'
           ]);
           const macSig = findAsset([
-            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.app\\.tar\\.gz\\.sig$',
-            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.app\\.tar\\.gz\\.sig$',
+            '^Dentix_.*\\.app\\.tar\\.gz\\.sig$',
+            '^Dentix\\.app\\.tar\\.gz\\.sig$',
             '.*\\.app\\.tar\\.gz\\.sig$'
           ]);
           if (macUpdater) {
@@ -194,12 +194,12 @@ jobs:
           }
 
           const linuxUpdater = findAsset([
-            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz$',
-            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.AppImage\\.tar\\.gz$',
+            '^Dentix_.*\\.AppImage\\.tar\\.gz$',
+            '^Dentix\\.AppImage\\.tar\\.gz$',
             '.*\\.AppImage\\.tar\\.gz$'
           ]);
           const linuxSig = findAsset([
-            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.AppImage\\.tar\\.gz\\.sig$',
+            '^Dentix_.*\\.AppImage\\.tar\\.gz\\.sig$',
             '.*\\.AppImage\\.tar\\.gz\\.sig$'
           ]);
           if (linuxUpdater) {
@@ -213,12 +213,12 @@ jobs:
           }
 
           const winUpdater = findAsset([
-            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip$',
-            '^Khwaja\\.Dental\\.Implants\\.Clinic\\.nsis\\.zip$',
+            '^Dentix_.*\\.nsis\\.zip$',
+            '^Dentix\\.nsis\\.zip$',
             '.*\\.nsis\\.zip$'
           ]);
           const winSig = findAsset([
-            '^Khwaja\\.Dental\\.Implants\\.Clinic_.*\\.nsis\\.zip\\.sig$',
+            '^Dentix_.*\\.nsis\\.zip\\.sig$',
             '.*\\.nsis\\.zip\\.sig$'
           ]);
           if (winUpdater) {

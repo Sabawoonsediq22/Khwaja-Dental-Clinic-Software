@@ -1,4 +1,4 @@
-# Khwaja Dental Management System
+# Dentix
 
 A full-featured **Dental Clinic Management System** built as a cross-platform desktop application using Tauri v2, React, and Rust. Designed for the day-to-day operations of a dental clinic — patient registration, visit tracking, dental charting, billing and invoicing, payment management, reporting, and cloud backup.
 

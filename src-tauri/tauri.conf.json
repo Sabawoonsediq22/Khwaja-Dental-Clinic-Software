@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Khwaja Dental & Implants Clinic",
+  "productName": "Dentix",
   "version": "1.0.6",
-  "identifier": "com.khwaja.dental-clinic",
+  "identifier": "com.dentix.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Khwaja Dental & Implants Clinic",
+        "title": "Dentix",
         "width": 1200,
         "height": 700,
         "minWidth": 900,
@@ -51,14 +51,14 @@
     ],
     "category": "Medical",
     "shortDescription": "Dental Clinic Management System",
-    "longDescription": "Khwaja Dental & Implants Clinic - Complete dental practice management solution with patient records, visit tracking, treatment planning, invoicing, billing, backups, and reporting.",
+    "longDescription": "Dentix - Complete dental practice management solution with patient records, visit tracking, treatment planning, invoicing, billing, backups, and reporting.",
     "copyright": "Copyright (C) 2026 Parsa Technology",
     "windows": {
       "nsis": {
         "installMode": "both",
         "installerIcon": "icons/icon.ico",
         "uninstallerIcon": "icons/icon.ico",
-        "startMenuFolder": "Khwaja Dental Clinic",
+        "startMenuFolder": "Dentix",
         "displayLanguageSelector": false
       }
     },

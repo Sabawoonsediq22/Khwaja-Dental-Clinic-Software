@@ -70,7 +70,7 @@
     "contactPhone": "Contact Phone",
     "contactPhonePlaceholder": "+93 7XX XXX XXX",
     "supportEmail": "Support Email",
-    "supportEmailPlaceholder": "info@khwajaclinic.com",
+    "supportEmailPlaceholder": "info@dentix.app",
     "physicalAddress": "Physical Address",
     "physicalAddressPlaceholder": "District, City, Province",
     "clinicLogo": "Clinic Logo",
@@ -984,7 +984,7 @@
     }
   },
   "product": {
-    "name": "Khwaja Dental & Implants Clinic"
+    "name": "Dentix"
   },
   "auth": {
     "title": "Welcome Back",
@@ -1015,7 +1015,7 @@
     "newPasswordPlaceholder": "Enter new password",
     "confirmNewPasswordPlaceholder": "Confirm new password",
     "passwordChanged": "Password changed successfully",
-    "poweredBy": "Khwaja Dental & Implants Clinic",
+    "poweredBy": "Dentix",
     "forgotPassword": "Forgot Password?",
     "forgotPasswordTitle": "Reset Password",
     "forgotPasswordSubtitle": "Enter your recovery key and set a new password.",

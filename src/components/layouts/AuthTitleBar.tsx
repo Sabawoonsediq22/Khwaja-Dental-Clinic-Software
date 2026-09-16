@@ -87,7 +87,7 @@ export default function AuthTitleBar() {
         className="flex items-center h-full min-w-0 flex-1"
       >
         <span className="text-[13px] leading-none tracking-tight select-none shrink-0 px-3">
-          Khwaja Dental & Implants Clinic
+          Dentix
         </span>
       </div>
 
