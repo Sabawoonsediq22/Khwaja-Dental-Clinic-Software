@@ -31,7 +31,7 @@ const formatAFN = (val: number) =>
 
 const formatUSD = (val: number) =>
   "$" + val.toLocaleString("en-US", {
-    minimumFractionDigits: 2,
+    minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   });
 
@@ -452,7 +452,7 @@ const Dashboard: React.FC = () => {
               <Chart
                 options={{
                   chart: {
-                    type: "bar",
+                    type: "pie",
                     height: "100%",
                     toolbar: { show: false },
                     fontFamily: "Inter, system-ui, sans-serif",
@@ -463,80 +463,40 @@ const Dashboard: React.FC = () => {
                       speed: 600,
                     },
                   },
-                  plotOptions: {
-                    bar: {
-                      borderRadius: 6,
-                      columnWidth: "55%",
-                      distributed: true,
-                    },
-                  },
-                  grid: {
-                    show: true,
-                    borderColor: isDark ? "rgba(75,85,99,0.15)" : "rgba(0,0,0,0.04)",
-                    strokeDashArray: 4,
-                    position: "back",
-                    xaxis: { lines: { show: false } },
-                    yaxis: { lines: { show: true } },
-                    padding: { top: 10, right: 10, bottom: 0, left: 10 },
-                  },
                   colors: COLORS.slice(0, procData.length),
-                  xaxis: {
-                    categories: procData.map((d) => d.name),
-                    axisBorder: { show: false },
-                    axisTicks: { show: false },
-                    labels: {
-                      style: {
-                        fontSize: "10px",
-                        fontWeight: 500,
-                        colors: isDark ? "#6b7280" : "#6b7280",
-                      },
-                      rotate: -20,
-                      rotateAlways: false,
-                    },
-                  },
-                  yaxis: {
-                    show: true,
-                    axisBorder: { show: false },
-                    axisTicks: { show: false },
-                    labels: {
-                      style: {
-                        fontSize: "11px",
-                        fontWeight: 500,
-                        colors: isDark ? "#6b7280" : "#9ca3af",
-                      },
-                      offsetX: -6,
-                    },
-                  },
+                  labels: procData.map((d) => d.name),
+                  legend: { show: false },
                   dataLabels: {
                     enabled: true,
-                    offsetY: -12,
+                    formatter: (val: number) => `${val.toFixed(1)}%`,
                     style: {
                       fontSize: "11px",
                       fontWeight: 600,
                       colors: [isDark ? "#e5e7eb" : "#374151"],
                     },
+                    dropShadow: { enabled: false },
                   },
                   tooltip: {
                     theme: isDark ? "dark" : "light",
                     style: { fontSize: "12px" },
                     y: { formatter: (val: number) => String(val) },
                   },
-                  legend: { show: false },
+                  stroke: {
+                    width: 2,
+                    colors: [isDark ? "#1f2937" : "#ffffff"],
+                  },
                   responsive: [
                     {
                       breakpoint: 640,
                       options: {
                         chart: { height: 220 },
-                        xaxis: { labels: { style: { fontSize: "9px" } } },
+                        legend: { fontSize: "10px" },
                       },
                     },
                   ],
                 }}
-                series={[{
-                  name: t("dashboard.count", "Count"),
-                  data: procData.map((d) => d.count),
-                }]}
-                type="bar"
+                series={procData.map((d) => d.count)}
+                type="pie"
                 height="100%"
               />
             ) : (

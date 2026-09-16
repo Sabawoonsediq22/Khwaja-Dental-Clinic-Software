@@ -53,14 +53,16 @@ const StatisticsCard: React.FC<StatisticsCardProps> = ({
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             {label}
           </p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white mt-1 font-mono tabular-nums">
-            {value}
-          </p>
-          {secondaryValue && (
-            <span className="inline-flex items-center text-[11px] sm:text-xl font-medium text-gray-700 dark:text-gray-400 bg-gray-100/80 dark:bg-gray-700/50 border border-gray-200/60 dark:border-gray-600/40 rounded-full px-2.5 py-0.5 mt-1.5 tabular-nums">
-              {secondaryValue}
-            </span>
-          )}
+          <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between sm:gap-2 mt-1">
+            <p className="text-xl font-bold text-gray-900 dark:text-white tabular-nums">
+              {value}
+            </p>
+            {secondaryValue && (
+              <span className="text-lg font-bold text-gray-700 dark:text-gray-400 tabular-nums sm:text-right">
+                {secondaryValue}
+              </span>
+            )}
+          </div>
           {subtitle && (
             <p className={cn("text-xs mt-2", config.text)}>{subtitle}</p>
           )}
