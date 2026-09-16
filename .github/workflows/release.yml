@@ -129,8 +129,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          VERSION=$(node -e "console.log(require('./src-tauri/tauri.conf.json').version)")
+          export TAG="${GITHUB_REF#refs/tags/}"
+          export VERSION=$(node -e "console.log(require('./src-tauri/tauri.conf.json').version)")
 
           echo "Creating latest.json for v$VERSION (tag: $TAG)"
 
