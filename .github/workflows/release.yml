@@ -69,9 +69,16 @@ jobs:
 
   finalize-latest-json:
     needs: release
+    if: always()
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Wait for all release uploads to complete
+        run: sleep 30
+
       - name: Create latest.json for all platforms
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
