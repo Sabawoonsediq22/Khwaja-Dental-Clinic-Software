@@ -8,7 +8,7 @@ import { toast } from "../lib/toast-utils";
 import StatCard, { type CardAccent } from "../components/dashboard/StatCard";
 import RecentPatientsTable from "../components/dashboard/RecentPatientsTable";
 import { ActivityIcon, PlusIcon } from "../shared/icons/icons";
-import { Badge, Button } from "../components/ui";
+import { Badge, Button, Select } from "../components/ui";
 import ChartCard from "../components/dashboard/ChartCard";
 import Chart from "react-apexcharts";
 import type { ApexOptions } from "apexcharts";
@@ -59,8 +59,6 @@ interface StatCardDef {
   sparklineData?: { day: string; value: number }[];
   onClick?: () => void;
 }
-
-const FLOW_MODES = ["daily", "weekly", "monthly"] as const;
 
 const useDarkMode = () => {
   const [isDark, setIsDark] = useState(() =>
@@ -416,21 +414,15 @@ const Dashboard: React.FC = () => {
           className="col-span-1 lg:col-span-7"
           icon={<ActivityIcon size="md" />}
           action={
-            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-              {FLOW_MODES.map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setFlowMode(mode)}
-                  className={`px-2.5 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                    flowMode === mode
-                      ? "bg-primary text-white shadow-sm"
-                      : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                >
-                  {t(`dashboard.${mode}`, mode.charAt(0).toUpperCase() + mode.slice(1))}
-                </button>
-              ))}
-            </div>
+            <Select
+              value={flowMode}
+              onChange={(e) => setFlowMode(e.target.value as "daily" | "weekly" | "monthly")}
+              className="w-auto text-xs sm:text-sm py-1 px-2 min-w-[120px]"
+            >
+              <option value="daily">{t("dashboard.today", "Today")}</option>
+              <option value="weekly">{t("dashboard.thisWeek", "This Week")}</option>
+              <option value="monthly">{t("dashboard.thisMonth", "This Month")}</option>
+            </Select>
           }
         >
           <div className="h-56 sm:h-64 lg:h-72 w-full">
@@ -448,21 +440,15 @@ const Dashboard: React.FC = () => {
           icon={<ActivityIcon size="md" />}
           className="col-span-1 lg:col-span-5"
           action={
-            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-              {FLOW_MODES.map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => setProcMode(mode)}
-                  className={`px-2.5 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
-                    procMode === mode
-                      ? "bg-primary text-white shadow-sm"
-                      : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
-                  }`}
-                >
-                  {t(`dashboard.${mode}`, mode.charAt(0).toUpperCase() + mode.slice(1))}
-                </button>
-              ))}
-            </div>
+            <Select
+              value={procMode}
+              onChange={(e) => setProcMode(e.target.value as "daily" | "weekly" | "monthly")}
+              className="w-auto text-xs sm:text-sm py-1 px-2 min-w-[120px]"
+            >
+              <option value="daily">{t("dashboard.today", "Today")}</option>
+              <option value="weekly">{t("dashboard.thisWeek", "This Week")}</option>
+              <option value="monthly">{t("dashboard.thisMonth", "This Month")}</option>
+            </Select>
           }
         >
           <div className="h-56 sm:h-64 lg:h-72 w-full">
