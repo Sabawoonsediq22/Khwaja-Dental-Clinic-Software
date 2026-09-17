@@ -78,7 +78,7 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
             </div>
             <div className="min-w-0 text-center flex-5">
               <h1 className="text-2xl font-black uppercase tracking-tight text-teal-700 dark:text-teal-300 sm:text-3xl">
-                {receipt.clinic.name || "Dental Clinic"}
+                {receipt.clinic.name || "Dentix"}
               </h1>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 {receipt.clinic.address || "Jalalabad,Nangarhar"}
