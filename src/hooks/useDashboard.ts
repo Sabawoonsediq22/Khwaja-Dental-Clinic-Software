@@ -16,10 +16,10 @@ export function usePatientsFlow(mode: "daily" | "weekly" | "monthly" = "daily") 
   });
 }
 
-export function useProcedureDistribution() {
+export function useProcedureDistribution(mode: "daily" | "weekly" | "monthly" = "daily") {
   return useQuery({
-    queryKey: ["dashboard", "procedureDistribution"],
-    queryFn: () => api.dashboard.procedureDistribution(),
+    queryKey: ["dashboard", "procedureDistribution", mode],
+    queryFn: () => api.dashboard.procedureDistribution(mode),
   });
 }
 

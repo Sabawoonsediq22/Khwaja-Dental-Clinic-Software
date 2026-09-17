@@ -191,16 +191,25 @@ impl DashboardService {
         Ok(result)
     }
 
-    pub async fn procedure_distribution(pool: &SqlitePool) -> AppResult<Vec<ProcedureDistribution>> {
-        let rows: Vec<(String, i64)> = sqlx::query_as(
+    pub async fn procedure_distribution(pool: &SqlitePool, mode: &str) -> AppResult<Vec<ProcedureDistribution>> {
+        let date_filter = match mode {
+            "weekly" => "date(tr.performed_at) >= date('now', '-7 days')",
+            "monthly" => "date(tr.performed_at) >= date('now', '-30 days')",
+            _ => "date(tr.performed_at) = date('now')",
+        };
+
+        let query = format!(
             "SELECT p.name, COUNT(*) as count FROM treatment_records tr
              JOIN procedures p ON tr.procedure_id = p.id
-             WHERE date(tr.performed_at) = date('now')
+             WHERE {}
              GROUP BY p.name
-             ORDER BY count DESC"
-        )
-        .fetch_all(pool)
-        .await?;
+             ORDER BY count DESC",
+            date_filter
+        );
+
+        let rows: Vec<(String, i64)> = sqlx::query_as(&query)
+            .fetch_all(pool)
+            .await?;
 
         Ok(rows.into_iter().map(|(name, count)| ProcedureDistribution { name, count }).collect())
     }

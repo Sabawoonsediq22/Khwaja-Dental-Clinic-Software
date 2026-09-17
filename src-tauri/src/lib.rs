@@ -321,8 +321,9 @@ async fn get_patients_flow(
 #[tauri::command]
 async fn get_procedure_distribution(
     state: State<'_, AppState>,
+    mode: String,
 ) -> Result<Vec<ProcedureDistribution>, String> {
-    DashboardService::procedure_distribution(&state.db)
+    DashboardService::procedure_distribution(&state.db, &mode)
         .await
         .map_err(|e| e.to_string())
 }

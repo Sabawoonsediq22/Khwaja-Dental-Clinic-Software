@@ -181,8 +181,8 @@ export const api = {
     stats: () => invoke<DashboardStats>("get_dashboard_stats"),
     patientsFlow: (mode: string) =>
       invoke<PatientsFlowPoint[]>("get_patients_flow", { mode }),
-    procedureDistribution: () =>
-      invoke<ProcedureDistribution[]>("get_procedure_distribution"),
+    procedureDistribution: (mode: string) =>
+      invoke<ProcedureDistribution[]>("get_procedure_distribution", { mode }),
     recentPatients: () => invoke<RecentPatient[]>("get_recent_patients"),
   },
   backups: {

@@ -85,13 +85,14 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [flowMode, setFlowMode] = useState<"daily" | "weekly" | "monthly">("weekly");
+  const [procMode, setProcMode] = useState<"daily" | "weekly" | "monthly">("daily");
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const isDark = useDarkMode();
 
   const { data: stats, isLoading: statsLoading, isError: statsError } =
     useDashboardStats();
   const { data: flowData } = usePatientsFlow(flowMode);
-  const { data: procData } = useProcedureDistribution();
+  const { data: procData } = useProcedureDistribution(procMode);
   const { data: recentPatients, refetch: refetchRecentPatients } =
     useRecentPatients(4);
   const updateStatusMutation = useUpdateVisitStatus();
@@ -446,6 +447,23 @@ const Dashboard: React.FC = () => {
           title={t("dashboard.procedureDistribution", "Procedure Distribution")}
           icon={<ActivityIcon size="md" />}
           className="col-span-1 lg:col-span-5"
+          action={
+            <div className="flex rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              {FLOW_MODES.map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => setProcMode(mode)}
+                  className={`px-2.5 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm font-bold transition-all duration-200 cursor-pointer ${
+                    procMode === mode
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
+                  }`}
+                >
+                  {t(`dashboard.${mode}`, mode.charAt(0).toUpperCase() + mode.slice(1))}
+                </button>
+              ))}
+            </div>
+          }
         >
           <div className="h-56 sm:h-64 lg:h-72 w-full">
             {procData && procData.length > 0 ? (
