@@ -36,7 +36,7 @@ impl ProcedureService {
 
     pub async fn list(pool: &SqlitePool) -> AppResult<Vec<Procedure>> {
         let procedures = sqlx::query_as(
-            "SELECT id, name, additional_note, COALESCE(procedure_price_afn, 0) as procedure_price_afn, COALESCE(procedure_price_usd, 0) as procedure_price_usd, created_at, updated_at FROM procedures ORDER BY name"
+            "SELECT id, name, additional_note, COALESCE(procedure_price_afn, 0.0) as procedure_price_afn, COALESCE(procedure_price_usd, 0.0) as procedure_price_usd, created_at, updated_at FROM procedures ORDER BY name"
         )
         .fetch_all(pool)
         .await?;
@@ -46,7 +46,7 @@ impl ProcedureService {
 
     pub async fn find_by_name(pool: &SqlitePool, name: &str) -> AppResult<Option<Procedure>> {
         let procedure = sqlx::query_as(
-            "SELECT id, name, additional_note, COALESCE(procedure_price_afn, 0) as procedure_price_afn, COALESCE(procedure_price_usd, 0) as procedure_price_usd, created_at, updated_at FROM procedures WHERE name = ?"
+            "SELECT id, name, additional_note, COALESCE(procedure_price_afn, 0.0) as procedure_price_afn, COALESCE(procedure_price_usd, 0.0) as procedure_price_usd, created_at, updated_at FROM procedures WHERE name = ?"
         )
         .bind(name)
         .fetch_optional(pool)

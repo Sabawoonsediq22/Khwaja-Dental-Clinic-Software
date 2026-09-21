@@ -43,8 +43,8 @@ impl SearchService {
         // Invoices (with patient name via visits)
         let invoices: Vec<GlobalSearchInvoice> = sqlx::query_as(
             "SELECT i.id, i.invoice_number, i.status,
-                    COALESCE(i.outstanding_afn, 0) as outstanding_afn,
-                    COALESCE(i.outstanding_usd, 0) as outstanding_usd,
+                    COALESCE(i.outstanding_afn, 0.0) as outstanding_afn,
+                    COALESCE(i.outstanding_usd, 0.0) as outstanding_usd,
                     p.full_name as patient_name
              FROM invoices i
              JOIN visits v ON v.id = i.visit_id
@@ -131,8 +131,8 @@ impl SearchService {
         // Treatments (via procedures joined to visits)
         let treatments: Vec<GlobalSearchTreatment> = sqlx::query_as(
             "SELECT DISTINCT p.id, p.name, p.additional_note,
-                    COALESCE(p.procedure_price_afn, 0) as procedure_price_afn,
-                    COALESCE(p.procedure_price_usd, 0) as procedure_price_usd,
+                    COALESCE(p.procedure_price_afn, 0.0) as procedure_price_afn,
+                    COALESCE(p.procedure_price_usd, 0.0) as procedure_price_usd,
                     p.visit_id,
                     pat.full_name as practitioner_name
              FROM procedures p
@@ -163,8 +163,8 @@ impl SearchService {
         // Payments
         let payments: Vec<GlobalSearchPayment> = sqlx::query_as(
             "SELECT pay.id,
-                    COALESCE(pay.amount_afn, 0) as amount_afn,
-                    COALESCE(pay.amount_usd, 0) as amount_usd,
+                    COALESCE(pay.amount_afn, 0.0) as amount_afn,
+                    COALESCE(pay.amount_usd, 0.0) as amount_usd,
                     pay.received_at, p.full_name as patient_name
              FROM payments pay
              JOIN invoices i ON i.id = pay.invoice_id

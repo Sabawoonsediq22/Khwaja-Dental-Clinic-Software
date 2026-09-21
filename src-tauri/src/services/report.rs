@@ -105,7 +105,7 @@ impl ReportService {
         .await?;
 
         let revenue: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) FROM invoices WHERE issued_at >= ? AND issued_at <= ?"
+            "SELECT COALESCE(SUM(COALESCE(paid_afn, 0.0) + COALESCE(paid_usd, 0.0)), 0.0) FROM invoices WHERE issued_at >= ? AND issued_at <= ?"
         )
         .bind(&start_date)
         .bind(&end_date)
@@ -114,8 +114,8 @@ impl ReportService {
 
         let revenue_row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0),
-               COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0)
+               COALESCE(SUM(COALESCE(paid_afn, 0.0)), 0.0),
+               COALESCE(SUM(COALESCE(paid_usd, 0.0)), 0.0)
              FROM invoices WHERE issued_at >= ? AND issued_at <= ?"
         )
         .bind(&start_date)
@@ -124,7 +124,7 @@ impl ReportService {
         .await?;
 
         let outstanding_balance: Option<f64> = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial') AND issued_at >= ? AND issued_at <= ?"
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0.0) + COALESCE(outstanding_usd, 0.0)), 0.0) FROM invoices WHERE status IN ('Unpaid', 'Partial') AND issued_at >= ? AND issued_at <= ?"
         )
         .bind(&start_date)
         .bind(&end_date)
@@ -133,8 +133,8 @@ impl ReportService {
 
         let outstanding_balance_row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
-               COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
+               COALESCE(SUM(COALESCE(outstanding_afn, 0.0)), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_usd, 0.0)), 0.0)
              FROM invoices WHERE status IN ('Unpaid', 'Partial') AND issued_at >= ? AND issued_at <= ?"
         )
         .bind(&start_date)
@@ -170,7 +170,7 @@ impl ReportService {
         let visits_trend = fill_range_daily_trends(start_dt, end_dt, visits_rows);
 
         let revenue_rows: Vec<(String, f64)> = sqlx::query_as(
-            "SELECT date(received_at) as day_str, COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) as val
+            "SELECT date(received_at) as day_str, COALESCE(SUM(COALESCE(amount_afn, 0.0) + COALESCE(amount_usd, 0.0)), 0.0) as val
              FROM payments
              WHERE received_at >= ? AND received_at <= ?
              GROUP BY date(received_at)
@@ -183,7 +183,7 @@ impl ReportService {
         let revenue_trend = fill_range_daily_trends(start_dt, end_dt, revenue_rows);
 
         let outstanding_rows: Vec<(String, f64)> = sqlx::query_as(
-            "SELECT date(issued_at) as day_str, COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) as val
+            "SELECT date(issued_at) as day_str, COALESCE(SUM(COALESCE(outstanding_afn, 0.0) + COALESCE(outstanding_usd, 0.0)), 0.0) as val
              FROM invoices
              WHERE issued_at >= ? AND issued_at <= ?
              GROUP BY date(issued_at)
@@ -215,7 +215,7 @@ impl ReportService {
         .await?;
 
         let prev_revenue: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(COALESCE(amount_afn, 0) + COALESCE(amount_usd, 0)), 0.0) FROM payments
+            "SELECT COALESCE(SUM(COALESCE(amount_afn, 0.0) + COALESCE(amount_usd, 0.0)), 0.0) FROM payments
              WHERE received_at >= ? AND received_at <= ?"
         )
         .bind(&prev_start)
@@ -225,8 +225,8 @@ impl ReportService {
 
         let prev_revenue_row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(COALESCE(amount_afn, 0)), 0.0),
-               COALESCE(SUM(COALESCE(amount_usd, 0)), 0.0)
+               COALESCE(SUM(COALESCE(amount_afn, 0.0)), 0.0),
+               COALESCE(SUM(COALESCE(amount_usd, 0.0)), 0.0)
              FROM payments
              WHERE received_at >= ? AND received_at <= ?"
         )
@@ -236,7 +236,7 @@ impl ReportService {
         .await?;
 
         let prev_outstanding: f64 = sqlx::query_scalar(
-            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0) + COALESCE(outstanding_usd, 0)), 0.0) FROM invoices
+            "SELECT COALESCE(SUM(COALESCE(outstanding_afn, 0.0) + COALESCE(outstanding_usd, 0.0)), 0.0) FROM invoices
              WHERE issued_at >= ? AND issued_at <= ?"
         )
         .bind(&prev_start)
@@ -246,8 +246,8 @@ impl ReportService {
 
         let prev_outstanding_row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(COALESCE(outstanding_afn, 0)), 0.0),
-               COALESCE(SUM(COALESCE(outstanding_usd, 0)), 0.0)
+               COALESCE(SUM(COALESCE(outstanding_afn, 0.0)), 0.0),
+               COALESCE(SUM(COALESCE(outstanding_usd, 0.0)), 0.0)
              FROM invoices
              WHERE issued_at >= ? AND issued_at <= ?"
         )
@@ -311,9 +311,9 @@ impl ReportService {
         let rows: Vec<(String, f64, f64, f64)> = if filter.filter_type == "daily" || filter.filter_type == "weekly" || filter.filter_type == "custom" {
             sqlx::query_as(
                 "SELECT date(issued_at) as month,
-                        COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) as revenue,
-                        COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
-                        COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
+                        COALESCE(SUM(COALESCE(paid_afn, 0.0) + COALESCE(paid_usd, 0.0)), 0.0) as revenue,
+                        COALESCE(SUM(COALESCE(paid_afn, 0.0)), 0.0) as revenue_afn,
+                        COALESCE(SUM(COALESCE(paid_usd, 0.0)), 0.0) as revenue_usd
                  FROM invoices
                  WHERE issued_at >= ? AND issued_at <= ?
                  GROUP BY date(issued_at)
@@ -326,9 +326,9 @@ impl ReportService {
         } else {
             sqlx::query_as(
                 "SELECT strftime('%Y-%m', issued_at) as month,
-                        COALESCE(SUM(COALESCE(paid_afn, 0) + COALESCE(paid_usd, 0)), 0.0) as revenue,
-                        COALESCE(SUM(COALESCE(paid_afn, 0)), 0.0) as revenue_afn,
-                        COALESCE(SUM(COALESCE(paid_usd, 0)), 0.0) as revenue_usd
+                        COALESCE(SUM(COALESCE(paid_afn, 0.0) + COALESCE(paid_usd, 0.0)), 0.0) as revenue,
+                        COALESCE(SUM(COALESCE(paid_afn, 0.0)), 0.0) as revenue_afn,
+                        COALESCE(SUM(COALESCE(paid_usd, 0.0)), 0.0) as revenue_usd
                  FROM invoices
                  WHERE issued_at >= ? AND issued_at <= ?
                  GROUP BY strftime('%Y-%m', issued_at)

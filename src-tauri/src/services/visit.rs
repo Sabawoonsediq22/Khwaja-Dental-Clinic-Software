@@ -116,10 +116,10 @@ impl VisitService {
                         p.name as procedure_name,
                         p.additional_note as procedure_additional_note,
                         tr.number_of_procedures,
-                        COALESCE(p.procedure_price_afn, 0) as unit_price_afn,
-                        COALESCE(p.procedure_price_usd, 0) as unit_price_usd,
-                        (COALESCE(p.procedure_price_afn, 0) * tr.number_of_procedures) as total_price_afn,
-                        (COALESCE(p.procedure_price_usd, 0) * tr.number_of_procedures) as total_price_usd,
+                        COALESCE(p.procedure_price_afn, 0.0) as unit_price_afn,
+                        COALESCE(p.procedure_price_usd, 0.0) as unit_price_usd,
+                        (COALESCE(p.procedure_price_afn, 0.0) * tr.number_of_procedures) as total_price_afn,
+                        (COALESCE(p.procedure_price_usd, 0.0) * tr.number_of_procedures) as total_price_usd,
                         tr.performed_at
                  FROM treatment_records tr
                  JOIN procedures p ON p.id = tr.procedure_id
@@ -244,8 +244,8 @@ impl VisitService {
                     v.clinical_notes,
                     v.status,
                     COALESCE(proc.procedures_count, 0) as procedures_count,
-                    COALESCE(inv.total_afn, 0) as total_afn,
-                    COALESCE(inv.total_usd, 0) as total_usd,
+                    COALESCE(inv.total_afn, 0.0) as total_afn,
+                    COALESCE(inv.total_usd, 0.0) as total_usd,
                     v.created_at
              FROM visits v
              JOIN patients p ON p.id = v.patient_id

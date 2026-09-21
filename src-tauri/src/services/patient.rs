@@ -427,8 +427,8 @@ impl PatientService {
     ) -> AppResult<Invoice> {
         let row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0),
-               COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0)
+               COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0.0),
+               COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0.0)
              FROM treatment_records tr
              JOIN procedures p ON p.id = tr.procedure_id
              WHERE tr.visit_id = ?",
@@ -659,12 +659,12 @@ impl PatientService {
     pub async fn get_statistics(pool: &SqlitePool, id: &str) -> AppResult<PatientStatisticsResponse> {
         let row: (f64, f64, f64, f64, f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(i.total_afn + i.total_usd), 0),
-               COALESCE(SUM(i.total_afn), 0),
-               COALESCE(SUM(i.total_usd), 0),
-               COALESCE(SUM(i.outstanding_afn + i.outstanding_usd), 0),
-               COALESCE(SUM(i.outstanding_afn), 0),
-               COALESCE(SUM(i.outstanding_usd), 0)
+               COALESCE(SUM(i.total_afn + i.total_usd), 0.0),
+               COALESCE(SUM(i.total_afn), 0.0),
+               COALESCE(SUM(i.total_usd), 0.0),
+               COALESCE(SUM(i.outstanding_afn + i.outstanding_usd), 0.0),
+               COALESCE(SUM(i.outstanding_afn), 0.0),
+               COALESCE(SUM(i.outstanding_usd), 0.0)
              FROM invoices i
              JOIN visits v ON v.id = i.visit_id
              WHERE v.patient_id = ?",

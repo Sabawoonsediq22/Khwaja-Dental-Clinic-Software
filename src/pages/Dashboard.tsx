@@ -412,12 +412,11 @@ const Dashboard: React.FC = () => {
         <ChartCard
           title={t("dashboard.patientsFlow", "Patients Flow")}
           className="col-span-1 lg:col-span-7"
-          icon={<ActivityIcon size="md" />}
           action={
             <Select
               value={flowMode}
               onChange={(e) => setFlowMode(e.target.value as "daily" | "weekly" | "monthly")}
-              className="w-auto text-xs sm:text-sm py-1 px-2 min-w-[120px]"
+              className="w-auto text-xs sm:text-sm py-1 px-2 min-w-30 cursor-pointer"
             >
               <option value="daily">{t("dashboard.today", "Today")}</option>
               <option value="weekly">{t("dashboard.thisWeek", "This Week")}</option>
@@ -437,13 +436,12 @@ const Dashboard: React.FC = () => {
 
         <ChartCard
           title={t("dashboard.procedureDistribution", "Procedure Distribution")}
-          icon={<ActivityIcon size="md" />}
           className="col-span-1 lg:col-span-5"
           action={
             <Select
               value={procMode}
               onChange={(e) => setProcMode(e.target.value as "daily" | "weekly" | "monthly")}
-              className="w-auto text-xs sm:text-sm py-1 px-2 min-w-[120px]"
+              className="w-auto text-xs sm:text-sm py-1 px-2 min-w-30 cursor-pointer"
             >
               <option value="daily">{t("dashboard.today", "Today")}</option>
               <option value="weekly">{t("dashboard.thisWeek", "This Week")}</option>

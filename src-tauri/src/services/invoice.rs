@@ -160,12 +160,12 @@ impl InvoiceService {
 
         let total_outstanding_sql = if status_where_clause.is_empty() {
             format!(
-                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0.0) + COALESCE(i.outstanding_usd, 0.0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
                 status_from_clause
             )
         } else {
             format!(
-                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0) + COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0.0) + COALESCE(i.outstanding_usd, 0.0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
                 status_from_clause, status_where_clause
             )
         };
@@ -182,12 +182,12 @@ impl InvoiceService {
         // Per-currency total outstanding
         let total_outstanding_afn_sql = if status_where_clause.is_empty() {
             format!(
-                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0.0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
                 status_from_clause
             )
         } else {
             format!(
-                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_afn, 0.0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
                 status_from_clause, status_where_clause
             )
         };
@@ -203,12 +203,12 @@ impl InvoiceService {
 
         let total_outstanding_usd_sql = if status_where_clause.is_empty() {
             format!(
-                "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0.0)), 0.0) {} WHERE i.status IN ('Unpaid', 'Partial')",
                 status_from_clause
             )
         } else {
             format!(
-                "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
+                "SELECT COALESCE(SUM(COALESCE(i.outstanding_usd, 0.0)), 0.0) {}{} AND i.status IN ('Unpaid', 'Partial')",
                 status_from_clause, status_where_clause
             )
         };
@@ -225,16 +225,16 @@ impl InvoiceService {
         // Build main query
         let query_str = format!(
             "SELECT i.id, i.invoice_number,
-                    COALESCE(i.subtotal_afn, 0) as subtotal_afn,
-                    COALESCE(i.subtotal_usd, 0) as subtotal_usd,
-                    COALESCE(i.discount_afn, 0) as discount_afn,
-                    COALESCE(i.discount_usd, 0) as discount_usd,
-                    COALESCE(i.total_afn, 0) as total_afn,
-                    COALESCE(i.total_usd, 0) as total_usd,
-                    COALESCE(i.paid_afn, 0) as paid_afn,
-                    COALESCE(i.paid_usd, 0) as paid_usd,
-                    COALESCE(i.outstanding_afn, 0) as outstanding_afn,
-                    COALESCE(i.outstanding_usd, 0) as outstanding_usd,
+                    COALESCE(i.subtotal_afn, 0.0) as subtotal_afn,
+                    COALESCE(i.subtotal_usd, 0.0) as subtotal_usd,
+                    COALESCE(i.discount_afn, 0.0) as discount_afn,
+                    COALESCE(i.discount_usd, 0.0) as discount_usd,
+                    COALESCE(i.total_afn, 0.0) as total_afn,
+                    COALESCE(i.total_usd, 0.0) as total_usd,
+                    COALESCE(i.paid_afn, 0.0) as paid_afn,
+                    COALESCE(i.paid_usd, 0.0) as paid_usd,
+                    COALESCE(i.outstanding_afn, 0.0) as outstanding_afn,
+                    COALESCE(i.outstanding_usd, 0.0) as outstanding_usd,
                     i.status, i.issued_at, i.visit_id as visit_id, v.patient_id as patient_id, p.full_name as patient_name, p.phone as patient_phone, v.visit_date
              FROM invoices i
              JOIN visits v ON v.id = i.visit_id
@@ -272,8 +272,8 @@ impl InvoiceService {
 
         let row: (f64, f64) = sqlx::query_as(
             "SELECT
-               COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0),
-               COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0)
+               COALESCE(SUM(p.procedure_price_afn * tr.number_of_procedures), 0.0),
+               COALESCE(SUM(p.procedure_price_usd * tr.number_of_procedures), 0.0)
              FROM treatment_records tr
              JOIN procedures p ON p.id = tr.procedure_id
              WHERE tr.visit_id = ?",
