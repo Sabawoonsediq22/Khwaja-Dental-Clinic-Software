@@ -194,7 +194,6 @@ CREATE INDEX IF NOT EXISTS idx_invoices_outstanding_usd ON invoices(outstanding_
 CREATE INDEX IF NOT EXISTS idx_payments_invoice ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_received_at ON payments(received_at);
 CREATE INDEX IF NOT EXISTS idx_patient_allergies_patient ON patient_allergies(patient_id);
-CREATE INDEX IF NOT EXISTS idx_patient_medications_patient ON patient_medications(patient_id);
 CREATE INDEX IF NOT EXISTS idx_medical_conditions_patient ON medical_conditions(patient_id);
 CREATE INDEX IF NOT EXISTS idx_xrays_patient ON xrays(patient_id);
 CREATE INDEX IF NOT EXISTS idx_invoice_items_invoice ON invoice_items(invoice_id);

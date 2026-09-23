@@ -1132,6 +1132,7 @@ pub fn run() {
                 Ok(pool) => {
                     if let Err(e) = tauri::async_runtime::block_on(db::run_migrations(&pool)) {
                         eprintln!("Failed to run migrations: {}", e);
+                        return Err(e.into());
                     }
                     app.manage(AppState { db: pool.clone(), config: config.clone() });
 
