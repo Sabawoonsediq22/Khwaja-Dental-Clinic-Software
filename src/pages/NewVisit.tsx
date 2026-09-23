@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeftIcon,
+  ArrowIcon,
   VisitDetailsIcon,
   ToothIcon,
   ImageIcon,
@@ -16,7 +16,6 @@ import {
   Button,
   FormField,
   FormInput,
-  FormTextarea,
   LoadingSpinner,
   Combobox,
   toast,
@@ -428,7 +427,7 @@ const NewVisit: React.FC = () => {
           className="mt-4"
           onClick={() => navigate("/patients")}
         >
-          {t("patients.table.columnActions")}
+          {t("common.backToPatients", "Back to Patients")}
         </Button>
       </div>
     );
@@ -446,14 +445,18 @@ const NewVisit: React.FC = () => {
         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-start">
           <div className="flex items-start gap-3">
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={() => navigate(`/patients/${patientId}`)}
+              title={t("common.back", "Back")}
+              aria-label={t("common.back", "Back")}
+              className="cursor-pointer h-12 w-12 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors [&_svg]:!size-7"
             >
               {isRTL() ? (
-                <ArrowLeftIcon className="rotate-180" />
+                <ArrowIcon className="dark:text-white rotate-180" />
               ) : (
-                <ArrowLeftIcon />
+                <ArrowIcon className="dark:text-white" />
               )}
             </Button>
             <div>

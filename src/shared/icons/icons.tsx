@@ -1364,6 +1364,26 @@ export const ArrowLeftIcon: React.FC<IconProps> = ({
   </svg>
 );
 
+/** Arrow left (←) */
+export const ArrowIcon: React.FC<IconProps> = ({
+  className = "dark:text-white",
+  size = "md",
+}) => (
+  <svg
+    className={`${sizeClasses[size]} ${className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M19 12H7m0 0l5-5m-5 5l5 5"
+    />
+  </svg>
+);
+
 /** Image / photo icon */
 export const ImageIcon: React.FC<IconProps> = ({
   className = "dark:text-white",

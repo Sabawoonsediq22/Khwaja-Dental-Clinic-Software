@@ -308,7 +308,21 @@
     "delete": "Delete",
     "deleting": "Deleting...",
     "edit": "Edit",
-    "restoring": "Restoring..."
+    "restoring": "Restoring...",
+    "back": "Back",
+    "backToPatients": "Back to Patients",
+    "goToDashboard": "Go to Dashboard"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for doesn't exist or has been moved.",
+    "goHome": "Back to Dashboard"
+  },
+  "breadcrumbs": {
+    "invoices": "Invoices",
+    "receipts": "Receipts",
+    "payments": "Payments",
+    "treatments": "Treatments"
   },
   "pagination": {
     "showing": "Showing {{start}} to {{end}} of {{total}}",

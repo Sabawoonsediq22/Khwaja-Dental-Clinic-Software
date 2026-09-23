@@ -8,9 +8,9 @@ const switchVariants = cva(
     variants: {
       variant: {
         default:
-          "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input",
+          "data-[state=checked]:bg-primary data-[state=unchecked]:bg-input hover:data-[state=unchecked]:bg-gray-300 dark:data-[state=checked]:bg-primary dark:data-[state=unchecked]:bg-gray-600 dark:hover:data-[state=unchecked]:bg-gray-500 dark:data-[state=checked]:hover:bg-blue-700",
         destructive:
-          "data-[state=checked]:bg-destructive data-[state=unchecked]:bg-input",
+          "data-[state=checked]:bg-destructive data-[state=unchecked]:bg-input hover:data-[state=unchecked]:bg-gray-300 dark:data-[state=unchecked]:bg-gray-600 dark:hover:data-[state=unchecked]:bg-gray-500",
       },
     },
     defaultVariants: {
@@ -20,7 +20,7 @@ const switchVariants = cva(
 );
 
 const switchThumbVariants = cva(
-  "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform",
+  "pointer-events-none block h-5 w-5 rounded-full bg-white shadow-md ring-0 transition-transform dark:bg-gray-100 dark:shadow-black/30",
   {
     variants: {
       checked: {

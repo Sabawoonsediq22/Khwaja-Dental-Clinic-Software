@@ -307,7 +307,21 @@
     "confirm": "تایید",
     "delete": "ډیلیټول",
     "deleting": "ډیلیټینګ...",
-    "edit": "تغیرول"
+    "edit": "تغیرول",
+    "back": "بیرته",
+    "backToPatients": "بیرته ناروغانو ته",
+    "goToDashboard": "ډشبورډ ته وټو"
+  },
+  "notFound": {
+    "title": "پاڼه ونه موندل شوه",
+    "description": "هغه پاڼه چې ته لټوي نه ده موجوده یا لېږدې شوې.",
+    "goHome": "بیرته ډشبورډ ته"
+  },
+  "breadcrumbs": {
+    "invoices": "فوټونه",
+    "receipts": "رسیدونه",
+    "payments": "تادیې",
+    "treatments": "درملنې"
   },
   "pagination": {
     "showing": "له {{start}} څخه تر {{end}} پورې له {{total}} څخه",

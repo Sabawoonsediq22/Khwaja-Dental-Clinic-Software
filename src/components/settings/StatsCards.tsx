@@ -62,10 +62,13 @@ const StatsCards: React.FC<StatsCardsProps> = ({ backups, backupSettings }) => {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold text-foreground mb-4">
-        {t("settings.statistics")}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="mb-4 flex items-center gap-2">
+        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+          {t("settings.statistics")}
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           label={t("settings.totalBackups")}
           value={totalBackups}

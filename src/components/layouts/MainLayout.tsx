@@ -39,6 +39,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const isRTL = i18n.language === "ps";
   const [isDark, setIsDark] = useState(false);
   const { logout } = useAuth();
+  const breadcrumbs = useBreadcrumbs();
 
   const {
     updateAvailable,
@@ -72,12 +73,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   };
 
   const navigation = [
-    { name: t("nav.dashboard"), href: "/dashboard", icon: LayoutIcon },
+    { name: t("nav.dashboard"), href: "/dashboard", icon: LayoutIcon, exact: true },
     { name: t("nav.patients"), href: "/patients", icon: PatientIcon },
     { name: t("nav.visits"), href: "/visits", icon: ClipboardListIcon },
     { name: t("nav.billings"), href: "/billing", icon: BillingIcon },
-    { name: t("nav.reports"), href: "/reports", icon: ReportsIcon },
-    { name: t("nav.help"), href: "/help", icon: HelpIcon },
+    { name: t("nav.reports"), href: "/reports", icon: ReportsIcon, exact: true },
+    { name: t("nav.settings"), href: "/settings", icon: SettingsIcon, exact: true },
+    { name: t("nav.help"), href: "/help", icon: HelpIcon, exact: true },
   ];
 
   const changeLanguage = (lng: "en" | "ps") => {
@@ -168,11 +170,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Navigation */}
         <nav className="flex-1 space-y-1 p-2">
           {navigation.map((item) => {
-            const isActive = location.pathname.startsWith(item.href);
+            const isActive = item.exact
+              ? location.pathname === item.href
+              : location.pathname === item.href ||
+                location.pathname.startsWith(`${item.href}/`);
             return (
               <NavLink
                 key={item.href}
                 to={item.href}
+                title={sidebarOpen ? undefined : item.name}
+                aria-label={item.name}
                 className={cn(
                   "flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                   isActive
@@ -236,7 +243,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         {/* Header */}
         <header className="sticky top-0 z-10 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-6 dark:border-gray-700 dark:bg-gray-800">
           <div className="flex-1 min-w-0">
-            <Breadcrumbs items={useBreadcrumbs()} isRTL={isRTL} />
+            <Breadcrumbs items={breadcrumbs} isRTL={isRTL} />
           </div>
           <div className="flex-1 flex items-center justify-end gap-2">
 
@@ -272,19 +279,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
                 )}
               </Button>
             )}
-            {/* Settings button */}
-            <NavLink
-              to="/settings"
-              className={cn(
-                "flex items-center justify-center p-1.75 text-sm font-medium transition-colors hover:bg-primary/80 hover:text-white border rounded-lg dark:border-gray-500",
-                location.pathname === "/settings"
-                  ? "bg-primary text-white"
-                  : "text-gray-700 dark:text-gray-300",
-              )}
-              aria-label="Settings"
-            >
-              <SettingsIcon />
-            </NavLink>
             {/* Logout button */}
             <Button
               onClick={handleLogout}

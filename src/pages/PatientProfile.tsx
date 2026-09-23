@@ -28,7 +28,9 @@ import {
   PlusIcon,
   DeleteIcon,
   LocationIcon,
+  ArrowIcon,
 } from "../shared/icons/icons";
+import { isRTL } from "../i18n";
 import { toast } from "sonner";
 import type { PatientVisitWithTreatments, Invoice } from "../types/ApiTypes";
 import { api } from "../lib/api";
@@ -423,6 +425,20 @@ const PatientProfile: React.FC = () => {
         <div className="flex items-start justify-between">
           {/* Left Side */}
           <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/patients")}
+              title={t("common.back", "Back")}
+              aria-label={t("common.back", "Back")}
+              className="cursor-pointer h-12 w-12 shrink-0 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors [&_svg]:size-7!"
+            >
+              {isRTL() ? (
+                <ArrowIcon className="dark:text-white rotate-180" />
+              ) : (
+                <ArrowIcon className="dark:text-white" />
+              )}
+            </Button>
             <PatientAvatarWithStatus
               name={patient.full_name}
               size="xxl"

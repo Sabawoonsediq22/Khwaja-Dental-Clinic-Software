@@ -9,6 +9,7 @@ import AboutSection from "../components/settings/AboutSection";
 import { useBackupSettings } from "../hooks/useBackup";
 import ClinicForm from "../components/settings/ClinicForm";
 import ChangePasswordForm from "../components/settings/ChangePasswordForm";
+import { SettingsIcon } from "../shared/icons/icons";
 
 const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -26,10 +27,14 @@ const Settings: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+    <div className="space-y-8">
+      {/* Page header */}
+      <div className="flex items-start gap-4">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <SettingsIcon className="h-6 w-6" />
+        </div>
+        <div className="space-y-1 pt-0.5">
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
             {t("settings.title")}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -38,23 +43,24 @@ const Settings: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <ClinicForm
-            key={brandingKey}
-            ref={clinicFormRef}
-            settings={settings}
-            onSaved={handleClinicSaved}
-          />
-        </div>
-        <div className="space-y-6">
-          <BackupSection />
-          <ChangePasswordForm />
-        </div>
-      </div>
-
+      {/* Backup statistics overview — at-a-glance status first */}
       <StatsCards backups={[]} backupSettings={backupSettings} />
 
+      {/* Primary settings: clinic profile + account security, balanced side by side */}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <ClinicForm
+          key={brandingKey}
+          ref={clinicFormRef}
+          settings={settings}
+          onSaved={handleClinicSaved}
+        />
+        <ChangePasswordForm />
+      </div>
+
+      {/* Backup management — full width so dense restore/backup controls can breathe */}
+      <BackupSection />
+
+      {/* About */}
       <AboutSection />
     </div>
   );

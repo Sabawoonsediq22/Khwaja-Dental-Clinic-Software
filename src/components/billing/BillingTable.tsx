@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { BillingTableProps } from "../../types/BillingTypes";
 import { Badge } from "../ui/Badge";
-import { Popover } from "../ui/Popover";
+import { PaymentIcon, PrinterIcon } from "../../shared/icons/icons";
 
 function formatDate(date: string | null | undefined): string {
   if (!date) return "-";
@@ -61,34 +61,34 @@ const BillingTable: React.FC<BillingTableProps> = ({
   return (
     <div className="bg-white dark:bg-gray-800">
       <div className="hidden md:block overflow-x-auto">
-        <table className="w-full text-sm text-left">
+        <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-100 dark:bg-gray-900 border-gray-200 dark:border-gray-700">
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 whitespace-nowrap">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400 whitespace-nowrap">
                 {t("billing.table.number", "NO.")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.invoiceNumber", "INVOICE #")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.patient", "PATIENT")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.date", "DATE")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.total", "TOTAL")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.paid", "PAID")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.outstanding", "OUTSTANDING")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.status", "STATUS")}
               </th>
-              <th className="text-left py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
+              <th className="py-3 px-4 font-bold text-xs uppercase tracking-wider text-gray-800 dark:text-gray-400">
                 {t("billing.table.actions", "ACTIONS")}
               </th>
             </tr>
@@ -147,19 +147,24 @@ const BillingTable: React.FC<BillingTableProps> = ({
                 {/* ... keep existing cells ... */}
                 <td className="py-3 px-4">
                   <div className="flex items-center gap-2">
-                    {/* New Popover for more actions */}
-                  <Popover 
-                    actions={[
-                      ...((invoice.outstanding_afn + invoice.outstanding_usd) > 0 ? [{
-                        label: t("billing.actions.recordPayment", "Record Payment"),
-                        onClick: () => onRecordPayment?.(invoice),
-                      }] : []),
-                      {
-                        label: t("billing.actions.printReceipt", "Print Receipt"),
-                        onClick: () => onPrintReceipt?.(invoice),
-                      },
-                    ]}
-                  />
+                    {(invoice.outstanding_afn + invoice.outstanding_usd) > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => onRecordPayment?.(invoice)}
+                        title={t("billing.actions.recordPayment", "Record Payment")}
+                        className="p-1.5 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                      >
+                        <PaymentIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onPrintReceipt?.(invoice)}
+                      title={t("billing.actions.printReceipt", "Print Receipt")}
+                      className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    >
+                      <PrinterIcon className="h-5 w-5" />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -193,19 +198,27 @@ const BillingTable: React.FC<BillingTableProps> = ({
               <span>{t("billing.table.paidLabel", "Paid:")} {formatDualCurrency(invoice.paid_afn, invoice.paid_usd)}</span>
               <span>{t("billing.table.dueLabel", "Due:")} {formatDualCurrency(invoice.outstanding_afn, invoice.outstanding_usd)}</span>
             </div>
-            {/* Mobile Popover */}
-              <Popover
-                actions={[
-                  ...((invoice.outstanding_afn + invoice.outstanding_usd) > 0 ? [{
-                    label: t("billing.actions.recordPayment", "Record Payment"),
-                    onClick: () => onRecordPayment?.(invoice),
-                  }] : []),
-                  {
-                    label: t("billing.actions.printReceipt", "Print Receipt"),
-                    onClick: () => onPrintReceipt?.(invoice),
-                  },
-                ]}
-              />
+            {/* Mobile actions */}
+            <div className="mt-3 flex items-center justify-end gap-2">
+              {(invoice.outstanding_afn + invoice.outstanding_usd) > 0 && (
+                <button
+                  type="button"
+                  onClick={() => onRecordPayment?.(invoice)}
+                  title={t("billing.actions.recordPayment", "Record Payment")}
+                  className="p-1.5 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-400 dark:hover:text-blue-400 dark:hover:bg-blue-900/20 transition-colors cursor-pointer"
+                >
+                  <PaymentIcon className="h-5 w-5" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => onPrintReceipt?.(invoice)}
+                title={t("billing.actions.printReceipt", "Print Receipt")}
+                className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+              >
+                <PrinterIcon className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         ))}
       </div>

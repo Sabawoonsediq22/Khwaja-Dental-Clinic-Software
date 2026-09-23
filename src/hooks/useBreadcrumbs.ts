@@ -28,6 +28,10 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
       settings: t("nav.settings"),
       about: t("nav.about"),
       help: t("nav.help"),
+      invoices: t("breadcrumbs.invoices", "Invoices"),
+      receipts: t("breadcrumbs.receipts", "Receipts"),
+      payments: t("breadcrumbs.payments", "Payments"),
+      treatments: t("breadcrumbs.treatments", "Treatments"),
       new: isNewVisitPage ? t("newVisit.title") : t("patients.new") || "New Patient",
     };
 
@@ -50,7 +54,7 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
         ) {
           breadcrumbs.push({
             label: isLoading
-              ? "Loading..."
+              ? t("common.loading", "Loading...")
               : patient?.full_name || pathname,
             href: isLast ? undefined : currentPath,
           });

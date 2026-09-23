@@ -3,18 +3,17 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeftIcon,
   PatientIcon,
   MedicalHistoryIcon,
-  VisitDetailsIcon,
   ToothIcon,
   ImageIcon,
   BillingIcon,
   CheckCircleIcon,
   CrossCircleIcon,
+  ArrowIcon,
 } from "../shared/icons/icons";
 import { Button } from "../components/ui";
-import { FormField, FormInput, FormTextarea, Combobox } from "../components/ui";
+import { FormField, FormInput, Combobox } from "../components/ui";
 import DentalChart from "../components/dental-chart/DentalChart";
 import { ReceiptPreviewModal } from "../components/receipt/ReceiptPreviewModal";
 import { isRTL } from "../i18n";
@@ -495,12 +494,14 @@ const NewPatient: React.FC = () => {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate("/patients")}
-                className="cursor-pointer"
+                title={t("common.back", "Back")}
+                aria-label={t("common.back", "Back")}
+                className="cursor-pointer h-12 w-12 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors [&_svg]:size-7!"
               >
                 {isRTL() ? (
-                  <ArrowLeftIcon className="rotate-180" />
+                  <ArrowIcon className="dark:text-white rotate-180" />
                 ) : (
-                  <ArrowLeftIcon />
+                  <ArrowIcon className="dark:text-white" />
                 )}
               </Button>
               <h2 className="text-3xl font-bold text-primary dark:text-white">

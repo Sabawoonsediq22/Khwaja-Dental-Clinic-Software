@@ -19,6 +19,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Billing = lazy(() => import("./pages/Billing"));
 const Help = lazy(() => import("./pages/Help"));
 const AllVisits = lazy(() => import("./pages/AllVisits"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = () => (
   <div className="flex h-[60vh] items-center justify-center">
@@ -84,6 +85,7 @@ function App() {
             <Route path="/reports" element={<Reports />} />
             <Route path="/help" element={<Help />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
       </MainLayout>
