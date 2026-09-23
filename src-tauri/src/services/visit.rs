@@ -30,15 +30,14 @@ impl VisitService {
         let visit_date = input.visit_date.clone().unwrap_or_else(|| now.clone());
 
         let visit = sqlx::query_as::<_, Visit>(
-            "INSERT INTO visits (id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-             RETURNING id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at"
+            "INSERT INTO visits (id, patient_id, visit_date, chief_complaint, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
+             RETURNING id, patient_id, visit_date, chief_complaint, status, created_at, updated_at"
         )
         .bind(&id)
         .bind(&input.patient_id)
         .bind(&visit_date)
         .bind(&input.chief_complaint)
-        .bind(&input.clinical_notes)
         .bind("Open")
         .bind(&now)
         .bind(&now)
@@ -62,7 +61,7 @@ impl VisitService {
 
         let visit = sqlx::query_as::<_, Visit>(
             "UPDATE visits SET status=?, updated_at=? WHERE id=?
-             RETURNING id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at"
+             RETURNING id, patient_id, visit_date, chief_complaint, status, created_at, updated_at"
         )
         .bind(status_str)
         .bind(&now)
@@ -78,7 +77,7 @@ impl VisitService {
 
     pub async fn get_by_patient(pool: &SqlitePool, patient_id: &str) -> AppResult<Vec<Visit>> {
         let visits = sqlx::query_as(
-            "SELECT id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at FROM visits WHERE patient_id = ? ORDER BY visit_date DESC"
+            "SELECT id, patient_id, visit_date, chief_complaint, status, created_at, updated_at FROM visits WHERE patient_id = ? ORDER BY visit_date DESC"
         )
         .bind(patient_id)
         .fetch_all(pool)
@@ -90,7 +89,7 @@ impl VisitService {
     #[allow(dead_code)]
     pub async fn find(pool: &SqlitePool, id: &str) -> AppResult<Visit> {
         let visit = sqlx::query_as(
-            "SELECT id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at FROM visits WHERE id = ?"
+            "SELECT id, patient_id, visit_date, chief_complaint, status, created_at, updated_at FROM visits WHERE id = ?"
         )
         .bind(id)
         .fetch_optional(pool)
@@ -102,7 +101,7 @@ impl VisitService {
 
     pub async fn get_with_treatments(pool: &SqlitePool, patient_id: &str) -> AppResult<Vec<PatientVisitWithTreatments>> {
         let visits = sqlx::query_as::<_, Visit>(
-            "SELECT id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at FROM visits WHERE patient_id = ? ORDER BY visit_date DESC"
+            "SELECT id, patient_id, visit_date, chief_complaint, status, created_at, updated_at FROM visits WHERE patient_id = ? ORDER BY visit_date DESC"
         )
         .bind(patient_id)
         .fetch_all(pool)
@@ -174,7 +173,6 @@ impl VisitService {
                 visit_id: visit.id,
                 visit_date: visit.visit_date,
                 chief_complaint: visit.chief_complaint,
-                clinical_notes: visit.clinical_notes,
                 status: visit.status,
                 procedures: treatment_procedures,
             });
@@ -241,7 +239,6 @@ impl VisitService {
                     p.phone as patient_phone,
                     v.visit_date,
                     v.chief_complaint,
-                    v.clinical_notes,
                     v.status,
                     COALESCE(proc.procedures_count, 0) as procedures_count,
                     COALESCE(inv.total_afn, 0.0) as total_afn,

@@ -31,7 +31,6 @@ interface FlattenedEntry {
   date: string;
   time: string;
   status: string;
-  notes: string | undefined;
   images: string[] | undefined;
   procedure: {
     name: string;
@@ -63,7 +62,6 @@ const flattenTreatments = (treatments: TreatmentEntry[], visitInvoices?: Map<str
         date: treatment.date,
         time: treatment.time,
         status: treatment.status,
-        notes: treatment.notes,
         images: treatment.images,
         procedure: {
           name: procedure.name,
@@ -292,17 +290,6 @@ const TreatmentHistoryTimeline: React.FC<TreatmentHistoryTimelineProps> = ({
 
                             {isExpanded && (
                               <div className="px-4 pb-4 space-y-3">
-                                {entry.notes && (
-                                  <div className="pt-3">
-                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                                      {t("patientProfile.clinicalNotes", "Clinical Notes")}
-                                    </span>
-                                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 whitespace-pre-wrap">
-                                      {entry.notes}
-                                    </p>
-                                  </div>
-                                )}
-
                                 {entry.procedure.additionalNote && (
                                   <div className="rounded-lg border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/60 p-3">
                                     <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">

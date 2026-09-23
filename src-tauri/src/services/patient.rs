@@ -178,14 +178,12 @@ impl PatientService {
         .await?;
 
         Self::insert_allergies(&mut tx, &id, input.allergies.as_deref()).await?;
-        Self::insert_medications(&mut tx, &id, input.medications.as_deref()).await?;
         Self::insert_medical_conditions(&mut tx, &id, input.medical_conditions.as_deref()).await?;
         let visit_id = Self::insert_visit(
             &mut tx,
             &id,
             input.visit_date.as_deref(),
             input.chief_complaint.as_deref(),
-            input.clinical_notes.as_deref(),
             &now,
         )
         .await?;
@@ -267,24 +265,6 @@ impl PatientService {
         Ok(())
     }
 
-    async fn insert_medications(
-        tx: &mut Transaction<'_, sqlx::Sqlite>,
-        patient_id: &str,
-        medications: Option<&str>,
-    ) -> AppResult<()> {
-        for medication in Self::split_csv(medications) {
-            sqlx::query(
-                "INSERT OR IGNORE INTO patient_medications (patient_id, medication_name) VALUES (?, ?)",
-            )
-            .bind(patient_id)
-            .bind(medication)
-            .execute(&mut **tx)
-            .await?;
-        }
-
-        Ok(())
-    }
-
     async fn insert_medical_conditions(
         tx: &mut Transaction<'_, sqlx::Sqlite>,
         patient_id: &str,
@@ -308,23 +288,20 @@ impl PatientService {
         patient_id: &str,
         visit_date: Option<&str>,
         chief_complaint: Option<&str>,
-        clinical_notes: Option<&str>,
         now: &str,
     ) -> AppResult<String> {
         let visit_id = format!("V-{}-{:06}", Utc::now().format("%Y%m%d"), Uuid::new_v4().simple().to_string().chars().take(6).collect::<String>());
         let visit_date = Self::trimmed_optional(visit_date).unwrap_or_else(|| now.to_string());
         let chief_complaint = Self::trimmed_optional(chief_complaint);
-        let clinical_notes = Self::trimmed_optional(clinical_notes);
 
         sqlx::query(
-            "INSERT INTO visits (id, patient_id, visit_date, chief_complaint, clinical_notes, status, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO visits (id, patient_id, visit_date, chief_complaint, status, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)",
         )
         .bind(&visit_id)
         .bind(patient_id)
         .bind(visit_date)
         .bind(chief_complaint)
-        .bind(clinical_notes)
         .bind("Open")
         .bind(now)
         .bind(now)
@@ -633,14 +610,6 @@ impl PatientService {
             .map(|r: String| r)
             .collect();
 
-        let medications: Vec<String> = sqlx::query_scalar("SELECT medication_name FROM patient_medications WHERE patient_id = ?")
-            .bind(id)
-            .fetch_all(pool)
-            .await?
-            .into_iter()
-            .map(|r: String| r)
-            .collect();
-
         let conditions: Vec<String> = sqlx::query_scalar("SELECT condition_name FROM medical_conditions WHERE patient_id = ?")
             .bind(id)
             .fetch_all(pool)
@@ -651,7 +620,6 @@ impl PatientService {
 
         Ok(PatientMedicalInfoResponse {
             allergies,
-            medications,
             medical_conditions: conditions,
         })
     }
@@ -705,11 +673,6 @@ impl PatientService {
             .execute(&mut *tx)
             .await?;
 
-        sqlx::query("DELETE FROM patient_medications WHERE patient_id = ?")
-            .bind(patient_id)
-            .execute(&mut *tx)
-            .await?;
-
         sqlx::query("DELETE FROM medical_conditions WHERE patient_id = ?")
             .bind(patient_id)
             .execute(&mut *tx)
@@ -720,15 +683,6 @@ impl PatientService {
             sqlx::query("INSERT INTO patient_allergies (patient_id, allergy_name) VALUES (?, ?)")
                 .bind(patient_id)
                 .bind(&allergy)
-                .execute(&mut *tx)
-                .await?;
-        }
-
-        // Insert new medications
-        for medication in Self::split_csv(input.medications.as_deref()) {
-            sqlx::query("INSERT INTO patient_medications (patient_id, medication_name) VALUES (?, ?)")
-                .bind(patient_id)
-                .bind(&medication)
                 .execute(&mut *tx)
                 .await?;
         }

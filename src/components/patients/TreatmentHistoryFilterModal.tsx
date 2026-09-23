@@ -43,7 +43,6 @@ const TreatmentHistoryFilterModal: React.FC<TreatmentHistoryFilterModalProps> = 
       const matchesSearch =
         searchQuery.trim() === "" ||
         t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        t.notes?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         t.procedures?.some((p) => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesStatus && matchesSearch;
     });
@@ -80,7 +79,7 @@ const TreatmentHistoryFilterModal: React.FC<TreatmentHistoryFilterModalProps> = 
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t("patientProfile.searchByProcedure", "Search by procedure, notes...")}
+            placeholder={t("patientProfile.searchByProcedure", "Search by procedure...")}
             className="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600"
           />
         </div>

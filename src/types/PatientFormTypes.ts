@@ -17,12 +17,6 @@ export interface PatientAllergies {
   allergyName: string;
 }
 
-export interface PatientMedications {
-  id?: number;
-  patientId: string;
-  medicationName: string;
-}
-
 export interface medicalConditions {
   diabetes: boolean;
   hypertension: boolean;
@@ -43,7 +37,6 @@ export interface PatientVisit {
    patientId: string;
    visitDate: string;
    chiefComplaint: string;
-   clinicalNotes: string;
    status: "Open" | "Completed" | "Canceled";
    discountAfn?: number;
    discountUsd?: number;

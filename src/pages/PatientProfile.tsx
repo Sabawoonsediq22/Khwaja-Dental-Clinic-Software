@@ -84,10 +84,6 @@ const toTreatmentEntries = (
           visit.status === "Cancelled"
             ? visit.status
             : "Open",
-        notes:
-          visit.clinical_notes ||
-          procedure.procedure_additional_note ||
-          undefined,
         procedures: [
           {
             name: procedure.procedure_name,
@@ -186,7 +182,6 @@ const PatientProfile: React.FC = () => {
   const [allergiesFormData, setAllergiesFormData] = useState({
     allergies: "",
     medical_conditions: "",
-    medications: "",
   });
 
   React.useEffect(() => {
@@ -203,7 +198,6 @@ const PatientProfile: React.FC = () => {
       setAllergiesFormData({
         allergies: medicalInfo.allergies?.join(", ") || "",
         medical_conditions: medicalInfo.medical_conditions?.join(", ") || "",
-        medications: medicalInfo.medications?.join(", ") || "",
       });
     }
   }, [patient, medicalInfo]);
@@ -272,12 +266,10 @@ const PatientProfile: React.FC = () => {
     if (!patient) return;
 
     const allergiesArray = parseCsv(allergiesFormData.allergies);
-    const medicationsArray = parseCsv(allergiesFormData.medications);
     const conditionsArray = parseCsv(allergiesFormData.medical_conditions);
     const medicalInfoKey = ["patients", patient.id, "medical-info"];
     const optimisticMedicalInfo = {
       allergies: allergiesArray,
-      medications: medicationsArray,
       medical_conditions: conditionsArray,
     };
 
@@ -287,8 +279,6 @@ const PatientProfile: React.FC = () => {
         input: {
           allergies:
             allergiesArray.length > 0 ? formatCsv(allergiesArray) : null,
-          medications:
-            medicationsArray.length > 0 ? formatCsv(medicationsArray) : null,
           medical_conditions:
             conditionsArray.length > 0 ? conditionsArray : null,
         },
@@ -300,7 +290,6 @@ const PatientProfile: React.FC = () => {
           setAllergiesFormData({
             allergies: formatCsv(allergiesArray),
             medical_conditions: formatCsv(conditionsArray),
-            medications: formatCsv(medicationsArray),
           });
           setShowAllergiesModal(false);
           toast.success(
@@ -418,12 +407,6 @@ const PatientProfile: React.FC = () => {
       label: t("patientProfile.medicalConditionsLabel"),
       value:
         medicalInfo?.medical_conditions?.join(", ") ||
-        t("patientProfile.noneRecorded"),
-    },
-    {
-      label: t("patientProfile.medicationsLabel"),
-      value:
-        medicalInfo?.medications?.join(", ") ||
         t("patientProfile.noneRecorded"),
     },
   ];
@@ -702,25 +685,6 @@ const PatientProfile: React.FC = () => {
               }
               placeholder={t(
                 "patientProfile.formPlaceholders.conditionsExample",
-              )}
-              className="w-full px-3 py-2 border rounded-md"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              {t("patientProfile.formLabels.medications")}
-            </label>
-            <input
-              type="text"
-              value={allergiesFormData.medications}
-              onChange={(e) =>
-                setAllergiesFormData({
-                  ...allergiesFormData,
-                  medications: e.target.value,
-                })
-              }
-              placeholder={t(
-                "patientProfile.formPlaceholders.medicationsExample",
               )}
               className="w-full px-3 py-2 border rounded-md"
             />

@@ -83,7 +83,6 @@ export interface TreatmentEntry {
   time: string;
   cost: number;
   status: "Open" | "Completed" | "Cancelled";
-  notes?: string;
   images?: string[];
   procedures?: {
     name: string;

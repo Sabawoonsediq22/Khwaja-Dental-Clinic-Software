@@ -70,7 +70,6 @@ const NewVisit: React.FC = () => {
 
   const [visitDate, setVisitDate] = useState(getTodayDateString());
   const [chiefComplaint, setChiefComplaint] = useState("");
-  const [clinicalNotes, setClinicalNotes] = useState("");
 
   interface SelectedProcedure {
     procedureName: string;
@@ -309,7 +308,6 @@ const NewVisit: React.FC = () => {
         patient_id: patientId,
         visit_date: visitDate || undefined,
         chief_complaint: trimToNull(chiefComplaint),
-        clinical_notes: trimToNull(clinicalNotes),
       };
       const createdVisit = await api.visits.create(visitInput);
       let treatmentRecord: TreatmentRecord | null = null;
@@ -551,19 +549,10 @@ const NewVisit: React.FC = () => {
                 <FormField
                   label={t("newVisit.chiefComplaint")}
                 >
-                  <FormTextarea
+                  <FormInput
                     value={chiefComplaint}
                     onChange={(event) => setChiefComplaint(event.target.value)}
                     placeholder={t("newVisit.chiefComplaintPlaceholder")}
-                    className="min-h-12.5 w-full"
-                    disabled={isSubmitting}
-                  />
-                </FormField>
-                <FormField label={t("newVisit.clinicalNotes")}>
-                  <FormTextarea
-                    value={clinicalNotes}
-                    onChange={(event) => setClinicalNotes(event.target.value)}
-                    placeholder={t("newVisit.clinicalNotesPlaceholder")}
                     className="min-h-12.5 w-full"
                     disabled={isSubmitting}
                   />

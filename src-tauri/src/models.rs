@@ -41,21 +41,9 @@ pub enum Gender {
 }
 
 // Patient medical info
-#[derive(Debug, Serialize, Deserialize, FromRow)]
-#[allow(dead_code)]
-pub struct PatientMedicalInfo {
-    pub patient_id: String,
-    pub allergies: Option<String>,
-    pub medications: Option<String>,
-    pub clinical_notes: Option<String>,
-    pub created_at: String,
-    pub updated_at: String,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PatientMedicalInfoResponse {
     pub allergies: Vec<String>,
-    pub medications: Vec<String>,
     pub medical_conditions: Vec<String>,
 }
 
@@ -87,7 +75,6 @@ pub struct Visit {
     pub patient_id: String,
     pub visit_date: String,
     pub chief_complaint: Option<String>,
-    pub clinical_notes: Option<String>,
     pub status: VisitStatus,
     pub created_at: String,
     pub updated_at: String,
@@ -139,7 +126,6 @@ pub struct PatientVisitWithTreatments {
     pub visit_id: String,
     pub visit_date: String,
     pub chief_complaint: Option<String>,
-    pub clinical_notes: Option<String>,
     pub status: VisitStatus,
     pub procedures: Vec<TreatmentProcedure>,
 }
@@ -491,11 +477,9 @@ pub struct CreatePatientInput {
     pub gender: Gender,
     pub address: Option<String>,
     pub allergies: Option<String>,
-    pub medications: Option<String>,
     pub medical_conditions: Option<Vec<String>>,
     pub visit_date: Option<String>,
     pub chief_complaint: Option<String>,
-    pub clinical_notes: Option<String>,
     pub procedures: Option<Vec<CreateProcedureWithTreatmentInput>>,
     pub discount: Option<f64>,
     pub discount_afn: Option<f64>,
@@ -523,14 +507,11 @@ pub struct UpdatePatientInput {
     pub gender: Option<Gender>,
     pub address: Option<String>,
     pub allergies: Option<String>,
-    pub medications: Option<String>,
-    pub clinical_notes: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdatePatientMedicalInfoInput {
     pub allergies: Option<String>,
-    pub medications: Option<String>,
     pub medical_conditions: Option<Vec<String>>,
 }
 
@@ -539,7 +520,6 @@ pub struct CreateVisitInput {
     pub patient_id: String,
     pub visit_date: Option<String>,
     pub chief_complaint: Option<String>,
-    pub clinical_notes: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -799,7 +779,6 @@ pub struct VisitListItem {
     pub patient_phone: Option<String>,
     pub visit_date: String,
     pub chief_complaint: Option<String>,
-    pub clinical_notes: Option<String>,
     pub status: String,
     pub procedures_count: i64,
     pub total_afn: f64,

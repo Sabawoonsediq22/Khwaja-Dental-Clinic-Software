@@ -16,13 +16,6 @@ CREATE TABLE patient_allergies (
     UNIQUE(patient_id, allergy_name)
 );
 
-CREATE TABLE patient_medications (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    patient_id TEXT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
-    medication_name TEXT NOT NULL,
-    UNIQUE(patient_id, medication_name)
-);
-
 CREATE TABLE  medical_conditions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     patient_id TEXT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
@@ -36,7 +29,6 @@ CREATE TABLE visits (
     patient_id TEXT NOT NULL REFERENCES patients(id) ON DELETE CASCADE,
     visit_date TEXT NOT NULL DEFAULT (datetime('now')),
     chief_complaint TEXT DEFAULT '',
-    clinical_notes TEXT DEFAULT '',
     status TEXT DEFAULT 'Open' CHECK(status IN ('Open','Completed','Cancelled')),
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))

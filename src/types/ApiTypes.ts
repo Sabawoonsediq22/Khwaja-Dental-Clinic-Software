@@ -29,7 +29,6 @@ export interface CreatedPatient {
 
 export interface PatientMedicalInfo {
   allergies: string[];
-  medications: string[];
   medical_conditions: string[];
 }
 
@@ -46,7 +45,6 @@ export interface PatientStatisticsInfo {
 
 export interface UpdatePatientMedicalInfoInput {
   allergies: string | null;
-  medications: string | null;
   medical_conditions: string[] | null;
 }
 
@@ -109,11 +107,9 @@ export interface CreatePatientInput {
   gender: "Male" | "Female" | "Other";
   address?: string | null;
   allergies?: string | null;
-  medications?: string | null;
   medical_conditions?: string[] | null;
   visit_date?: string | null;
   chief_complaint?: string | null;
-  clinical_notes?: string | null;
   procedures: CreateProcedureWithTreatmentInput[];
   discount_afn?: number | null;
   discount_usd?: number | null;
@@ -137,8 +133,6 @@ export interface UpdatePatientInput {
   gender?: "Male" | "Female" | "Other";
   address?: string | null;
   allergies?: string | null;
-  medications?: string | null;
-  clinical_notes?: string | null;
 }
 
 export interface Visit {
@@ -146,7 +140,6 @@ export interface Visit {
   patient_id: string;
   visit_date: string;
   chief_complaint?: string | null;
-  clinical_notes?: string | null;
   status: "Open" | "Completed" | "Cancelled";
   created_at: string;
   updated_at: string;
@@ -156,7 +149,6 @@ export interface CreateVisitInput {
   patient_id: string;
   visit_date?: string;
   chief_complaint?: string | null;
-  clinical_notes?: string | null;
 }
 
 export interface CreateProcedureInput {
@@ -200,7 +192,6 @@ export interface PatientVisitWithTreatments {
   visit_id: string;
   visit_date: string;
   chief_complaint: string | null;
-  clinical_notes: string | null;
   status: "Open" | "Completed" | "Cancelled";
   procedures: TreatmentProcedure[];
 }
@@ -575,7 +566,6 @@ export interface VisitListItem {
   patient_phone: string | null;
   visit_date: string;
   chief_complaint: string | null;
-  clinical_notes: string | null;
   status: "Open" | "Completed" | "Cancelled";
   procedures_count: number;
   total_afn: number;

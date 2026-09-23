@@ -55,13 +55,12 @@ const TreatmentHistoryDownloadModal: React.FC<TreatmentHistoryDownloadModalProps
     setDownloading("csv");
 
     try {
-      const headers = ["Date", "Time", "Procedure", t("common.status", "Status"), "Notes", "Cost (AFN)"];
+      const headers = ["Date", "Time", "Procedure", t("common.status", "Status"), "Cost (AFN)"];
       const rows = treatments.map((t) => [
         formatDate(t.date),
         t.time,
         getTreatmentTitle(t),
         t.status,
-        t.notes || "",
         t.cost.toLocaleString(),
       ]);
 
@@ -120,13 +119,12 @@ const TreatmentHistoryDownloadModal: React.FC<TreatmentHistoryDownloadModalProps
         52,
       );
 
-      const headers = ["Date", "Time", "Procedure", "Status", "Notes", "Cost (AFN)"];
+      const headers = ["Date", "Time", "Procedure", "Status", "Cost (AFN)"];
       const body = treatments.map((t) => [
         formatDate(t.date),
         t.time,
         getTreatmentTitle(t),
         t.status,
-        t.notes || "-",
         `${t.cost.toLocaleString()} AFN`,
       ]);
 

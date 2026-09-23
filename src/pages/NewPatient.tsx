@@ -61,7 +61,6 @@ const NewPatient: React.FC = () => {
 
   // Medical history inputs are normalized into comma-separated strings before submission.
   const [allergyInput, setAllergyInput] = useState("");
-  const [medicationInput, setMedicationInput] = useState("");
   const [medicalConditions, setMedicalConditions] = useState<medicalConditions>(
     {
       diabetes: false,
@@ -77,7 +76,6 @@ const NewPatient: React.FC = () => {
     patientId: "",
     visitDate: new Date().toISOString().split("T")[0],
     chiefComplaint: "",
-    clinicalNotes: "",
     status: "Open",
   });
 
@@ -256,13 +254,6 @@ const NewPatient: React.FC = () => {
   };
 
   /**
-   * Stores raw medication text before it is normalized to CSV during submission.
-   */
-  const handleMedicationInputChange = (value: string) => {
-    setMedicationInput(value);
-  };
-
-  /**
    * Updates any visit detail field using a dynamic key from the PatientVisit type.
    */
   const handlePatientVisitChange = (
@@ -394,7 +385,6 @@ const NewPatient: React.FC = () => {
     try {
       const gender = patient.gender as CreatePatientInput["gender"];
       const allergiesCsv = formatCsvList(allergyInput);
-      const medicationsCsv = formatCsvList(medicationInput);
       const selectedMedicalConditions = getSelectedMedicalConditions();
 
       const proceduresPayload: CreateProcedureWithTreatmentInput[] =
@@ -419,14 +409,12 @@ const NewPatient: React.FC = () => {
         gender,
         address: patient.address?.trim() || null,
         allergies: allergiesCsv || null,
-        medications: medicationsCsv || null,
         medical_conditions:
           selectedMedicalConditions.length > 0
             ? selectedMedicalConditions
             : null,
         visit_date: patientVisit.visitDate || null,
         chief_complaint: patientVisit.chiefComplaint.trim() || null,
-        clinical_notes: patientVisit.clinicalNotes.trim() || null,
         procedures: proceduresPayload,
         discount_afn: discountAfn > 0 ? discountAfn : null,
         discount_usd: discountUsd > 0 ? discountUsd : null,
@@ -642,146 +630,31 @@ const NewPatient: React.FC = () => {
             </div>
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <section className="space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-              <div className="border-b bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-t-lg p-4">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
+          <section className="space-y-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
+            <div className="border-b bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-t-lg p-4">
+              <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
                   <MedicalHistoryIcon className="w-5 h-5 text-red-600" />
-                  {t("newPatient.medicalHistory")}
-                </h3>
-              </div>
-              <div className="space-y-4 px-4 pb-4">
-                <div>
-                  <FormField label={t("newPatient.allergies")}>
-                    <FormInput
-                      placeholder={t(
-                        "newPatient.allergiesPlaceholder",
-                        "e.g. Penicillin, Latex, Peanuts",
-                      )}
-                      onChange={(e) => handleAllergyInputChange(e.target.value)}
-                      value={allergyInput}
-                      disabled={isSubmitting}
-                      className="w-full"
-                    />
-                  </FormField>
-                </div>
-
-                <div className="space-y-3 my-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-red-50/50 dark:bg-gray-700/50 p-4">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                    {t("newPatient.medicalConditions")}
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md ${medicalConditions.diabetes ? "bg-blue-100 border-blue-500" : ""}`}>
-                      <input
-                        type="checkbox"
-                        checked={medicalConditions.diabetes}
-                        onChange={(e) =>
-                          setMedicalConditions({
-                            ...medicalConditions,
-                            diabetes: e.target.checked,
-                          })
-                        }
-                        disabled={isSubmitting}
-                        className="rounded border-gray-300 dark:border-gray-600"
-                      />
-                      <span>{t("newPatient.diabetes")}</span>
-                    </label>
-                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md ${medicalConditions.hypertension ? "bg-blue-100 border-blue-500" : ""}`}>
-                      <input
-                        type="checkbox"
-                        checked={medicalConditions.hypertension}
-                        onChange={(e) =>
-                          setMedicalConditions({
-                            ...medicalConditions,
-                            hypertension: e.target.checked,
-                          })
-                        }
-                        disabled={isSubmitting}
-                        className="rounded border-gray-300 dark:border-gray-600"
-                      />
-                      <span>{t("newPatient.hypertension")}</span>
-                    </label>
-                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md ${medicalConditions.heartDisease ? "bg-blue-100 border-blue-500" : ""}`}>
-                      <input
-                        type="checkbox"
-                        checked={medicalConditions.heartDisease}
-                        onChange={(e) =>
-                          setMedicalConditions({
-                            ...medicalConditions,
-                            heartDisease: e.target.checked,
-                          })
-                        }
-                        disabled={isSubmitting}
-                        className="rounded border-gray-300 dark:border-gray-600"
-                      />
-                      <span>{t("newPatient.heartDisease")}</span>
-                    </label>
-                    <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md ${medicalConditions.asthma ? "bg-blue-100 border-blue-500" : ""}`}>
-                      <input
-                        type="checkbox"
-                        checked={medicalConditions.asthma}
-                        onChange={(e) =>
-                          setMedicalConditions({
-                            ...medicalConditions,
-                            asthma: e.target.checked,
-                          })
-                        }
-                        disabled={isSubmitting}
-                        className="rounded border-gray-300 dark:border-gray-600"
-                      />
-                      <span>{t("newPatient.asthma")}</span>
-                    </label>
-                  </div>
-                  <div className="flex items-center w-full">
-                    <FormField
-                      label={t("newPatient.typeYours")}
-                      className="w-full"
-                    >
-                      <FormInput
-                        placeholder={t(
-                          "newPatient.medicalConditionPlaceholder",
-                          "e.g. Epilepsy, Thyroid Issues, etc.",
-                        )}
-                        onChange={(e) =>
-                          setMedicalConditions({
-                            ...medicalConditions,
-                            other: e.target.value,
-                          })
-                        }
-                        value={medicalConditions.other || ""}
-                        disabled={isSubmitting}
-                        className="w-full"
-                      />
-                    </FormField>
-                  </div>
-                </div>
-                <FormField label={t("newPatient.currentMedications")}>
-                  <FormTextarea
-                    placeholder={t(
-                      "newPatient.currentMedicationsPlaceholder",
-                      "e.g. Metformin, Atorvastatin, Ibuprofen",
-                    )}
-                    onChange={(e) =>
-                      handleMedicationInputChange(e.target.value)
-                    }
-                    value={medicationInput}
-                    className="h-20 w-full"
-                    disabled={isSubmitting}
-                  />
-                </FormField>
-              </div>
-            </section>
-
-            <section className="space-y-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
-              <div className="border-b bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-t-lg p-4">
-                <h3 className="flex items-center gap-2 text-lg font-bold text-gray-900 dark:text-white">
-                  <VisitDetailsIcon className="w-5 h-5 text-blue-600" />
+                  {t("newPatient.medicalHistory")} &{" "}
                   {t("newPatient.visitDetails")}
                 </h3>
-              </div>
-              <div className="space-y-4 px-4 pb-4">
+            </div>
+            <div className="space-y-4 px-6 pb-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <FormField label={t("newPatient.allergies")}>
+                  <FormInput
+                    placeholder={t(
+                      "newPatient.allergiesPlaceholder",
+                      "e.g. Penicillin, Latex, Peanuts",
+                    )}
+                    onChange={(e) => handleAllergyInputChange(e.target.value)}
+                    value={allergyInput}
+                    disabled={isSubmitting}
+                    className="w-full"
+                  />
+                </FormField>
+
                 <FormField label={t("newPatient.chiefComplaint")}>
-                  <FormTextarea
+                  <FormInput
                     placeholder={t("newPatient.chiefComplaintPlaceholder")}
                     onChange={(e) =>
                       handlePatientVisitChange("chiefComplaint", e.target.value)
@@ -791,21 +664,99 @@ const NewPatient: React.FC = () => {
                     disabled={isSubmitting}
                   />
                 </FormField>
-
-                <FormField label={t("newPatient.clinicalNotes")}>
-                  <FormTextarea
-                    placeholder={t("newPatient.clinicalNotesPlaceholder")}
-                    onChange={(e) =>
-                      handlePatientVisitChange("clinicalNotes", e.target.value)
-                    }
-                    value={patientVisit.clinicalNotes}
-                    className="h-20 w-full"
-                    disabled={isSubmitting}
-                  />
-                </FormField>
               </div>
-            </section>
-          </div>
+
+              <div className="space-y-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-red-50/50 dark:bg-gray-700/50 p-4">
+                <p className="text-sm font-medium text-gray-900 dark:text-white flex items-center gap-2">
+                  {t("newPatient.medicalConditions")}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm">
+                  <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md dark:text-white ${medicalConditions.diabetes ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:border-blue-500" : "border-gray-300 dark:border-gray-600 dark:bg-gray-700"}`}>
+                    <input
+                      type="checkbox"
+                      checked={medicalConditions.diabetes}
+                      onChange={(e) =>
+                        setMedicalConditions({
+                          ...medicalConditions,
+                          diabetes: e.target.checked,
+                        })
+                      }
+                      disabled={isSubmitting}
+                      className="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.diabetes")}</span>
+                  </label>
+                  <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md dark:text-white ${medicalConditions.hypertension ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:border-blue-500" : "border-gray-300 dark:border-gray-600 dark:bg-gray-700"}`}>
+                    <input
+                      type="checkbox"
+                      checked={medicalConditions.hypertension}
+                      onChange={(e) =>
+                        setMedicalConditions({
+                          ...medicalConditions,
+                          hypertension: e.target.checked,
+                        })
+                      }
+                      disabled={isSubmitting}
+                      className="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.hypertension")}</span>
+                  </label>
+                  <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md dark:text-white ${medicalConditions.heartDisease ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:border-blue-500" : "border-gray-300 dark:border-gray-600 dark:bg-gray-700"}`}>
+                    <input
+                      type="checkbox"
+                      checked={medicalConditions.heartDisease}
+                      onChange={(e) =>
+                        setMedicalConditions({
+                          ...medicalConditions,
+                          heartDisease: e.target.checked,
+                        })
+                      }
+                      disabled={isSubmitting}
+                      className="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.heartDisease")}</span>
+                  </label>
+                  <label className={`flex items-center gap-2 cursor-pointer border w-full px-2 py-2 rounded-md dark:text-white ${medicalConditions.asthma ? "bg-blue-100 border-blue-500 dark:bg-blue-900/30 dark:border-blue-500" : "border-gray-300 dark:border-gray-600 dark:bg-gray-700"}`}>
+                    <input
+                      type="checkbox"
+                      checked={medicalConditions.asthma}
+                      onChange={(e) =>
+                        setMedicalConditions({
+                          ...medicalConditions,
+                          asthma: e.target.checked,
+                        })
+                      }
+                      disabled={isSubmitting}
+                      className="rounded border-gray-300 dark:border-gray-600"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">{t("newPatient.asthma")}</span>
+                  </label>
+                </div>
+                <div className="flex items-center w-full">
+                  <FormField
+                    label={t("newPatient.typeYours")}
+                    className="w-full"
+                  >
+                    <FormInput
+                      placeholder={t(
+                        "newPatient.medicalConditionPlaceholder",
+                        "e.g. Epilepsy, Thyroid Issues, etc.",
+                      )}
+                      onChange={(e) =>
+                        setMedicalConditions({
+                          ...medicalConditions,
+                          other: e.target.value,
+                        })
+                      }
+                      value={medicalConditions.other || ""}
+                      disabled={isSubmitting}
+                      className="w-full"
+                    />
+                  </FormField>
+                </div>
+              </div>
+            </div>
+          </section>
 
           <section className="border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 overflow-hidden">
             <div className="border-b bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 rounded-t-lg p-4">
