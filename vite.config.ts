@@ -42,10 +42,11 @@ export default defineConfig({
           ui: ["@tanstack/react-query"],
           pdf: ["jspdf", "jspdf-autotable"],
           i18n: ["react-i18next", "i18next"],
+          charts: ["apexcharts", "react-apexcharts"],
         },
       },
     },
     sourcemap: false,
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 900,
   },
 });

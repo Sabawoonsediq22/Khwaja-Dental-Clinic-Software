@@ -243,6 +243,9 @@ const ReceiptPrintView: React.FC<ReceiptPrintViewProps> = ({
           <p className="font-medium text-gray-700 dark:text-gray-300">
             {t("receipt.thankYou", { clinicName: receipt.clinic.name || "Dental Clinic" })}
           </p>
+          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+            Powered by: www.parsatechnology.com
+          </p>
         </footer>
       </div>
     </div>

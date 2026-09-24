@@ -1100,7 +1100,7 @@ async fn change_password(
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+pub fn run() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
 
     tauri::Builder::default()
@@ -1124,6 +1124,35 @@ pub fn run() {
                 .join("dental_clinic.db")
                 .to_string_lossy()
                 .to_string();
+
+            // Migrate data from the old bundle identifier folder (com.dentix.app).
+            // app_data_dir is derived from the identifier, so renaming it changes
+            // where the DB and encryption key live.
+            if let Some(parent) = app_data_dir.parent() {
+                let legacy_dir = parent.join("com.dentix.app");
+                let new_db = app_data_dir.join("dental_clinic.db");
+                let legacy_db = legacy_dir.join("dental_clinic.db");
+                if !new_db.exists() && legacy_db.exists() {
+                    if let Err(e) = std::fs::create_dir_all(&app_data_dir) {
+                        eprintln!("[WARN] Failed to create app data dir: {}", e);
+                    } else if let Ok(entries) = std::fs::read_dir(&legacy_dir) {
+                        for entry in entries.flatten() {
+                            let target = app_data_dir.join(entry.file_name());
+                            if let Err(e) = std::fs::rename(entry.path(), &target) {
+                                eprintln!(
+                                    "[WARN] Failed to migrate {}: {}",
+                                    entry.path().display(),
+                                    e
+                                );
+                            }
+                        }
+                        println!(
+                            "[INFO] Migrated app data from {}",
+                            legacy_dir.display()
+                        );
+                    }
+                }
+            }
 
             println!("[INFO] Database path: {}", db_path);
 
@@ -1212,6 +1241,6 @@ pub fn run() {
             change_password,
             reset_password,
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .run(tauri::generate_context!())?;
+    Ok(())
 }

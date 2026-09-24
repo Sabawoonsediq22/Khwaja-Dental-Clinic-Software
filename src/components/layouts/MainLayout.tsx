@@ -25,6 +25,8 @@ import Logo from "../../assets/favicon.svg";
 import { api } from "../../lib/api";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
 import TitleBar from "./TitleBar";
+import SearchModal from "../search/SearchModal";
+import TopHeaderSearch from "../search/SearchHeader";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface MainLayoutProps {
@@ -38,8 +40,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const isRTL = i18n.language === "ps";
   const [isDark, setIsDark] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const { logout } = useAuth();
   const breadcrumbs = useBreadcrumbs();
+
+  const openSearch = () => setIsSearchOpen(true);
+  const closeSearch = () => setIsSearchOpen(false);
+
+  useKeyboardShortcut("k", openSearch, "ctrl");
+  useKeyboardShortcut("k", openSearch, "meta");
 
   const {
     updateAvailable,
@@ -246,6 +255,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             <Breadcrumbs items={breadcrumbs} isRTL={isRTL} />
           </div>
           <div className="flex-1 flex items-center justify-end gap-2">
+            {/* Global search */}
+            <TopHeaderSearch
+              onClick={openSearch}
+              className="h-9 w-64 lg:w-80 text-xs"
+            />
 
             {/* Theme toggle button */}
             <Button
@@ -307,6 +321,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
         <div className="p-6">{children}</div>
       </main>
       </div>
+      <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
     </div>
   );
 };

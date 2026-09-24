@@ -2,6 +2,8 @@ use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 use sqlx::SqlitePool;
 use std::str::FromStr;
 
+include!(concat!(env!("OUT_DIR"), "/migrations_embed.rs"));
+
 pub async fn init_pool(db_path: &str) -> Result<SqlitePool, sqlx::Error> {
     if let Some(parent) = std::path::Path::new(db_path).parent() {
         if let Err(e) = std::fs::create_dir_all(parent) {
@@ -88,33 +90,7 @@ pub async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
     .execute(pool)
     .await?;
 
-    let migrations_path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("migrations");
-
-    let mut files: Vec<_> = std::fs::read_dir(&migrations_path)?
-        .into_iter()
-        .filter_map(|entry| entry.ok())
-        .filter_map(|entry| {
-            let path = entry.path();
-            if path.extension().map(|ext| ext == "sql").unwrap_or(false) {
-                let version = path
-                    .file_stem()
-                    .and_then(|s| s.to_str())
-                    .unwrap_or("")
-                    .split('_')
-                    .next()
-                    .unwrap_or("")
-                    .to_string();
-                Some((version, path))
-            } else {
-                None
-            }
-        })
-        .collect();
-
-    files.sort_by(|a, b| a.0.cmp(&b.0));
-
-    for (version, file) in &files {
+    for (version, sql) in EMBEDDED_MIGRATIONS {
         let exists: bool = sqlx::query_scalar(
             "SELECT EXISTS(SELECT 1 FROM _sqlx_migrations WHERE version = ?)",
         )
@@ -125,8 +101,6 @@ pub async fn run_migrations(pool: &SqlitePool) -> Result<(), sqlx::Error> {
         if exists {
             continue;
         }
-
-        let sql = std::fs::read_to_string(file)?;
 
         let mut tx = pool.begin().await?;
 

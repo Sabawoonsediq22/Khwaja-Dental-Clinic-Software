@@ -823,7 +823,6 @@ version = "1.0.18"
 dependencies = [
  "base64 0.22.1",
  "chrono",
- "dotenvy",
  "env_logger",
  "hex",
  "log",

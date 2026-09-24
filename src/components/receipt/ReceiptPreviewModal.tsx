@@ -51,7 +51,19 @@ const ReceiptPreviewModal: React.FC<ReceiptPreviewModalProps> = ({
   const handlePrint = () => {
     if (!receipt) return;
 
-    window.setTimeout(() => window.print(), 50);
+    const previousTitle = document.title;
+    document.title = "";
+
+    const restoreTitle = () => {
+      document.title = previousTitle;
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+    window.addEventListener("afterprint", restoreTitle);
+
+    window.setTimeout(() => {
+      window.print();
+      restoreTitle();
+    }, 50);
   };
 
   const handleExportPdf = () => {

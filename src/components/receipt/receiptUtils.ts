@@ -213,6 +213,7 @@ export const buildReceiptDownloadHtml = (receipt: ReceiptData) => `<!doctype htm
       <div class="right outstanding">${receipt.outstandingAfn > 0 ? formatCurrency(receipt.outstandingAfn, "AFN") : ""}${receipt.outstandingAfn > 0 && receipt.outstandingUsd > 0 ? " / " : ""}${receipt.outstandingUsd > 0 ? formatCurrency(receipt.outstandingUsd, "USD") : ""}</div>
     </div>
     <div class="footer">${receipt.clinic.name ? `Thank you for choosing ${receipt.clinic.name}!` : "Thank you for your visit!"}</div>
+    <div class="footer">Powered by: www.parsatechnology.com</div>
   </div>
 </body>
 </html>`;

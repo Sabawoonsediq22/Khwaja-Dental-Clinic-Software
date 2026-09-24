@@ -4,9 +4,6 @@ import { cn } from "../../lib/utils";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n";
 import { CloseIcon, MaximizeIcon, MinimizeIcon, RestoreIcon } from "../../shared/icons/icons";
-import { useKeyboardShortcut } from "../../hooks/useKeyboardShortcut";
-import SearchModal from "../search/SearchModal";
-import TopHeaderSearch from "../search/SearchHeader";
 
 const appWindow = getCurrentWindow();
 const buttonBase =
@@ -25,14 +22,6 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const { t } = useTranslation();
   const isRTL = i18n.language === "ps";
-
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  const openSearch = () => setIsSearchOpen(true);
-  const closeSearch = () => setIsSearchOpen(false);
-
-  useKeyboardShortcut("k", openSearch, "ctrl");
-  useKeyboardShortcut("k", openSearch, "meta");
 
   useEffect(() => {
     const checkMaximized = async () => {
@@ -152,10 +141,6 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
           </span>
         </div>
 
-        <div className="flex items-center justify-center px-4 shrink-0">
-          <TopHeaderSearch onClick={openSearch} className="h-6 w-96 lg:w-lg text-xs" />
-        </div>
-
         <div
           data-tauri-drag-region
           onDoubleClick={handleDoubleClick}
@@ -237,7 +222,6 @@ export default function TitleBar({ clinicLogo }: TitleBarProps) {
           })}
         </div>
       )}
-      <SearchModal isOpen={isSearchOpen} onClose={closeSearch} />
     </>
   );
 }

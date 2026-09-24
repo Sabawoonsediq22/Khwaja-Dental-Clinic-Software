@@ -75,6 +75,11 @@ async function generatePDF(
     margin: { top: 30 },
   });
 
+  const pageHeight = doc.internal.pageSize.getHeight();
+  doc.setFontSize(8);
+  doc.setTextColor(100);
+  doc.text("Powered by: www.parsatechnology.com", 14, pageHeight - 8);
+
   doc.save(filename);
 }
 

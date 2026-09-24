@@ -144,6 +144,11 @@ const TreatmentHistoryDownloadModal: React.FC<TreatmentHistoryDownloadModalProps
         },
       });
 
+      const pageHeight = doc.internal.pageSize.getHeight();
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text("Powered by: www.parsatechnology.com", 14, pageHeight - 8);
+
       doc.save(`treatment-history-${patientId || "unknown"}.pdf`);
       onClose();
     } finally {

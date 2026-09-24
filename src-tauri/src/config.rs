@@ -1,5 +1,4 @@
 use std::env;
-use std::path::PathBuf;
 
 const ENV_GOOGLE_CLIENT_ID: &str = "GOOGLE_OAUTH_CLIENT_ID";
 const ENV_GOOGLE_CLIENT_SECRET: &str = "GOOGLE_OAUTH_CLIENT_SECRET";
@@ -40,17 +39,6 @@ impl AppConfig {
 
         if !embedded.is_empty() {
             return embedded.to_string();
-        }
-
-        let dot_env_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(".env");
-        if dot_env_path.exists() {
-            dotenvy::from_path(&dot_env_path).ok();
-            if let Ok(val) = env::var(env_key) {
-                let trimmed = val.trim().to_string();
-                if !trimmed.is_empty() {
-                    return trimmed;
-                }
-            }
         }
 
         String::new()

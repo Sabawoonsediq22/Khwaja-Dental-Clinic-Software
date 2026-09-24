@@ -249,7 +249,7 @@ textarea:focus-visible {
 @media print {
   @page {
     size: A4;
-    margin: 12mm;
+    margin: 0;
   }
 
   html,
@@ -259,6 +259,8 @@ textarea:focus-visible {
     height: auto !important;
     overflow: visible !important;
     background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   body {
@@ -299,7 +301,7 @@ textarea:focus-visible {
     width: 100% !important;
     max-width: none !important;
     margin: 0 auto !important;
-    border: 1px solid #e5e7eb !important;
+    border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;
     padding: 12mm !important;
