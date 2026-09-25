@@ -19,7 +19,7 @@ export function Tooth({
     <div
       onClick={() => onClick(tooth)}
       className={[
-        "relative flex flex-col items-center cursor-pointer select-none transition-transform",
+        "relative flex min-w-0 max-w-8 flex-1 flex-col items-center cursor-pointer select-none transition-transform",
         selected ? "scale-105" : "",
       ].join(" ")}
       role="button"
@@ -31,7 +31,7 @@ export function Tooth({
         }
       }}
     >
-      <ToothSvg tooth={tooth} size={32} selected={selected} />
+      <ToothSvg tooth={tooth} size={32} selected={selected} className="h-auto w-full" />
 
       <div className={[
         "mt-1 text-[10px] font-medium transition-colors",

@@ -125,7 +125,6 @@ GOOGLE_OAUTH_CLIENT_ID="your-client-id.apps.googleusercontent.com"
 | Ctrl+R / Cmd+R | Reports |
 | Ctrl+D / Cmd+D | Dashboard |
 | Ctrl+, | Settings |
-| ? | Help |
 
 ## Scripts
 

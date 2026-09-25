@@ -27,7 +27,6 @@ export const useBreadcrumbs = (): BreadcrumbItem[] => {
       reports: t("nav.reports"),
       settings: t("nav.settings"),
       about: t("nav.about"),
-      help: t("nav.help"),
       invoices: t("breadcrumbs.invoices", "Invoices"),
       receipts: t("breadcrumbs.receipts", "Receipts"),
       payments: t("breadcrumbs.payments", "Payments"),

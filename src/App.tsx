@@ -17,7 +17,6 @@ const PatientProfile = lazy(() => import("./pages/PatientProfile"));
 const Reports = lazy(() => import("./pages/Reports"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Billing = lazy(() => import("./pages/Billing"));
-const Help = lazy(() => import("./pages/Help"));
 const AllVisits = lazy(() => import("./pages/AllVisits"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -83,7 +82,6 @@ function App() {
             <Route path="/visits/:id" element={<Patients />} />
             <Route path="/treatments/:id" element={<Patients />} />
             <Route path="/reports" element={<Reports />} />
-            <Route path="/help" element={<Help />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

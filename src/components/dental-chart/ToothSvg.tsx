@@ -4,9 +4,10 @@ interface ToothSvgProps {
   tooth: ToothData;
   size: number;
   selected?: boolean;
+  className?: string;
 }
 
-export function ToothSvg({ tooth, size, selected = false }: ToothSvgProps) {
+export function ToothSvg({ tooth, size, selected = false, className }: ToothSvgProps) {
   const isUpper = tooth.number >= 1 && tooth.number <= 7;
   const isAnterior = tooth.number <= 3;
   const isPremolar = tooth.number === 4 || tooth.number === 5;
@@ -36,7 +37,7 @@ export function ToothSvg({ tooth, size, selected = false }: ToothSvgProps) {
       width={size}
       height={size * 1.3}
       viewBox="0 0 24 32"
-      className="transition-all"
+      className={["transition-all", className].filter(Boolean).join(" ")}
     >
       {/* Crown outline - anatomically inspired shape */}
       <g transform={isUpper ? "" : "translate(0, 2)"}>

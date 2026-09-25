@@ -23,9 +23,9 @@ export default function DentalChart({ onToothSelect, onMeasurementChange, select
       </div>
 
       {/* Numbers */}
-      <div className="flex justify-center gap-2 md:gap-4 py-2 text-lg font-bold text-gray-900 dark:text-white">
+      <div className="flex w-full justify-center gap-1 md:gap-2 py-2 text-lg font-bold text-gray-900 dark:text-white">
         {[7, 6, 5, 4, 3, 2, 1, 1, 2, 3, 4, 5, 6, 7].map((n) => (
-          <span key={n} className="w-6 text-center">{n}</span>
+          <span key={n} className="min-w-0 max-w-8 flex-1 text-center">{n}</span>
         ))}
       </div>
 

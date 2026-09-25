@@ -770,7 +770,7 @@ const NewPatient: React.FC = () => {
               </h3>
             </div>
             <div className="flex flex-col lg:flex-row">
-              <div className="flex-1 p-6 lg:border-r border-gray-200 dark:border-gray-700 space-y-5">
+              <div className="flex-1 min-w-0 p-6 lg:border-r border-gray-200 dark:border-gray-700 space-y-5">
                 <div className="flex items-end">
                   <FormField label={t("newPatient.procedure")} className="flex-1">
                     <Combobox
@@ -860,8 +860,8 @@ const NewPatient: React.FC = () => {
                     </div>
 
                     <div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-                      <div className="flex items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 p-4 dark:border-gray-700">
+                        <div className="flex min-w-0 flex-wrap items-center gap-3">
                           <h4 className="text-base font-bold text-gray-900 dark:text-white">
                             {selectedProcedures[activeProcedureIndex]
                               ?.procedureName ||

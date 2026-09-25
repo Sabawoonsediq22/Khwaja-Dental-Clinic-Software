@@ -31,7 +31,7 @@ export function DentalArch({
 
   return (
     <div className="flex justify-center">
-      <div className="flex items-end gap-1 md:gap-2">
+      <div className="flex w-full items-end justify-center gap-1 md:gap-2">
         {teethingOrder.map((tooth) => (
           <Tooth
             key={tooth.id}

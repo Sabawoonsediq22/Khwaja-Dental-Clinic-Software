@@ -7,7 +7,6 @@ import {
   BillingIcon,
   CollapseIcon,
   ExpandIcon,
-  HelpIcon,
   LayoutIcon,
   PatientIcon,
   ReportsIcon,
@@ -15,12 +14,11 @@ import {
   MoonIcon,
   SettingsIcon,
   SunIcon,
-  UpdateIcon,
 } from "../../shared/icons/icons";
 import { Button, Breadcrumbs } from "../ui/index";
 import { cn } from "../../lib/utils";
 import { useKeyboardShortcut } from "../../hooks/useKeyboardShortcut";
-import { useUpdate } from "../../hooks/useUpdate";
+import UpdateButton from "../common/UpdateButton";
 import Logo from "../../assets/favicon.svg";
 import { api } from "../../lib/api";
 import { useBreadcrumbs } from "../../hooks/useBreadcrumbs";
@@ -50,22 +48,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   useKeyboardShortcut("k", openSearch, "ctrl");
   useKeyboardShortcut("k", openSearch, "meta");
 
-  const {
-    updateAvailable,
-    updateInfo,
-    isDownloading,
-    downloadProgress,
-    installUpdate,
-  } = useUpdate();
-
-  const handleUpdate = async () => {
-    try {
-      await installUpdate();
-    } catch {
-      toast.error("Update failed. Please try again.");
-    }
-  };
-
   const handleLogout = async () => {
     await logout();
     toast.success(t("auth.logoutSuccess"));
@@ -88,7 +70,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
     { name: t("nav.billings"), href: "/billing", icon: BillingIcon },
     { name: t("nav.reports"), href: "/reports", icon: ReportsIcon, exact: true },
     { name: t("nav.settings"), href: "/settings", icon: SettingsIcon, exact: true },
-    { name: t("nav.help"), href: "/help", icon: HelpIcon, exact: true },
   ];
 
   const changeLanguage = (lng: "en" | "ps") => {
@@ -104,7 +85,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   useKeyboardShortcut("r", () => goTo("/reports"), "ctrl");
   useKeyboardShortcut("d", () => goTo("/dashboard"), "ctrl");
   useKeyboardShortcut(",", () => goTo("/settings"), "ctrl");
-  useKeyboardShortcut("?", () => goTo("/help"));
 
   const { data: clinicSettings } = useQuery({
     queryKey: ["settings"],
@@ -273,26 +253,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             </Button>
 
             {/* Update button */}
-            {updateAvailable && (
-              <Button
-                onClick={handleUpdate}
-                variant="ghost"
-                size="icon"
-                disabled={isDownloading}
-                className={cn(
-                  "cursor-pointer border rounded-lg dark:border-gray-500 transition-colors relative",
-                  isDownloading
-                    ? "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400"
-                    : "bg-green-50 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50"
-                )}
-                title={isDownloading ? `Downloading... ${downloadProgress}%` : `Update to v${updateInfo?.version}`}
-              >
-                <UpdateIcon size="lg" />
-                {!isDownloading && (
-                  <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-green-500 animate-pulse" />
-                )}
-              </Button>
-            )}
+            <UpdateButton />
             {/* Logout button */}
             <Button
               onClick={handleLogout}

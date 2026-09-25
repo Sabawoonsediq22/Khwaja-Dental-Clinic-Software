@@ -323,3 +323,13 @@ textarea:focus-visible {
     padding: 8mm !important;
   }
 }
+
+/* Indeterminate update download progress bar */
+@keyframes update-indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
+}

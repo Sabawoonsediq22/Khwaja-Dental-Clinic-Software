@@ -1,10 +1,19 @@
-import { useState, useEffect, useCallback } from "react";
-import { check } from "@tauri-apps/plugin-updater";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { check, Update } from "@tauri-apps/plugin-updater";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { toast } from "sonner";
+import i18n from "../i18n";
 
-interface UpdateInfo {
+export type UpdateStatus =
+  | "idle"
+  | "downloading"
+  | "installing"
+  | "restarting"
+  | "error";
+
+export interface UpdateInfo {
   version: string;
+  currentVersion?: string;
   date?: string;
   notes?: string;
 }
@@ -12,87 +21,112 @@ interface UpdateInfo {
 interface UseUpdateReturn {
   updateAvailable: boolean;
   updateInfo: UpdateInfo | null;
+  status: UpdateStatus;
   isDownloading: boolean;
-  downloadProgress: number;
+  downloadProgress: number | null;
+  downloadedBytes: number;
+  totalBytes: number | null;
+  error: string | null;
   checkForUpdates: () => Promise<void>;
   installUpdate: () => Promise<void>;
 }
 
+const isBusy = (status: UpdateStatus) =>
+  status === "downloading" || status === "installing" || status === "restarting";
+
 export function useUpdate(): UseUpdateReturn {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [downloadProgress, setDownloadProgress] = useState(0);
-  const [updater, setUpdater] = useState<Awaited<ReturnType<typeof check>> | null>(null);
+  const [status, setStatus] = useState<UpdateStatus>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [downloadedBytes, setDownloadedBytes] = useState(0);
+  const [totalBytes, setTotalBytes] = useState<number | null>(null);
+
+  const updaterRef = useRef<Update | null>(null);
+  const statusRef = useRef<UpdateStatus>("idle");
+
+  const changeStatus = useCallback((next: UpdateStatus) => {
+    statusRef.current = next;
+    setStatus(next);
+  }, []);
 
   const checkForUpdates = useCallback(async () => {
     try {
       const update = await check();
       if (update) {
-        setUpdateAvailable(true);
+        updaterRef.current = update;
         setUpdateInfo({
-          version: update.version || "unknown",
+          version: update.version,
+          currentVersion: update.currentVersion,
           date: update.date,
           notes: update.body,
         });
-        setUpdater(update);
+        setUpdateAvailable(true);
       }
-    } catch (error) {
-      console.error("Failed to check for updates:", error);
-      toast.error("Failed to check for updates. Please try again later.");
+    } catch (err) {
+      console.error("Failed to check for updates:", err);
+      toast.error(i18n.t("update.checkFailed"));
     }
   }, []);
 
   const installUpdate = useCallback(async () => {
-    if (!updater) return;
+    const update = updaterRef.current;
+    if (!update || isBusy(statusRef.current)) return;
+
+    setError(null);
+    setDownloadedBytes(0);
+    setTotalBytes(null);
+    changeStatus("downloading");
 
     try {
-      setIsDownloading(true);
-      setDownloadProgress(0);
-
-      let downloaded = 0;
-      let contentLength = 0;
-
-      await updater.downloadAndInstall((event) => {
+      await update.downloadAndInstall((event) => {
         switch (event.event) {
-          case "Started":
-            contentLength = event.data.contentLength || 0;
+          case "Started": {
+            const length = event.data.contentLength;
+            setTotalBytes(length && length > 0 ? length : null);
+            setDownloadedBytes(0);
             break;
+          }
           case "Progress":
-            downloaded += event.data.chunkLength;
-            if (contentLength > 0) {
-              setDownloadProgress(Math.round((downloaded / contentLength) * 100));
-            }
+            setDownloadedBytes((prev) => prev + event.data.chunkLength);
             break;
           case "Finished":
+            changeStatus("installing");
             break;
         }
       });
 
-      toast.success("Update downloaded! Restarting...", {
-        duration: 2000,
-      });
-
-      setTimeout(async () => {
-        await relaunch();
-      }, 2000);
-    } catch (error) {
-      console.error("Failed to install update:", error);
-      toast.error("Failed to install update. Please try again.");
-      setIsDownloading(false);
-      setDownloadProgress(0);
+      changeStatus("restarting");
+      toast.success(i18n.t("update.restartToast"));
+      setTimeout(() => {
+        relaunch();
+      }, 1500);
+    } catch (err) {
+      console.error("Failed to install update:", err);
+      setError(err instanceof Error ? err.message : String(err));
+      changeStatus("error");
+      toast.error(i18n.t("update.failed"));
     }
-  }, [updater]);
+  }, [changeStatus]);
 
   useEffect(() => {
     checkForUpdates();
   }, [checkForUpdates]);
 
+  const downloadProgress =
+    totalBytes && totalBytes > 0
+      ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100))
+      : null;
+
   return {
     updateAvailable,
     updateInfo,
-    isDownloading,
+    status,
+    isDownloading: status === "downloading",
     downloadProgress,
+    downloadedBytes,
+    totalBytes,
+    error,
     checkForUpdates,
     installUpdate,
   };
