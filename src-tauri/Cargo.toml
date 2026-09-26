@@ -1,6 +1,6 @@
 [package]
 name = "dentix"
-version = "1.0.21"
+version = "1.0.22"
 description = "Dental Clinic Management System"
 authors = ["Parsa Technology"]
 edition = "2021"
